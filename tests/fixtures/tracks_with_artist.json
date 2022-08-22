@@ -1,0 +1,1602 @@
+[
+  {
+    "album_name" : "For Those About To Rock We Salute You",
+    "track_name" : "For Those About To Rock (We Salute You)",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "343719",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "Balls to the Wall",
+    "track_name" : "Balls to the Wall",
+    "genre_name" : "Rock",
+    "media_type_name" : "Protected AAC audio file",
+    "track_duration" : "342562",
+    "artist_name" : "Accept"
+  },
+  {
+    "album_name" : "Restless and Wild",
+    "track_name" : "Fast As a Shark",
+    "genre_name" : "Rock",
+    "media_type_name" : "Protected AAC audio file",
+    "track_duration" : "230619",
+    "artist_name" : "Accept"
+  },
+  {
+    "album_name" : "Restless and Wild",
+    "track_name" : "Restless and Wild",
+    "genre_name" : "Rock",
+    "media_type_name" : "Protected AAC audio file",
+    "track_duration" : "252051",
+    "artist_name" : "Accept"
+  },
+  {
+    "album_name" : "Restless and Wild",
+    "track_name" : "Princess of the Dawn",
+    "genre_name" : "Rock",
+    "media_type_name" : "Protected AAC audio file",
+    "track_duration" : "375418",
+    "artist_name" : "Accept"
+  },
+  {
+    "album_name" : "For Those About To Rock We Salute You",
+    "track_name" : "Put The Finger On You",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "205662",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "For Those About To Rock We Salute You",
+    "track_name" : "Let's Get It Up",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "233926",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "For Those About To Rock We Salute You",
+    "track_name" : "Inject The Venom",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "210834",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "For Those About To Rock We Salute You",
+    "track_name" : "Snowballed",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "203102",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "For Those About To Rock We Salute You",
+    "track_name" : "Evil Walks",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "263497",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "For Those About To Rock We Salute You",
+    "track_name" : "C.O.D.",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "199836",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "For Those About To Rock We Salute You",
+    "track_name" : "Breaking The Rules",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "263288",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "For Those About To Rock We Salute You",
+    "track_name" : "Night Of The Long Knives",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "205688",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "For Those About To Rock We Salute You",
+    "track_name" : "Spellbound",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "270863",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "Let There Be Rock",
+    "track_name" : "Go Down",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "331180",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "Let There Be Rock",
+    "track_name" : "Dog Eat Dog",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "215196",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "Let There Be Rock",
+    "track_name" : "Let There Be Rock",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "366654",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "Let There Be Rock",
+    "track_name" : "Bad Boy Boogie",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "267728",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "Let There Be Rock",
+    "track_name" : "Problem Child",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "325041",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "Let There Be Rock",
+    "track_name" : "Overdose",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "369319",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "Let There Be Rock",
+    "track_name" : "Hell Ain't A Bad Place To Be",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "254380",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "Let There Be Rock",
+    "track_name" : "Whole Lotta Rosie",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "323761",
+    "artist_name" : "AC\/DC"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "Walk On Water",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "295680",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "Love In An Elevator",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "321828",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "Rag Doll",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "264698",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "What It Takes",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "310622",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "Dude (Looks Like A Lady)",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "264855",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "Janie's Got A Gun",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "330736",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "Cryin'",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "309263",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "Amazing",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "356519",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "Blind Man",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "240718",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "Deuces Are Wild",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "215875",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "The Other Side",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "244375",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "Crazy",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "316656",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "Eat The Rich",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "251036",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "Angel",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "307617",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Big Ones",
+    "track_name" : "Livin' On The Edge",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "381231",
+    "artist_name" : "Aerosmith"
+  },
+  {
+    "album_name" : "Jagged Little Pill",
+    "track_name" : "All I Really Want",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "284891",
+    "artist_name" : "Alanis Morissette"
+  },
+  {
+    "album_name" : "Jagged Little Pill",
+    "track_name" : "You Oughta Know",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "249234",
+    "artist_name" : "Alanis Morissette"
+  },
+  {
+    "album_name" : "Jagged Little Pill",
+    "track_name" : "Perfect",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "188133",
+    "artist_name" : "Alanis Morissette"
+  },
+  {
+    "album_name" : "Jagged Little Pill",
+    "track_name" : "Hand In My Pocket",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "221570",
+    "artist_name" : "Alanis Morissette"
+  },
+  {
+    "album_name" : "Jagged Little Pill",
+    "track_name" : "Right Through You",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "176117",
+    "artist_name" : "Alanis Morissette"
+  },
+  {
+    "album_name" : "Jagged Little Pill",
+    "track_name" : "Forgiven",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "300355",
+    "artist_name" : "Alanis Morissette"
+  },
+  {
+    "album_name" : "Jagged Little Pill",
+    "track_name" : "You Learn",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "239699",
+    "artist_name" : "Alanis Morissette"
+  },
+  {
+    "album_name" : "Jagged Little Pill",
+    "track_name" : "Head Over Feet",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "267493",
+    "artist_name" : "Alanis Morissette"
+  },
+  {
+    "album_name" : "Jagged Little Pill",
+    "track_name" : "Mary Jane",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "280607",
+    "artist_name" : "Alanis Morissette"
+  },
+  {
+    "album_name" : "Jagged Little Pill",
+    "track_name" : "Ironic",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "229825",
+    "artist_name" : "Alanis Morissette"
+  },
+  {
+    "album_name" : "Jagged Little Pill",
+    "track_name" : "Not The Doctor",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "227631",
+    "artist_name" : "Alanis Morissette"
+  },
+  {
+    "album_name" : "Jagged Little Pill",
+    "track_name" : "Wake Up",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "293485",
+    "artist_name" : "Alanis Morissette"
+  },
+  {
+    "album_name" : "Jagged Little Pill",
+    "track_name" : "You Oughta Know (Alternate)",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "491885",
+    "artist_name" : "Alanis Morissette"
+  },
+  {
+    "album_name" : "Facelift",
+    "track_name" : "We Die Young",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "152084",
+    "artist_name" : "Alice In Chains"
+  },
+  {
+    "album_name" : "Facelift",
+    "track_name" : "Man In The Box",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "286641",
+    "artist_name" : "Alice In Chains"
+  },
+  {
+    "album_name" : "Facelift",
+    "track_name" : "Sea Of Sorrow",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "349831",
+    "artist_name" : "Alice In Chains"
+  },
+  {
+    "album_name" : "Facelift",
+    "track_name" : "Bleed The Freak",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "241946",
+    "artist_name" : "Alice In Chains"
+  },
+  {
+    "album_name" : "Facelift",
+    "track_name" : "I Can't Remember",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "222955",
+    "artist_name" : "Alice In Chains"
+  },
+  {
+    "album_name" : "Facelift",
+    "track_name" : "Love, Hate, Love",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "387134",
+    "artist_name" : "Alice In Chains"
+  },
+  {
+    "album_name" : "Facelift",
+    "track_name" : "It Ain't Like That",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "277577",
+    "artist_name" : "Alice In Chains"
+  },
+  {
+    "album_name" : "Facelift",
+    "track_name" : "Sunshine",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "284969",
+    "artist_name" : "Alice In Chains"
+  },
+  {
+    "album_name" : "Facelift",
+    "track_name" : "Put You Down",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "196231",
+    "artist_name" : "Alice In Chains"
+  },
+  {
+    "album_name" : "Facelift",
+    "track_name" : "Confusion",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "344163",
+    "artist_name" : "Alice In Chains"
+  },
+  {
+    "album_name" : "Facelift",
+    "track_name" : "I Know Somethin (Bout You)",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "261955",
+    "artist_name" : "Alice In Chains"
+  },
+  {
+    "album_name" : "Facelift",
+    "track_name" : "Real Thing",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "243879",
+    "artist_name" : "Alice In Chains"
+  },
+  {
+    "album_name" : "Warner 25 Anos",
+    "track_name" : "Desafinado",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "185338",
+    "artist_name" : "Antônio Carlos Jobim"
+  },
+  {
+    "album_name" : "Warner 25 Anos",
+    "track_name" : "Garota De Ipanema",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "285048",
+    "artist_name" : "Antônio Carlos Jobim"
+  },
+  {
+    "album_name" : "Warner 25 Anos",
+    "track_name" : "Samba De Uma Nota Só (One Note Samba)",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "137273",
+    "artist_name" : "Antônio Carlos Jobim"
+  },
+  {
+    "album_name" : "Warner 25 Anos",
+    "track_name" : "Por Causa De Você",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "169900",
+    "artist_name" : "Antônio Carlos Jobim"
+  },
+  {
+    "album_name" : "Warner 25 Anos",
+    "track_name" : "Ligia",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "251977",
+    "artist_name" : "Antônio Carlos Jobim"
+  },
+  {
+    "album_name" : "Warner 25 Anos",
+    "track_name" : "Fotografia",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "129227",
+    "artist_name" : "Antônio Carlos Jobim"
+  },
+  {
+    "album_name" : "Warner 25 Anos",
+    "track_name" : "Dindi (Dindi)",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "253178",
+    "artist_name" : "Antônio Carlos Jobim"
+  },
+  {
+    "album_name" : "Warner 25 Anos",
+    "track_name" : "Se Todos Fossem Iguais A Você (Instrumental)",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "134948",
+    "artist_name" : "Antônio Carlos Jobim"
+  },
+  {
+    "album_name" : "Warner 25 Anos",
+    "track_name" : "Falando De Amor",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "219663",
+    "artist_name" : "Antônio Carlos Jobim"
+  },
+  {
+    "album_name" : "Warner 25 Anos",
+    "track_name" : "Angela",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "169508",
+    "artist_name" : "Antônio Carlos Jobim"
+  },
+  {
+    "album_name" : "Warner 25 Anos",
+    "track_name" : "Corcovado (Quiet Nights Of Quiet Stars)",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "205662",
+    "artist_name" : "Antônio Carlos Jobim"
+  },
+  {
+    "album_name" : "Warner 25 Anos",
+    "track_name" : "Outra Vez",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "126511",
+    "artist_name" : "Antônio Carlos Jobim"
+  },
+  {
+    "album_name" : "Warner 25 Anos",
+    "track_name" : "O Boto (Bôto)",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "366837",
+    "artist_name" : "Antônio Carlos Jobim"
+  },
+  {
+    "album_name" : "Warner 25 Anos",
+    "track_name" : "Canta, Canta Mais",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "271856",
+    "artist_name" : "Antônio Carlos Jobim"
+  },
+  {
+    "album_name" : "Plays Metallica By Four Cellos",
+    "track_name" : "Enter Sandman",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "221701",
+    "artist_name" : "Apocalyptica"
+  },
+  {
+    "album_name" : "Plays Metallica By Four Cellos",
+    "track_name" : "Master Of Puppets",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "436453",
+    "artist_name" : "Apocalyptica"
+  },
+  {
+    "album_name" : "Plays Metallica By Four Cellos",
+    "track_name" : "Harvester Of Sorrow",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "374543",
+    "artist_name" : "Apocalyptica"
+  },
+  {
+    "album_name" : "Plays Metallica By Four Cellos",
+    "track_name" : "The Unforgiven",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "322925",
+    "artist_name" : "Apocalyptica"
+  },
+  {
+    "album_name" : "Plays Metallica By Four Cellos",
+    "track_name" : "Sad But True",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "288208",
+    "artist_name" : "Apocalyptica"
+  },
+  {
+    "album_name" : "Plays Metallica By Four Cellos",
+    "track_name" : "Creeping Death",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "308035",
+    "artist_name" : "Apocalyptica"
+  },
+  {
+    "album_name" : "Plays Metallica By Four Cellos",
+    "track_name" : "Wherever I May Roam",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "369345",
+    "artist_name" : "Apocalyptica"
+  },
+  {
+    "album_name" : "Plays Metallica By Four Cellos",
+    "track_name" : "Welcome Home (Sanitarium)",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "350197",
+    "artist_name" : "Apocalyptica"
+  },
+  {
+    "album_name" : "Audioslave",
+    "track_name" : "Cochise",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "222380",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Audioslave",
+    "track_name" : "Show Me How to Live",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "277890",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Audioslave",
+    "track_name" : "Gasoline",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "279457",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Audioslave",
+    "track_name" : "What You Are",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "249391",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Audioslave",
+    "track_name" : "Like a Stone",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "294034",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Audioslave",
+    "track_name" : "Set It Off",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "263262",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Audioslave",
+    "track_name" : "Shadow on the Sun",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "343457",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Audioslave",
+    "track_name" : "I am the Highway",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "334942",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Audioslave",
+    "track_name" : "Exploder",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "206053",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Audioslave",
+    "track_name" : "Hypnotize",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "206628",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Audioslave",
+    "track_name" : "Bring'em Back Alive",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "329534",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Audioslave",
+    "track_name" : "Light My Way",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "303595",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Audioslave",
+    "track_name" : "Getaway Car",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "299598",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Audioslave",
+    "track_name" : "The Last Remaining Light",
+    "genre_name" : "Rock",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "317492",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Out Of Exile",
+    "track_name" : "Your Time Has Come",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "255529",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Out Of Exile",
+    "track_name" : "Out Of Exile",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "291291",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Out Of Exile",
+    "track_name" : "Be Yourself",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "279484",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Out Of Exile",
+    "track_name" : "Doesn't Remind Me",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "255869",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Out Of Exile",
+    "track_name" : "Drown Me Slowly",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "233691",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Out Of Exile",
+    "track_name" : "Heaven's Dead",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "276688",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Out Of Exile",
+    "track_name" : "The Worm",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "237714",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Out Of Exile",
+    "track_name" : "Man Or Animal",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "233195",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Out Of Exile",
+    "track_name" : "Yesterday To Tomorrow",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "273763",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Out Of Exile",
+    "track_name" : "Dandelion",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "278125",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Out Of Exile",
+    "track_name" : "#1 Zero",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "299102",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "Out Of Exile",
+    "track_name" : "The Curse",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "309786",
+    "artist_name" : "Audioslave"
+  },
+  {
+    "album_name" : "BackBeat Soundtrack",
+    "track_name" : "Money",
+    "genre_name" : "Rock And Roll",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "147591",
+    "artist_name" : "BackBeat"
+  },
+  {
+    "album_name" : "BackBeat Soundtrack",
+    "track_name" : "Long Tall Sally",
+    "genre_name" : "Rock And Roll",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "106396",
+    "artist_name" : "BackBeat"
+  },
+  {
+    "album_name" : "BackBeat Soundtrack",
+    "track_name" : "Bad Boy",
+    "genre_name" : "Rock And Roll",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "116088",
+    "artist_name" : "BackBeat"
+  },
+  {
+    "album_name" : "BackBeat Soundtrack",
+    "track_name" : "Twist And Shout",
+    "genre_name" : "Rock And Roll",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "161123",
+    "artist_name" : "BackBeat"
+  },
+  {
+    "album_name" : "BackBeat Soundtrack",
+    "track_name" : "Please Mr. Postman",
+    "genre_name" : "Rock And Roll",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "137639",
+    "artist_name" : "BackBeat"
+  },
+  {
+    "album_name" : "BackBeat Soundtrack",
+    "track_name" : "C'Mon Everybody",
+    "genre_name" : "Rock And Roll",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "140199",
+    "artist_name" : "BackBeat"
+  },
+  {
+    "album_name" : "BackBeat Soundtrack",
+    "track_name" : "Rock 'N' Roll Music",
+    "genre_name" : "Rock And Roll",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "141923",
+    "artist_name" : "BackBeat"
+  },
+  {
+    "album_name" : "BackBeat Soundtrack",
+    "track_name" : "Slow Down",
+    "genre_name" : "Rock And Roll",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "163265",
+    "artist_name" : "BackBeat"
+  },
+  {
+    "album_name" : "BackBeat Soundtrack",
+    "track_name" : "Roadrunner",
+    "genre_name" : "Rock And Roll",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "143595",
+    "artist_name" : "BackBeat"
+  },
+  {
+    "album_name" : "BackBeat Soundtrack",
+    "track_name" : "Carol",
+    "genre_name" : "Rock And Roll",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "143830",
+    "artist_name" : "BackBeat"
+  },
+  {
+    "album_name" : "BackBeat Soundtrack",
+    "track_name" : "Good Golly Miss Molly",
+    "genre_name" : "Rock And Roll",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "106266",
+    "artist_name" : "BackBeat"
+  },
+  {
+    "album_name" : "BackBeat Soundtrack",
+    "track_name" : "20 Flight Rock",
+    "genre_name" : "Rock And Roll",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "107807",
+    "artist_name" : "BackBeat"
+  },
+  {
+    "album_name" : "The Best Of Billy Cobham",
+    "track_name" : "Quadrant",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "261851",
+    "artist_name" : "Billy Cobham"
+  },
+  {
+    "album_name" : "The Best Of Billy Cobham",
+    "track_name" : "Snoopy's search-Red baron",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "456071",
+    "artist_name" : "Billy Cobham"
+  },
+  {
+    "album_name" : "The Best Of Billy Cobham",
+    "track_name" : "Spanish moss-\"A sound portrait\"-Spanish moss",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "248084",
+    "artist_name" : "Billy Cobham"
+  },
+  {
+    "album_name" : "The Best Of Billy Cobham",
+    "track_name" : "Moon germs",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "294060",
+    "artist_name" : "Billy Cobham"
+  },
+  {
+    "album_name" : "The Best Of Billy Cobham",
+    "track_name" : "Stratus",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "582086",
+    "artist_name" : "Billy Cobham"
+  },
+  {
+    "album_name" : "The Best Of Billy Cobham",
+    "track_name" : "The pleasant pheasant",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "318066",
+    "artist_name" : "Billy Cobham"
+  },
+  {
+    "album_name" : "The Best Of Billy Cobham",
+    "track_name" : "Solo-Panhandler",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "246151",
+    "artist_name" : "Billy Cobham"
+  },
+  {
+    "album_name" : "The Best Of Billy Cobham",
+    "track_name" : "Do what cha wanna",
+    "genre_name" : "Jazz",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "274155",
+    "artist_name" : "Billy Cobham"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 1]",
+    "track_name" : "Intro\/ Low Down",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "323683",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 1]",
+    "track_name" : "13 Years Of Grief",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "246987",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 1]",
+    "track_name" : "Stronger Than Death",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "300747",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 1]",
+    "track_name" : "All For You",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "235833",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 1]",
+    "track_name" : "Super Terrorizer",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "319373",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 1]",
+    "track_name" : "Phoney Smile Fake Hellos",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "273606",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 1]",
+    "track_name" : "Lost My Better Half",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "284081",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 1]",
+    "track_name" : "Bored To Tears",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "247327",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 1]",
+    "track_name" : "A.N.D.R.O.T.A.Z.",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "266266",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 1]",
+    "track_name" : "Born To Booze",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "282122",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 1]",
+    "track_name" : "World Of Trouble",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "359157",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 1]",
+    "track_name" : "No More Tears",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "555075",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 1]",
+    "track_name" : "The Begining... At Last",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "365662",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 2]",
+    "track_name" : "Heart Of Gold",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "194873",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 2]",
+    "track_name" : "Snowblind",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "420022",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 2]",
+    "track_name" : "Like A Bird",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "276532",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 2]",
+    "track_name" : "Blood In The Wall",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "284368",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Alcohol Fueled Brewtality Live! [Disc 2]",
+    "track_name" : "The Beginning...At Last",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "271960",
+    "artist_name" : "Black Label Society"
+  },
+  {
+    "album_name" : "Black Sabbath",
+    "track_name" : "Black Sabbath",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "382066",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath",
+    "track_name" : "The Wizard",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "264829",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath",
+    "track_name" : "Behind The Wall Of Sleep",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "217573",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath",
+    "track_name" : "N.I.B.",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "368770",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath",
+    "track_name" : "Evil Woman",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "204930",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath",
+    "track_name" : "Sleeping Village",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "644571",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath",
+    "track_name" : "Warning",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "212062",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath Vol. 4 (Remaster)",
+    "track_name" : "Wheels Of Confusion \/ The Straightener",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "494524",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath Vol. 4 (Remaster)",
+    "track_name" : "Tomorrow's Dream",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "192496",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath Vol. 4 (Remaster)",
+    "track_name" : "Changes",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "286275",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath Vol. 4 (Remaster)",
+    "track_name" : "FX",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "103157",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath Vol. 4 (Remaster)",
+    "track_name" : "Supernaut",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "285779",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath Vol. 4 (Remaster)",
+    "track_name" : "Snowblind",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "331676",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath Vol. 4 (Remaster)",
+    "track_name" : "Cornucopia",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "234814",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath Vol. 4 (Remaster)",
+    "track_name" : "Laguna Sunrise",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "173087",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath Vol. 4 (Remaster)",
+    "track_name" : "St. Vitus Dance",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "149655",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Black Sabbath Vol. 4 (Remaster)",
+    "track_name" : "Under The Sun\/Every Day Comes and Goes",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "350458",
+    "artist_name" : "Black Sabbath"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "Smoked Pork",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "47333",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "Body Count's In The House",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "204251",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "Now Sports",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "4884",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "Body Count",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "317936",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "A Statistic",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "6373",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "Bowels Of The Devil",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "223216",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "The Real Problem",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "11650",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "KKK Bitch",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "173008",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "D Note",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "95738",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "Voodoo",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "300721",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "The Winner Loses",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "392254",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "There Goes The Neighborhood",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "350171",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "Oprah",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "6635",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "Evil Dick",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "239020",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "Body Count Anthem",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "166426",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "Momma's Gotta Die Tonight",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "371539",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Body Count",
+    "track_name" : "Freedom Of Speech",
+    "genre_name" : "Alternative & Punk",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "281234",
+    "artist_name" : "Body Count"
+  },
+  {
+    "album_name" : "Chemical Wedding",
+    "track_name" : "King In Crimson",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "283167",
+    "artist_name" : "Bruce Dickinson"
+  },
+  {
+    "album_name" : "Chemical Wedding",
+    "track_name" : "Chemical Wedding",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "246177",
+    "artist_name" : "Bruce Dickinson"
+  },
+  {
+    "album_name" : "Chemical Wedding",
+    "track_name" : "The Tower",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "285257",
+    "artist_name" : "Bruce Dickinson"
+  },
+  {
+    "album_name" : "Chemical Wedding",
+    "track_name" : "Killing Floor",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "269557",
+    "artist_name" : "Bruce Dickinson"
+  },
+  {
+    "album_name" : "Chemical Wedding",
+    "track_name" : "Book Of Thel",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "494393",
+    "artist_name" : "Bruce Dickinson"
+  },
+  {
+    "album_name" : "Chemical Wedding",
+    "track_name" : "Gates Of Urizen",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "265351",
+    "artist_name" : "Bruce Dickinson"
+  },
+  {
+    "album_name" : "Chemical Wedding",
+    "track_name" : "Jerusalem",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "402390",
+    "artist_name" : "Bruce Dickinson"
+  },
+  {
+    "album_name" : "Chemical Wedding",
+    "track_name" : "Trupets Of Jericho",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "359131",
+    "artist_name" : "Bruce Dickinson"
+  },
+  {
+    "album_name" : "Chemical Wedding",
+    "track_name" : "Machine Men",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "341655",
+    "artist_name" : "Bruce Dickinson"
+  },
+  {
+    "album_name" : "Chemical Wedding",
+    "track_name" : "The Alchemist",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "509413",
+    "artist_name" : "Bruce Dickinson"
+  },
+  {
+    "album_name" : "Chemical Wedding",
+    "track_name" : "Realword",
+    "genre_name" : "Metal",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "237531",
+    "artist_name" : "Bruce Dickinson"
+  },
+  {
+    "album_name" : "The Best Of Buddy Guy - The Millenium Collection",
+    "track_name" : "First Time I Met The Blues",
+    "genre_name" : "Blues",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "140434",
+    "artist_name" : "Buddy Guy"
+  },
+  {
+    "album_name" : "The Best Of Buddy Guy - The Millenium Collection",
+    "track_name" : "Let Me Love You Baby",
+    "genre_name" : "Blues",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "175386",
+    "artist_name" : "Buddy Guy"
+  },
+  {
+    "album_name" : "The Best Of Buddy Guy - The Millenium Collection",
+    "track_name" : "Stone Crazy",
+    "genre_name" : "Blues",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "433397",
+    "artist_name" : "Buddy Guy"
+  },
+  {
+    "album_name" : "The Best Of Buddy Guy - The Millenium Collection",
+    "track_name" : "Pretty Baby",
+    "genre_name" : "Blues",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "237662",
+    "artist_name" : "Buddy Guy"
+  },
+  {
+    "album_name" : "The Best Of Buddy Guy - The Millenium Collection",
+    "track_name" : "When My Left Eye Jumps",
+    "genre_name" : "Blues",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "235311",
+    "artist_name" : "Buddy Guy"
+  },
+  {
+    "album_name" : "The Best Of Buddy Guy - The Millenium Collection",
+    "track_name" : "Leave My Girl Alone",
+    "genre_name" : "Blues",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "204721",
+    "artist_name" : "Buddy Guy"
+  },
+  {
+    "album_name" : "The Best Of Buddy Guy - The Millenium Collection",
+    "track_name" : "She Suits Me To A Tee",
+    "genre_name" : "Blues",
+    "media_type_name" : "MPEG audio file",
+    "track_duration" : "136803",
+    "artist_name" : "Buddy Guy"
+  }
+]
