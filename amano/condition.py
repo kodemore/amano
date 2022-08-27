@@ -5,6 +5,9 @@ from .base_attribute import AbstractAttribute, AttributeType
 import string
 import random
 
+from .constants import CONDITION_COMPARATOR_EQ, CONDITION_COMPARATOR_NEQ, \
+    CONDITION_COMPARATOR_LT, CONDITION_COMPARATOR_LTE, CONDITION_COMPARATOR_GT, \
+    CONDITION_COMPARATOR_GTE
 
 _COUNTER = 0
 
@@ -58,20 +61,21 @@ class NotCondition(Condition):
 
 
 class ComparisonCondition(Condition):
+
     class ComparisonOperator(Enum):
-        EQ = '='
-        NEQ = '<>'
-        LT = '<'
-        LTE = '<='
-        GT = '>'
-        GTE = '>='
+        EQ = CONDITION_COMPARATOR_EQ
+        NEQ = CONDITION_COMPARATOR_NEQ
+        LT = CONDITION_COMPARATOR_LT
+        LTE = CONDITION_COMPARATOR_LTE
+        GT = CONDITION_COMPARATOR_GT
+        GTE = CONDITION_COMPARATOR_GTE
 
         def __str__(self) -> str:
             return str(self.value)
 
     def __init__(self, operator: ComparisonOperator, attribute: AbstractAttribute, value: Any):
         if isinstance(value, AbstractAttribute):
-            super().__init__(operator=operator, attribute=attribute, right_expression=value)
+            super().__init__(operator=operator, attribute=attribute, value=value)
             return
 
         if isinstance(value, Condition):
