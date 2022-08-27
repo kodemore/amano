@@ -11,7 +11,7 @@ from chili import is_dataclass
 from chili.typing import get_origin_type, get_type_args
 from chili import HydrationStrategy
 
-from constants import (
+from .constants import (
     TYPE_MAP, TYPE_STRING, TYPE_LIST, TYPE_NULL, TYPE_BINARY,
     TYPE_BINARY_SET, TYPE_NUMBER_SET, TYPE_BOOLEAN, TYPE_NUMBER,
     TYPE_STRING_SET

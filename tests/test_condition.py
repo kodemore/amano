@@ -9,4 +9,4 @@ def test_comparison_condition() -> None:
 
     # then
     assert isinstance(condition, ComparisonCondition)
-    assert str(condition) == "field = :field"
+    assert str(condition)[:-6] == "field = :field"
