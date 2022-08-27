@@ -3,7 +3,8 @@ build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core>=1.0.0"]
 
 [tool.black]
-line-length = 120
+exclude = ".venv"
+line-length = 80
 target-version = ["py39"]
 
 [tool.coverage.report]
@@ -34,10 +35,13 @@ name = "amano"
 version = "0.1.0"
 
 [tool.poetry.dependencies]
-mypy-boto3-dynamodb = "^1.24.36"
 boto = "^2.49.0"
-python = "^3.8"
+boto3 = "^1.24.57"
+botocore = "^1.27.57"
 chili = "^1.7.0"
+mypy-boto3-dynamodb = "^1.24.36"
+python = "^3.8"
+gid = "^1.0.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.6.0"

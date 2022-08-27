@@ -10,3 +10,7 @@ class ItemNotFoundError(AmanoDBError):
 
 class QueryError(AmanoDBError):
     ...
+
+
+class PutItemError(QueryError):
+    ...

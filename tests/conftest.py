@@ -1,15 +1,22 @@
-from typing import Generator, List, Dict
-
-import pytest
-import boto3
-from mypy_boto3_dynamodb.client import DynamoDBClient
-from botocore.exceptions import ClientError
 import json
+import os
+from os import path
+from typing import Dict, Generator, List
+
+import boto3
+import pytest
+from botocore.exceptions import ClientError
+from mypy_boto3_dynamodb.client import DynamoDBClient
 
 
 @pytest.fixture()
-def tracks_with_artists_json() -> List[Dict]:
-    with open("fixtures/tracks_with_artist.json", "r") as file:
+def fixtures_dir() -> str:
+    return path.join(path.dirname(path.realpath(__file__)), "fixtures")
+
+
+@pytest.fixture()
+def tracks_with_artists_json(fixtures_dir) -> List[Dict]:
+    with open(path.join(fixtures_dir, "tracks_with_artist.json"), "r") as file:
         data = json.load(file)
 
     return data
@@ -18,11 +25,14 @@ def tracks_with_artists_json() -> List[Dict]:
 @pytest.fixture
 def dynamodb_client() -> DynamoDBClient:
     session = boto3.Session(
-        aws_access_key_id="test",
-        aws_secret_access_key="test",
-        region_name="localhost"
+        aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "test"),
+        aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "test"),
+        region_name=os.environ.get("AWS_REGION_NAME", "localhost"),
     )
-    client = session.client("dynamodb", endpoint_url="http://localhost:8000")
+    client = session.client(
+        "dynamodb",
+        endpoint_url=os.environ.get("ENDPOINT_URL", "http://localhost:8000"),
+    )
 
     return client
 
@@ -33,7 +43,9 @@ def dynamodb_test_table_name() -> str:
 
 
 @pytest.fixture
-def bootstrapped_dynamodb_client(dynamodb_client, dynamodb_test_table_name, tracks_with_artists_json) -> Generator[DynamoDBClient, None, None]:
+def bootstrapped_dynamodb_client(
+    dynamodb_client, dynamodb_test_table_name, tracks_with_artists_json
+) -> Generator[DynamoDBClient, None, None]:
     try:
         table_exists = False
         dynamodb_client.create_table(
@@ -55,9 +67,9 @@ def bootstrapped_dynamodb_client(dynamodb_client, dynamodb_test_table_name, trac
                         {"AttributeName": "artist_name", "KeyType": "HASH"},
                         {"AttributeName": "album_name", "KeyType": "RANGE"},
                     ],
-                    'Projection': {
-                        'ProjectionType': 'ALL',
-                    }
+                    "Projection": {
+                        "ProjectionType": "ALL",
+                    },
                 }
             ],
             GlobalSecondaryIndexes=[
@@ -67,8 +79,8 @@ def bootstrapped_dynamodb_client(dynamodb_client, dynamodb_test_table_name, trac
                         {"AttributeName": "album_name", "KeyType": "HASH"},
                         {"AttributeName": "track_name", "KeyType": "RANGE"},
                     ],
-                    'Projection': {
-                        'ProjectionType': 'ALL',
+                    "Projection": {
+                        "ProjectionType": "ALL",
                     },
                 },
                 {
@@ -77,10 +89,10 @@ def bootstrapped_dynamodb_client(dynamodb_client, dynamodb_test_table_name, trac
                         {"AttributeName": "genre_name", "KeyType": "HASH"},
                         {"AttributeName": "album_name", "KeyType": "RANGE"},
                     ],
-                    'Projection': {
-                        'ProjectionType': 'ALL',
-                    }
-                }
+                    "Projection": {
+                        "ProjectionType": "ALL",
+                    },
+                },
             ],
             BillingMode="PAY_PER_REQUEST",
         )
@@ -109,7 +121,6 @@ def bootstrapped_dynamodb_client(dynamodb_client, dynamodb_test_table_name, trac
 
     yield dynamodb_client
 
-    #dynamodb_client.delete_table(
+    # dynamodb_client.delete_table(
     #    TableName=dynamodb_test_table_name,
-    #)
-
+    # )

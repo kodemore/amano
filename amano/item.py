@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from collections import UserList
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Type, Any, List
+from typing import Any, Dict, List, Type
 
 from .attribute import Attribute
 
@@ -16,19 +15,37 @@ class _Undefined:
 UNDEFINED = _Undefined()
 
 
-class ChangeLog(UserList):
-    ...
+class _ChangeType(Enum):
+    SET = "SET"
+    UNSET = "REMOVE"
+    CHANGE = "CHANGE"
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(\"{self.value}\")"
 
 
 @dataclass
-class ChangeLogEntry:
-    class Type(Enum):
-        SET = "set"
-        UNSET = "unset"
-        CHANGE = "change"
+class _AttributeChange:
+    attribute: Attribute
+    type: _ChangeType
+    value: Any
 
-    name: str
-    action: ChangeLogEntry.Type
+
+class _Commit:
+    changes: List[_AttributeChange]
+    data: Dict[str, Any]
+
+    def __init__(self):
+        self.changes = []
+        self.data = {}
+
+    def add_change(self, change: _AttributeChange) -> None:
+        self.changes.append(change)
+        if change.type in (_ChangeType.SET, _ChangeType.CHANGE):
+            self.data[str(change.attribute)] = change.value
+            return
+
+        del self.data[str(change.attribute)]
 
 
 class ItemMeta(type):
@@ -36,25 +53,28 @@ class ItemMeta(type):
         if body["__module__"] == __name__ and what == "Item":
             return type.__new__(cls, what, bases, body)
 
-        class_instance = type.__new__(cls, what, bases, {**body, **{
-            "__meta__": {},
-            "_attributes": [],
-            "_changelog": ChangeLog(),
-        }})
+        class_instance = type.__new__(
+            cls,
+            what,
+            bases,
+            {
+                **body,
+                **{
+                    "__meta__": {},
+                    "__attributes__": [],
+                    "__log__": [],
+                    "__snapshots__": [],
+                },
+            },
+        )
 
         if "__annotations__" in body:
             for attribute_name, attribute_type in body["__annotations__"].items():
                 class_instance.__meta__[attribute_name] = Attribute(
-                    attribute_name,
-                    attribute_type,
-                    body[attribute_name] if attribute_name in body else UNDEFINED
+                    attribute_name, attribute_type, body[attribute_name] if attribute_name in body else UNDEFINED
                 )
 
-                setattr(
-                    class_instance,
-                    attribute_name,
-                    class_instance.__meta__[attribute_name]
-                )
+                setattr(class_instance, attribute_name, class_instance.__meta__[attribute_name])
 
         return class_instance
 
@@ -63,7 +83,9 @@ class ItemMeta(type):
         if attribute_name in item_class:
             return item_class.__meta__[attribute_name]
 
-        raise AttributeError(f"{item_class.__module__}.{item_class.__qualname__} does not specify any attribute with `{attribute_name}` name.")
+        raise AttributeError(
+            f"{item_class.__module__}.{item_class.__qualname__} does not specify any attribute with `{attribute_name}` name."
+        )
 
     def __init__(cls, name, bases, dct, **extra):
         super().__init__(name, bases, dct)
@@ -72,13 +94,34 @@ class ItemMeta(type):
         return item in self.__meta__
 
 
+class _ItemState(Enum):
+    NEW = "new"
+    CLEAN = "clean"
+    DIRTY = "dirty"
+
+
 class Item(metaclass=ItemMeta):
     __meta__: Dict[str, Attribute]
-    _attributes: List[str]
-    _changelog: ChangeLog
+    __attributes__: List[str]
+    __log__: List[_AttributeChange]
+    __snapshots__: List[_Commit]
+
+    def __init__(self, *args, **kwargs) -> None:
+        item_data = {}
+        for attribute in self.__meta__.values():
+            item_data[attribute.name] = attribute.default_value
+
+        if args:
+            for index, value in enumerate(args):
+                item_data[self.attributes[index]] = value
+        if kwargs:
+            item_data = {**item_data, **kwargs}
+
+        for attribute, value in item_data.items():
+            setattr(self, attribute, value)
 
     def __getattribute__(self, key: str) -> Any:
-        if key in ("__dict__", "_attributes", "_logs", "__class__", "__meta__", "__module__"):
+        if key in ("__dict__", "__attributes__", "__log__", "__snapshots__", "__class__", "__meta__", "__module__"):
             return super().__getattribute__(key)
 
         if hasattr(self.__class__, key):
@@ -95,11 +138,11 @@ class Item(metaclass=ItemMeta):
 
     def __setattr__(self, key, value):
         if key in self.__dict__:
-            log_item = ChangeLogEntry(key, ChangeLogEntry.Type.CHANGE)
+            log_item = _AttributeChange(self.__meta__[key], _ChangeType.CHANGE, value)
         else:
-            log_item = ChangeLogEntry(key, ChangeLogEntry.Type.SET)
+            log_item = _AttributeChange(self.__meta__[key], _ChangeType.SET, value)
 
-        self._logs.append(log_item)
+        self.__log__.append(log_item)
 
         if isinstance(value, Attribute):
             value = value.default_value
@@ -107,8 +150,8 @@ class Item(metaclass=ItemMeta):
         super().__setattr__(key, value)
 
     def __delattr__(self, key: str) -> None:
-        log_item = ChangeLogEntry(key, ChangeLogEntry.Type.UNSET)
-        self._logs.append(log_item)
+        log_item = _AttributeChange(self.__meta__[key], _ChangeType.UNSET, None)
+        self.__log__.append(log_item)
         del self.__dict__[key]
 
     @classmethod
@@ -118,10 +161,10 @@ class Item(metaclass=ItemMeta):
     @classmethod
     @property
     def attributes(cls) -> List[str]:
-        if not cls._attributes:
-            cls._attributes = list(cls.__meta__.keys())
+        if not cls.__attributes__:
+            cls.__attributes__ = list(cls.__meta__.keys())
 
-        return cls._attributes
+        return cls.__attributes__
 
     @classmethod
     def hydrate(cls, value: Dict[str, Any]) -> Item:
@@ -130,6 +173,7 @@ class Item(metaclass=ItemMeta):
         for field, attribute in cls.__meta__.items():
             setattr(instance, field, attribute.hydrate(value.get(field)))
 
+        instance._commit()
         return instance
 
     def extract(self) -> Dict[str, Any]:
@@ -139,5 +183,23 @@ class Item(metaclass=ItemMeta):
 
         return result
 
-    def changelog(self) -> ChangeLog:
-        return self._changelog
+    def _commit(self) -> None:
+        commit = _Commit()
+        for item in self.__log__:
+            commit.add_change(item)
+
+        self.__log__.clear()
+        self.__snapshots__.append(commit)
+
+    def _state(self) -> _ItemState:
+        if not self.__log__ and len(self.__snapshots__) == 1:
+            return _ItemState.CLEAN
+
+        if not self.__snapshots__:
+            return _ItemState.NEW
+
+        return _ItemState.DIRTY
+
+
+class VersionedItem(Item):
+    ...

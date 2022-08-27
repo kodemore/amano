@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
-from amano import Item, Attribute
-from amano.item import ChangeLogEntry
+from amano import Attribute, Item
+from amano.item import _AttributeChange, _ItemState, _ChangeType
 
 
 def test_can_instantiate() -> None:
@@ -133,7 +133,7 @@ def test_can_extract_item_as_dataclass() -> None:
     }
 
 
-def test_item_changelog() -> None:
+def test_item_log() -> None:
     # given
     @dataclass
     class MyItem(Item):
@@ -146,7 +146,7 @@ def test_item_changelog() -> None:
     # then
     assert item.name == "Bobik"
     assert item.age == 10
-    assert len(item.changelog()) == 2
+    assert len(item.__log__) == 2
 
     # when
     item.name = "Pluto"
@@ -154,7 +154,7 @@ def test_item_changelog() -> None:
     # then
     assert item.name == "Pluto"
     assert item.age == 10
-    assert len(item.changelog()) == 3
+    assert len(item.__log__) == 3
 
     # when
     del item.name
@@ -162,28 +162,39 @@ def test_item_changelog() -> None:
     # then
     assert not hasattr(item, "name")
     assert item.age == 10
-    assert len(item.changelog()) == 4
+    assert len(item.__log__) == 4
+
+    for log in item.__log__:
+        assert isinstance(log, _AttributeChange)
+
+    assert item.__log__[0].type == _ChangeType.SET
+    assert item.__log__[1].type == _ChangeType.SET
+    assert item.__log__[2].type == _ChangeType.CHANGE
+    assert item.__log__[3].type == _ChangeType.UNSET
 
 
-def test_can_get_changelog_for_attribute() -> None:
+def test_can_get_item_state() -> None:
     # given
-    @dataclass
     class MyItem(Item):
         name: str
         age: int = 10
 
+    # when
     item = MyItem("Bobik")
 
+    # then
+    assert item._state() == _ItemState.NEW
+    assert item.name == "Bobik"
+    assert item.age == 10
+
     # when
-    item.name = "Pluto"
-    del item.name
-    item.name = "Bobik"
+    item._commit()
 
     # then
-    changelog = item.changelog()
+    assert item._state() == _ItemState.CLEAN
 
-    assert len(changelog) == 4
-    assert changelog[0].action == ChangeLogEntry.Type.SET
-    assert changelog[1].action == ChangeLogEntry.Type.CHANGE
-    assert changelog[2].action == ChangeLogEntry.Type.UNSET
-    assert changelog[3].action == ChangeLogEntry.Type.SET
+    # when
+    del item.age
+
+    # then
+    assert item._state() == _ItemState.DIRTY

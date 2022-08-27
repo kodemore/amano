@@ -1,17 +1,17 @@
-
+sources = amano tests
 .DEFAULT_GOAL := all
 
 toml_sort:
 	toml-sort pyproject.toml --all --in-place
 
 isort:
-	poetry run isort --recursive .
+	poetry run isort $(sources)
 
 black:
-	poetry run black .
+	poetry run black -S -l 120 --target-version py38 $(sources)
 
-flake8:
-	poetry run flake8 .
+flake:
+	poetry run flake8 amano
 
 pylint:
 	poetry run pylint amano
@@ -26,9 +26,9 @@ bandit:
 	poetry run bandit -r . -x ./tests,./test
 
 test:
-	poetry run pytest
+	poetry run pytest tests
 
-lint: isort black flake8 mypy toml_sort
+lint: isort black flake mypy toml_sort
 
 audit: audit_dependencies bandit
 

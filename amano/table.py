@@ -2,21 +2,24 @@ from __future__ import annotations
 
 from enum import Enum
 from functools import cached_property
-from typing import Generic, TypeVar, Tuple, Union, Type, List, Any, Dict
+from typing import Any, Dict, Generic, List, Tuple, Type, TypeVar, Union
 
-from botocore.exceptions import ClientError
-from mypy_boto3_dynamodb.client import DynamoDBClient
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
+from botocore.exceptions import ClientError, ParamValidationError
+from mypy_boto3_dynamodb.client import DynamoDBClient
 from mypy_boto3_dynamodb.service_resource import Table as DynamoDBTable
+from mypy_boto3_dynamodb.type_defs import AttributeValueTypeDef
+
 from .attribute import Attribute
 from .errors import ItemNotFoundError, QueryError
-
-from .item import Item
+from .item import Item, _AttributeChange, _ChangeType
 
 I = TypeVar("I", bound=Item)
 
 _serialize_item = TypeSerializer().serialize
 _deserialize_item = TypeDeserializer().deserialize
+
+KeyExpression = Dict[str, AttributeValueTypeDef]
 
 
 class KeyType(Enum):
@@ -57,24 +60,14 @@ def extract_indexes(index_list: List[Dict[str, Any]], index_type: IndexType) -> 
         if len(key_schema) > 1:
             if key_schema[0]["KeyType"] == KeyType.PARTITION_KEY:
                 index = Index(
-                    index_type,
-                    index_data["IndexName"],
-                    key_schema[0]["AttributeName"],
-                    key_schema[1]["AttributeName"]
+                    index_type, index_data["IndexName"], key_schema[0]["AttributeName"], key_schema[1]["AttributeName"]
                 )
             else:
                 index = Index(
-                    index_type,
-                    index_data["IndexName"],
-                    key_schema[1]["AttributeName"],
-                    key_schema[0]["AttributeName"]
+                    index_type, index_data["IndexName"], key_schema[1]["AttributeName"], key_schema[0]["AttributeName"]
                 )
         else:
-            index = Index(
-                index_type,
-                index_data["IndexName"],
-                key_schema[0]["AttributeName"]
-            )
+            index = Index(index_type, index_data["IndexName"], key_schema[0]["AttributeName"])
         indexes[index.name] = index
 
     return indexes
@@ -113,32 +106,22 @@ class Table(Generic[I]):
                     IndexType.PRIMARY_KEY,
                     self._PRIMARY_KEY_NAME,
                     key_schema[0]["AttributeName"],
-                    key_schema[1]["AttributeName"]
+                    key_schema[1]["AttributeName"],
                 )
             else:
                 primary_key = Index(
                     IndexType.PRIMARY_KEY,
                     self._PRIMARY_KEY_NAME,
                     key_schema[1]["AttributeName"],
-                    key_schema[0]["AttributeName"]
+                    key_schema[0]["AttributeName"],
                 )
         else:
-            primary_key = Index(
-                IndexType.PRIMARY_KEY,
-                self._PRIMARY_KEY_NAME,
-                key_schema[0]["AttributeName"]
-            )
+            primary_key = Index(IndexType.PRIMARY_KEY, self._PRIMARY_KEY_NAME, key_schema[0]["AttributeName"])
         indexes = {primary_key.name: primary_key}
         if "GlobalSecondaryIndexes" in self._table_meta:
-            indexes = {
-                **indexes,
-                **extract_indexes(self._table_meta["GlobalSecondaryIndexes"], IndexType.GLOBAL_INDEX)
-            }
+            indexes = {**indexes, **extract_indexes(self._table_meta["GlobalSecondaryIndexes"], IndexType.GLOBAL_INDEX)}
         if "LocalSecondaryIndexes" in self._table_meta:
-            indexes = {
-                **indexes,
-                **extract_indexes(self._table_meta["LocalSecondaryIndexes"], IndexType.LOCAL_INDEX)
-            }
+            indexes = {**indexes, **extract_indexes(self._table_meta["LocalSecondaryIndexes"], IndexType.LOCAL_INDEX)}
         self._indexes = indexes
 
     def _get_indexes_for_field_list(self, fields: List[str]) -> Dict[str, Index]:
@@ -177,16 +160,19 @@ class Table(Generic[I]):
 
         return f"attribute_not_exists({self.partition_key})"
 
-    def put_item(self, item: I, override: bool = True):
-        if not isinstance(item, self._item_class):
-            ValueError(f"Could not persist item of type `{type(item)}`, expected instance of `{self._item_class}` instead.")
+    def save(self, item: I) -> None:
+        ...
 
+    def put(self, item: I, override: bool = True, condition=...) -> bool:
+        if not isinstance(item, self._item_class):
+            ValueError(
+                f"Could not persist item of type `{type(item)}`, expected instance of `{self._item_class}` instead."
+            )
         try:
             put_query = {
                 "TableName": self._table_name,
                 "Item": _serialize_item(item.extract())["M"],
                 "ReturnConsumedCapacity": "TOTAL",
-
             }
             if not override:
                 put_query["ConditionExpression"] = self._prevent_override_condition
@@ -194,11 +180,50 @@ class Table(Generic[I]):
             result = self._db_client.put_item(**put_query)
         except ClientError as e:
             result = e.response
+            if result["Error"]["Code"] == "ConditionalCheckFailedException":
+                return False
+            raise QueryError(result["Error"]["Message"]) from e
+        except ParamValidationError as e:
+            raise QueryError(str(e)) from e
 
-    def get_item(self, *keys: str, consistent_read: bool = False) -> I:
-        key_query = {
-            self.partition_key: keys[0]
-        }
+        return result["ResponseMetadata"]["HTTPStatusCode"] == 200
+
+    def update(self, item: I) -> None:
+        update_expression, expression_attribute_values = self._generate_update_expression(item)
+
+        self._db_client.update_item(
+            TableName=self._table_name,
+            Key=self._get_key_expression(item),
+            UpdateExpression=...,
+            ExpressionAttributeValues=...,
+        )
+        ...
+
+    def _generate_update_expression(self, item: I) -> Tuple[str, Dict[str, Any]]:
+
+        changes = {attribute_change.attribute.name: attribute_change for attribute_change in item.__log__}
+
+        set_fields = []
+        delete_fields = []
+        attribute_values = {}
+        for change in changes.values():
+            if change.type in (_ChangeType.CHANGE, _ChangeType.SET):
+                set_fields.append(change.attribute.name)
+                attribute_values[":" + change.attribute.name] = _serialize_item(change.attribute.extract(change.value))
+                continue
+            if change.type is _ChangeType.UNSET:
+                delete_fields.append(change.attribute.name)
+
+        update_expression = ""
+        if set_fields:
+            update_expression = f"SET {','.join([field_name + ' = :' + field_name for field_name in set_fields])} "
+        if delete_fields:
+            update_expression += f"DELETE {','.join([field_name for field_name in set_fields])} "
+
+        return update_expression, attribute_values
+
+    def get(self, *keys: str, consistent_read: bool = False) -> I:
+        key_query = {self.partition_key: keys[0]}
         if len(keys) > 1:
             key_query[self.sort_key] = keys[1]
 
@@ -219,11 +244,20 @@ class Table(Generic[I]):
 
         if "Item" not in result:
             raise ItemNotFoundError(
-                f"Could not retrieve item `{self._item_class}` matching criteria `{key_query}`",
-                key_query
+                f"Could not retrieve item `{self._item_class}` matching criteria `{key_query}`", key_query
             )
 
         return self._item_class.hydrate(_deserialize_item({"M": result["Item"]}))
+
+    def _get_key_expression(self, item: I) -> KeyExpression:
+        key_expression = {
+            self.partition_key: getattr(item, self.partition_key),
+        }
+
+        if self.sort_key:
+            key_expression[self.sort_key] = getattr(item, self.sort_key)
+
+        return _serialize_item(key_expression)
 
     @property
     def indexes(self) -> Dict[str, Index]:
