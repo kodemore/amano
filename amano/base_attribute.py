@@ -4,7 +4,8 @@ import enum
 from abc import abstractmethod, ABC
 from datetime import date, datetime, time
 from decimal import Decimal
-from typing import AnyStr, Dict, FrozenSet, List, Set, Tuple, TypedDict, overload, Any
+from typing import AnyStr, Dict, FrozenSet, List, Set, Tuple, TypedDict, \
+    overload, Any, Sequence, Mapping
 
 from chili import is_dataclass
 from chili.typing import get_origin_type, get_type_args
@@ -28,6 +29,7 @@ _SUPPORTED_BASE_TYPES = {
     float: TYPE_NUMBER,
     list: TYPE_LIST,
     List: TYPE_LIST,
+    Sequence: TYPE_LIST,
     set: TYPE_LIST,
     Set: TYPE_LIST,
     frozenset: TYPE_LIST,
@@ -36,6 +38,7 @@ _SUPPORTED_BASE_TYPES = {
     Tuple: TYPE_LIST,
     dict: TYPE_MAP,
     Dict: TYPE_MAP,
+    Mapping: TYPE_MAP,
     TypedDict: TYPE_MAP,
     type(None): TYPE_NULL,
     bytes: TYPE_BINARY,
@@ -50,6 +53,23 @@ _SUPPORTED_GENERIC_TYPES = {
     frozenset: TYPE_LIST,
     dict: TYPE_MAP,
 }
+
+AttributeValue = TypedDict(
+    "AttributeValue",
+    {
+        TYPE_STRING: str,
+        TYPE_NUMBER: str,
+        TYPE_BINARY: bytes,
+        TYPE_STRING_SET: Set[str],
+        TYPE_NUMBER_SET: Set[str],
+        TYPE_BINARY_SET: Set[bytes],
+        TYPE_MAP: Mapping[str, Any],
+        TYPE_LIST: Sequence[Any],
+        TYPE_NULL: bool,
+        TYPE_BOOLEAN: bool,
+    },
+    total=False,
+)
 
 
 class AttributeType(enum.Enum):
@@ -117,8 +137,8 @@ class AbstractAttribute(ABC):
     strategy: HydrationStrategy
 
     @abstractmethod
-    def extract(self, value: Any) -> Any:
+    def extract(self, value: Any) -> AttributeValue:
         ...
 
-    def hydrate(self, value: Any) -> Any:
+    def hydrate(self, value: AttributeValue) -> Any:
         ...

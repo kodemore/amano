@@ -11,6 +11,7 @@ from mypy_boto3_dynamodb.service_resource import Table as DynamoDBTable
 from mypy_boto3_dynamodb.type_defs import AttributeValueTypeDef
 
 from .attribute import Attribute
+from .constants import KEY_TYPE_HASH, KEY_TYPE_RANGE
 from .errors import ItemNotFoundError, QueryError
 from .item import Item, _AttributeChange, _ChangeType
 
@@ -23,8 +24,8 @@ KeyExpression = Dict[str, AttributeValueTypeDef]
 
 
 class KeyType(Enum):
-    PARTITION_KEY = "HASH"
-    SORT_KEY = "RANGE"
+    PARTITION_KEY = KEY_TYPE_HASH
+    SORT_KEY = KEY_TYPE_RANGE
 
     def __eq__(self, other):
         if isinstance(other, str):

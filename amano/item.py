@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Any, Dict, List, Type
 
 from .attribute import Attribute
+from .base_attribute import AttributeValue
 
 
 class _Undefined:
@@ -167,7 +168,7 @@ class Item(metaclass=ItemMeta):
         return cls.__attributes__
 
     @classmethod
-    def hydrate(cls, value: Dict[str, Any]) -> Item:
+    def hydrate(cls, value: Dict[str, AttributeValue]) -> Item:
         instance = cls.__new__(cls)
 
         for field, attribute in cls.__meta__.items():
@@ -176,7 +177,7 @@ class Item(metaclass=ItemMeta):
         instance._commit()
         return instance
 
-    def extract(self) -> Dict[str, Any]:
+    def extract(self) -> Dict[str, AttributeValue]:
         result = {}
         for field, attribute in self.__meta__.items():
             result[field] = attribute.extract(getattr(self, field))
