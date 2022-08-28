@@ -48,7 +48,39 @@ class Attribute(AbstractAttribute):
         return f"Attribute[{self.type}](\"{self.name}\")"
 
     def __eq__(self, other) -> ComparisonCondition:
-        return ComparisonCondition(ComparisonCondition.ComparisonOperator.EQ, self, other)
+        return ComparisonCondition(
+            ComparisonCondition.ComparisonOperator.EQ,
+            self,
+            other
+        )
+
+    def __gt__(self, other) -> ComparisonCondition:
+        return ComparisonCondition(
+            ComparisonCondition.ComparisonOperator.GT,
+            self,
+            other
+        )
+
+    def __ge__(self, other) -> ComparisonCondition:
+        return ComparisonCondition(
+            ComparisonCondition.ComparisonOperator.GTE,
+            self,
+            other
+        )
+
+    def __lt__(self, other) -> ComparisonCondition:
+        return ComparisonCondition(
+            ComparisonCondition.ComparisonOperator.LT,
+            self,
+            other
+        )
+
+    def __le__(self, other) -> ComparisonCondition:
+        return ComparisonCondition(
+            ComparisonCondition.ComparisonOperator.LTE,
+            self,
+            other
+        )
 
     def not_exists(self) -> Condition:
         ...

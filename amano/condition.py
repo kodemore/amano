@@ -1,13 +1,15 @@
-from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Dict, List, Union, Any
-from .base_attribute import AbstractAttribute, AttributeType
-import string
-import random
+from __future__ import annotations
 
+import random
+import string
+from abc import ABC, abstractmethod
+from typing import Dict, List, Union, Any
+
+from .base_attribute import AbstractAttribute, AttributeType
 from .constants import CONDITION_COMPARATOR_EQ, CONDITION_COMPARATOR_NEQ, \
     CONDITION_COMPARATOR_LT, CONDITION_COMPARATOR_LTE, CONDITION_COMPARATOR_GT, \
     CONDITION_COMPARATOR_GTE
+from .utils import StringEnum
 
 _COUNTER = 0
 
@@ -15,7 +17,7 @@ _COUNTER = 0
 def _rand_id() -> str:
     global _COUNTER
     _COUNTER += 1
-    return "".join(random.choices(string.ascii_lowercase, k=4)) + str(_COUNTER)
+    return "".join(random.choices(string.ascii_letters, k=4)) + str(_COUNTER)
 
 
 class Condition(ABC):
@@ -32,23 +34,34 @@ class Condition(ABC):
     def __str__(self) -> str:
         return self.format.format(**self.format_params)
 
+    def __and__(self, other) -> AndCondition:
+        return AndCondition(self, other)
 
-class AndCondition(Condition):
+    def __or__(self, other) -> OrCondition:
+        return OrCondition(self, other)
+
+
+class LogicalCondition(Condition, ABC):
     def __init__(self, left_condition: Union[Condition, str], right_condition: Union[Condition, str]):
-        super().__init__(left_condition, right_condition)
+        super().__init__(left_condition=left_condition, right_condition=right_condition)
+        self._values = {}
+        if hasattr(left_condition, "values"):
+            self._values = left_condition.values
 
+        if hasattr(right_condition, "values"):
+            self._values = {**self._values, **right_condition.values}
+
+
+class AndCondition(LogicalCondition):
     @property
     def format(self) -> str:
-        return "({0} AND {1})"
+        return "({left_condition} AND {right_condition})"
 
 
-class OrCondition(Condition):
-    def __init__(self, left_condition: Union[Condition, str], right_condition: Union[Condition, str]):
-        super().__init__(left_condition, right_condition)
-
+class OrCondition(LogicalCondition):
     @property
     def format(self) -> str:
-        return "({0} OR {1})"
+        return "({left_condition} OR {right_condition})"
 
 
 class NotCondition(Condition):
@@ -62,16 +75,13 @@ class NotCondition(Condition):
 
 class ComparisonCondition(Condition):
 
-    class ComparisonOperator(Enum):
+    class ComparisonOperator(StringEnum):
         EQ = CONDITION_COMPARATOR_EQ
         NEQ = CONDITION_COMPARATOR_NEQ
         LT = CONDITION_COMPARATOR_LT
         LTE = CONDITION_COMPARATOR_LTE
         GT = CONDITION_COMPARATOR_GT
         GTE = CONDITION_COMPARATOR_GTE
-
-        def __str__(self) -> str:
-            return str(self.value)
 
     def __init__(self, operator: ComparisonOperator, attribute: AbstractAttribute, value: Any):
         if isinstance(value, AbstractAttribute):

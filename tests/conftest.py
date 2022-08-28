@@ -9,12 +9,17 @@ from botocore.exceptions import ClientError
 from mypy_boto3_dynamodb.client import DynamoDBClient
 
 
-@pytest.fixture()
+@pytest.fixture
+def field_identifier() -> str:
+    return "_[a-zA-Z]{4}[0-9]"
+
+
+@pytest.fixture
 def fixtures_dir() -> str:
     return path.join(path.dirname(path.realpath(__file__)), "fixtures")
 
 
-@pytest.fixture()
+@pytest.fixture
 def tracks_with_artists_json(fixtures_dir) -> List[Dict]:
     with open(path.join(fixtures_dir, "tracks_with_artist.json"), "r") as file:
         data = json.load(file)
