@@ -9,9 +9,9 @@ from botocore.exceptions import ClientError
 from mypy_boto3_dynamodb.client import DynamoDBClient
 
 
-@pytest.fixture
-def field_identifier() -> str:
-    return "_[a-zA-Z]{4}[0-9]"
+@pytest.fixture(autouse=True)
+def field_identifier(monkeypatch) -> None:
+    monkeypatch.setattr("amano.condition._param_suffix", lambda: "")
 
 
 @pytest.fixture
