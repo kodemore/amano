@@ -208,8 +208,34 @@ def test_can_put_item(bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_tes
 
     # when
     item = Track("Tool", "Reflection", "Lateralus")
-    result = my_table.put(item, condition=Track.artist_name.not_exists() & Track.track_name.not_exists())
+    result = my_table.put(item)
 
+    # then
+    assert result
+
+
+def test_can_put_item_with_condition(
+    bootstrapped_dynamodb_client: DynamoDBClient,
+    dynamodb_test_table_name: str
+) -> None:
+
+    # given
+    @dataclass
+    class Track(Item):
+        artist_name: str
+        track_name: str
+        album_name: str
+
+    my_table = Table[Track](
+        bootstrapped_dynamodb_client,
+        dynamodb_test_table_name
+    )
+
+    # when
+    item = Track("Tool", "Reflection", "Lateralus")
+    result = my_table.put(item, condition=Track.album_name.not_exists())
+
+    # then
     assert result
 
 

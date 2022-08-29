@@ -11,6 +11,7 @@ from mypy_boto3_dynamodb.service_resource import Table as DynamoDBTable
 from mypy_boto3_dynamodb.type_defs import AttributeValueTypeDef
 
 from .attribute import Attribute
+from .condition import Condition
 from .constants import KEY_TYPE_HASH, KEY_TYPE_RANGE
 from .errors import ItemNotFoundError, QueryError
 from .item import Item, _AttributeChange, _ChangeType
@@ -164,7 +165,7 @@ class Table(Generic[I]):
     def save(self, item: I) -> None:
         ...
 
-    def put(self, item: I, override: bool = True, condition=...) -> bool:
+    def put(self, item: I, condition: Condition = None) -> bool:
         if not isinstance(item, self._item_class):
             ValueError(
                 f"Could not persist item of type `{type(item)}`, expected instance of `{self._item_class}` instead."
@@ -172,11 +173,13 @@ class Table(Generic[I]):
         try:
             put_query = {
                 "TableName": self._table_name,
-                "Item": _serialize_item(item.extract())["M"],
+                "Item": item.extract(),
                 "ReturnConsumedCapacity": "TOTAL",
             }
-            if not override:
-                put_query["ConditionExpression"] = self._prevent_override_condition
+            if condition:
+                put_query["ConditionExpression"] = str(condition)
+                if condition.values:
+                    put_query["ExpressionAttributeValues"] = condition.values
 
             result = self._db_client.put_item(**put_query)
         except ClientError as e:
@@ -248,7 +251,7 @@ class Table(Generic[I]):
                 f"Could not retrieve item `{self._item_class}` matching criteria `{key_query}`", key_query
             )
 
-        return self._item_class.hydrate(_deserialize_item({"M": result["Item"]}))
+        return self._item_class.hydrate(result["Item"])
 
     def _get_key_expression(self, item: I) -> KeyExpression:
         key_expression = {

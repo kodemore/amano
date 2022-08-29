@@ -1,22 +1,53 @@
 from __future__ import annotations
 
-import enum
 from abc import abstractmethod, ABC
 from datetime import date, datetime, time
 from decimal import Decimal
+from typing import Any, Union
 from typing import AnyStr, Dict, FrozenSet, List, Set, Tuple, TypedDict, \
-    overload, Any, Sequence, Mapping
+    overload, Sequence, Mapping
 
-from chili import is_dataclass
+from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
+from chili import HydrationStrategy, is_dataclass
+from chili.hydration import StrategyRegistry
 from chili.typing import get_origin_type, get_type_args
-from chili import HydrationStrategy
 
 from .constants import (
     TYPE_MAP, TYPE_STRING, TYPE_LIST, TYPE_NULL, TYPE_BINARY,
     TYPE_BINARY_SET, TYPE_NUMBER_SET, TYPE_BOOLEAN, TYPE_NUMBER,
     TYPE_STRING_SET
 )
+from .utils import StringEnum
 
+serialize_value = TypeSerializer().serialize
+deserialize_value = TypeDeserializer().deserialize
+
+
+class FloatStrategy(HydrationStrategy):
+    def hydrate(self, value: Any) -> float:
+        return float(value)
+
+    def extract(self, value: Any) -> Decimal:  # decimal is understood by dynamodb
+        return Decimal(str(value))
+
+
+serializer_registry = StrategyRegistry()
+
+# Add support for floats in dynamodb
+serializer_registry.add(float, FloatStrategy())
+
+VALID_TYPE_VALUES = {
+    TYPE_STRING: (str, AnyStr, datetime, date, time),
+    TYPE_NUMBER: (Decimal, int, float),
+    TYPE_LIST: (list, List, Sequence, set, Set, frozenset, FrozenSet, tuple, Tuple),
+    TYPE_MAP: (dict, Mapping, Dict, TypedDict),
+    TYPE_NULL: (type(None)),
+    TYPE_BINARY: (bytes, bytearray),
+    TYPE_BOOLEAN: tuple([bool]),
+    TYPE_STRING_SET: tuple([Set[str]]),
+    TYPE_NUMBER_SET: tuple([Set[Union[Decimal, int, float]]]),
+    TYPE_BINARY_SET: tuple([Set[Union[bytes, bytearray]]]),
+}
 
 _SUPPORTED_BASE_TYPES = {
     str: TYPE_STRING,
@@ -72,7 +103,7 @@ AttributeValue = TypedDict(
 )
 
 
-class AttributeType(enum.Enum):
+class AttributeType(StringEnum):
     STRING = TYPE_STRING
     NUMBER = TYPE_NUMBER
     BOOLEAN = TYPE_BOOLEAN

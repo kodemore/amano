@@ -7,7 +7,7 @@ from typing import Dict, List, Union, Any
 
 from astroid.decorators import cachedproperty
 
-from .base_attribute import AbstractAttribute, AttributeType, AttributeValue
+from .base_attribute import AbstractAttribute, AttributeType, AttributeValue, VALID_TYPE_VALUES, serializer_registry, serialize_value
 from .constants import CONDITION_COMPARATOR_EQ, CONDITION_COMPARATOR_NEQ, \
     CONDITION_COMPARATOR_LT, CONDITION_COMPARATOR_LTE, CONDITION_COMPARATOR_GT, \
     CONDITION_COMPARATOR_GTE
@@ -24,7 +24,7 @@ def _param_suffix() -> str:
 
 
 class Condition(ABC):
-    values: List
+    values: Dict[str, AttributeValue] = {}
 
     def __init__(self, **kwargs):
         self.format_params = dict(kwargs)
@@ -42,6 +42,98 @@ class Condition(ABC):
 
     def __or__(self, other) -> OrCondition:
         return OrCondition(self, other)
+
+
+class AttributeExists(Condition):
+    def __init__(self, attribute: AbstractAttribute):
+        super().__init__(attribute=str(attribute))
+
+    @property
+    def format(self) -> str:
+        return "attribute_exists({attribute})"
+
+
+class AttributeNotExists(Condition):
+    def __init__(self, attribute: AbstractAttribute):
+        super().__init__(attribute=str(attribute))
+
+    @property
+    def format(self) -> str:
+        return "attribute_not_exists({attribute})"
+
+
+class BeginsWithCondition(Condition):
+    def __init__(
+        self,
+        attribute: AbstractAttribute,
+        value: str
+    ):
+        param_name = f":{attribute}{_param_suffix()}"
+        self.values = {
+            param_name: {
+                "S": str(value)
+            }
+        }
+        super().__init__(attribute=str(attribute), value=param_name)
+
+    @property
+    def format(self) -> str:
+        return "begins_with({attribute}, {value})"
+
+
+class ContainsCondition(Condition):
+    def __init__(
+        self,
+        attribute: AbstractAttribute,
+        value: Any
+    ):
+        param_name = f":{attribute}{_param_suffix()}"
+        if attribute.type not in (AttributeType.STRING, AttributeType.STRING_SET, AttributeType.NUMBER_SET, AttributeType.BINARY_SET):
+            raise ValueError(f"Attribute `{attribute}` does not support `contains` function.")
+
+        if attribute.type is AttributeType.NUMBER_SET:
+            value_type = AttributeType.NUMBER
+        elif attribute.type is AttributeType.BINARY_SET:
+            value_type = AttributeType.BINARY
+        else:
+            value_type = AttributeType.STRING
+
+        if not isinstance(value, VALID_TYPE_VALUES[str(value_type)]):
+            raise ValueError(
+                f"Passed value of type `{type(value)}` cannot be used with "
+                f"contains function and `{attribute.name}` attribute's type."
+            )
+
+        serializer = serializer_registry.get_for(type(value))
+        self.values = {
+            param_name: serialize_value(serializer.extract(value)),
+        }
+
+        super().__init__(attribute=str(attribute), value=param_name)
+
+    @property
+    def format(self) -> str:
+        return "contains({attribute}, {value})"
+
+
+class AttributeIsType(Condition):
+    def __init__(
+        self,
+        attribute: AbstractAttribute,
+        expected_type: AttributeType
+    ):
+        param_name = f":{attribute}{_param_suffix()}"
+        self.expected_type = expected_type
+        self.values = {
+            param_name: {
+                "S": str(expected_type)
+            }
+        }
+        super().__init__(attribute=str(attribute), expected_type=param_name)
+
+    @property
+    def format(self) -> str:
+        return "attribute_type({attribute}, {expected_type})"
 
 
 class LogicalCondition(Condition, ABC):
@@ -106,7 +198,7 @@ class ComparisonCondition(Condition):
         left_operand: AbstractAttribute,
         right_operand: Any
     ):
-        self._values = {}
+        self.values = {}
         if isinstance(right_operand, AbstractAttribute):
             super().__init__(
                 operator=operator,
@@ -121,7 +213,7 @@ class ComparisonCondition(Condition):
         # validate value type
         AttributeType.from_python_type(type(right_operand))
         param_name = f":{left_operand}{_param_suffix()}"
-        self._values = {param_name: left_operand.extract(right_operand)}
+        self.values = {param_name: left_operand.extract(right_operand)}
         super().__init__(
             operator=operator,
             left_operand=left_operand,
@@ -132,6 +224,39 @@ class ComparisonCondition(Condition):
     def format(self) -> str:
         return "{left_operand} {operator} {right_operand}"
 
+
+class SizeCondition(Condition):
+    def __init__(self, attribute: AbstractAttribute):
+        super().__init__(attribute=attribute.name)
+        self.values = {}
+
     @property
-    def values(self) -> Dict[str, AttributeValue]:
-        return self._values
+    def format(self) -> str:
+        if "operator" not in self.format_params:
+            return "size({attribute})"
+
+        return "size({attribute}) {operator} {value}"
+
+    def __eq__(self, value: int) -> SizeCondition:
+        return self._compare_size(CONDITION_COMPARATOR_EQ, value)
+
+    def __gt__(self, value: int) -> SizeCondition:
+        return self._compare_size(CONDITION_COMPARATOR_GT, value)
+
+    def __ge__(self, value: int) -> SizeCondition:
+        return self._compare_size(CONDITION_COMPARATOR_GTE, value)
+
+    def __lt__(self, value: int) -> SizeCondition:
+        return self._compare_size(CONDITION_COMPARATOR_LT, value)
+
+    def __le__(self, value: int) -> SizeCondition:
+        return self._compare_size(CONDITION_COMPARATOR_LTE, value)
+
+    def _compare_size(self, operator: str, value: int) -> SizeCondition:
+        param_name = f":{self.format_params['attribute']}_size{_param_suffix()}"
+        self.format_params["operator"] = operator
+        self.format_params["value"] = param_name
+        self.values[param_name] = {
+            "N": str(value),
+        }
+        return self
