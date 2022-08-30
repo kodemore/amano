@@ -233,13 +233,16 @@ def test_can_put_item_with_condition(
 
     # when
     item = Track("Tool", "Reflection", "Lateralus")
-    result = my_table.put(item, condition=Track.album_name.not_exists())
+    result = my_table.put(item, condition=Track.album_name.exists())
 
     # then
     assert result
 
 
-def test_query_table_with_pk_only(bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str) -> None:
+def test_query_table_with_pk_only(
+    bootstrapped_dynamodb_client: DynamoDBClient,
+    dynamodb_test_table_name: str
+) -> None:
     # given
     @dataclass
     class Track(Item):
@@ -249,11 +252,6 @@ def test_query_table_with_pk_only(bootstrapped_dynamodb_client: DynamoDBClient, 
 
     my_table = Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
 
-    result = my_table._db_client.scan(
-        KeyConditionExpression="artist_name = :artist_name",  # AND begins_with(track_name , :track_name)",
-        ExpressionAttributeValues={":artist_name": {"S": "AC/DC"}},
-        TableName=dynamodb_test_table_name,
-        ReturnConsumedCapacity="TOTAL",
-    )
+    result = my_table.query(Track.artist_name == "AC\DC")
 
     a = 1

@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
-from amano import Attribute, Item
+from amano.item import Item
+from amano.attribute import AttributeType, Attribute
 from amano.item import _AttributeChange, _ItemState, _ChangeType
 
 
@@ -47,11 +48,11 @@ def test_can_get_attribute() -> None:
 
     assert MyItem.name.name == "name"
     assert MyItem.name.type == "S"
-    assert MyItem.name.type == Attribute.Type.STRING
+    assert MyItem.name.type == AttributeType.STRING
 
     assert MyItem.age.name == "age"
     assert MyItem.age.type == "N"
-    assert MyItem.age.type == Attribute.Type.NUMBER
+    assert MyItem.age.type == AttributeType.NUMBER
 
 
 def test_can_get_attributes() -> None:
@@ -70,7 +71,7 @@ def test_can_hydrate_item() -> None:
         age: int
 
     # when
-    item = MyItem.hydrate({"name": "Bobik", "age": "10"})
+    item = MyItem.hydrate({"name": {"S": "Bobik"}, "age": {"N": "10"}})
 
     # then
     assert item.name == "Bobik"
@@ -94,8 +95,8 @@ def test_can_extract_item() -> None:
 
     # then
     assert value == {
-        "name": "Bobik",
-        "age": 10,
+        "name": {"S": "Bobik"},
+        "age": {"N": "10"},
     }
 
 
@@ -107,7 +108,7 @@ def test_can_hydrate_item_as_dataclass() -> None:
         age: int
 
     # when
-    item = MyItem.hydrate({"name": "Bobik", "age": "10"})
+    item = MyItem.hydrate({"name": {"S": "Bobik"}, "age": {"N": "10"}})
 
     # then
     assert item.name == "Bobik"
@@ -128,8 +129,8 @@ def test_can_extract_item_as_dataclass() -> None:
 
     # then
     assert value == {
-        "name": "Bobik",
-        "age": 10,
+        "name": {"S": "Bobik"},
+        "age": {"N": "10"},
     }
 
 
