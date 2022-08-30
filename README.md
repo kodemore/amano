@@ -49,14 +49,14 @@ pick the best matching index for your query.
   ],
   "LocalSecondaryIndexes": [
     {
-      "IndexName": "LocalArtistAndAlbumNameIndex",
+      "IndexName": "lsi-1",
       "KeySchema": [
         {
-          "AttributeName": "artist_name",
+          "AttributeName": "user_id",
           "KeyType": "HASH"
         },
         {
-          "AttributeName": "album_name",
+          "AttributeName": "price_value",
           "KeyType": "RANGE"
         }
       ],
@@ -67,14 +67,14 @@ pick the best matching index for your query.
   ],
   "GlobalSecondaryIndexes": [
     {
-      "IndexName": "GlobalAlbumAndTrackNameIndex",
+      "IndexName": "gsi-1",
       "KeySchema": [
         {
-          "AttributeName": "album_name",
+          "AttributeName": "sku",
           "KeyType": "HASH"
         },
         {
-          "AttributeName": "track_name",
+          "AttributeName": "user_id",
           "KeyType": "RANGE"
         }
       ],
