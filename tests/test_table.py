@@ -233,7 +233,7 @@ def test_can_put_item_with_condition(
 
     # when
     item = Track("Tool", "Reflection", "Lateralus")
-    result = my_table.put(item, condition=Track.album_name.exists())
+    result = my_table.put(item, condition=Track.artist_name.exists())
 
     # then
     assert result

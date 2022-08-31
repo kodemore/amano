@@ -78,6 +78,26 @@ def test_can_hydrate_item() -> None:
     assert item.age == 10
 
 
+def test_can_hydrate_item_with_mapping() -> None:
+    # given
+    field_mapping = {
+        # class : table
+        "name": "mapped_name",
+        "age": "mapped_age",
+    }
+
+    class MyItem(Item, mapping=field_mapping):
+        name: str
+        age: int
+
+    # when
+    item = MyItem.hydrate({"mapped_name": {"S": "Bobik"}, "mapped_age": {"N": "10"}})
+
+    # then
+    assert item.name == "Bobik"
+    assert item.age == 10
+
+
 def test_can_extract_item() -> None:
     # given
     class MyItem(Item):
@@ -97,6 +117,34 @@ def test_can_extract_item() -> None:
     assert value == {
         "name": {"S": "Bobik"},
         "age": {"N": "10"},
+    }
+
+
+def test_can_extract_item_with_mapping() -> None:
+    # given
+    field_mapping = {
+        # class : table
+        "name": "mapped_name",
+        "age": "mapped_age",
+    }
+
+    class MyItem(Item, mapping=field_mapping):
+        name: str
+        age: int
+
+        def __init__(self, name: str, age: int):
+            self.name = name
+            self.age = age
+
+    item = MyItem("Bobik", 10)
+
+    # when
+    value = item.extract()
+
+    # then
+    assert value == {
+        "mapped_name": {"S": "Bobik"},
+        "mapped_age": {"N": "10"},
     }
 
 

@@ -70,9 +70,13 @@ class ItemMeta(type):
         )
 
         if "__annotations__" in body:
+            if "mapping" in meta:
+                mapping = meta["mapping"]
+            else:
+                mapping = {}
             for attribute_name, attribute_type in body["__annotations__"].items():
                 class_instance.__meta__[attribute_name] = Attribute(
-                    attribute_name, attribute_type, body[attribute_name] if attribute_name in body else UNDEFINED
+                    attribute_name if attribute_name not in mapping else mapping[attribute_name], attribute_type, body[attribute_name] if attribute_name in body else UNDEFINED
                 )
 
                 setattr(class_instance, attribute_name, class_instance.__meta__[attribute_name])
@@ -172,7 +176,7 @@ class Item(metaclass=ItemMeta):
         instance = cls.__new__(cls)
 
         for field, attribute in cls.__meta__.items():
-            setattr(instance, field, attribute.hydrate(value.get(field)))
+            setattr(instance, field, attribute.hydrate(value.get(attribute.name)))
 
         instance._commit()
         return instance
@@ -180,7 +184,7 @@ class Item(metaclass=ItemMeta):
     def extract(self) -> Dict[str, AttributeValue]:
         result = {}
         for field, attribute in self.__meta__.items():
-            result[field] = attribute.extract(getattr(self, field))
+            result[attribute.name] = attribute.extract(getattr(self, field))
 
         return result
 
