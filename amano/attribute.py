@@ -72,6 +72,9 @@ class Attribute(AbstractAttribute):
     def is_type(self, attribute_type: AttributeType) -> AttributeIsType:
         return AttributeIsType(self, attribute_type)
 
+    def startswith(self, string: str) -> BeginsWithCondition:
+        return self.begins_with(string)
+
     def begins_with(self, string: str) -> BeginsWithCondition:
         return BeginsWithCondition(self, string)
 

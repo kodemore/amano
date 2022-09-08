@@ -1,14 +1,14 @@
 import json
 from abc import ABC
 from dataclasses import dataclass
-from typing import Any, Dict, Generic, TypeVar
+from typing import Any, Dict, Generic, TypeVar, Iterable
 
 import pytest
 from boto3.dynamodb.conditions import Key
 from mypy_boto3_dynamodb import DynamoDBClient
 from mypy_boto3_dynamodb.service_resource import Table as DynamoDBTable
 
-from amano import Index, Item, Table
+from amano import Index, Item, Table, Cursor
 from amano.errors import AmanoDBError, ItemNotFoundError, QueryError
 
 
@@ -30,7 +30,7 @@ def test_fail_instantiation_on_non_parametrized_table(
     bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str
 ) -> None:
     # when
-    with pytest.raises(SyntaxError):
+    with pytest.raises(RuntimeError):
         Table(bootstrapped_dynamodb_client, table_name=dynamodb_test_table_name)
 
 
@@ -114,6 +114,7 @@ def test_can_retrieve_indexes(bootstrapped_dynamodb_client, dynamodb_test_table_
         "GlobalAlbumAndTrackNameIndex",
         "LocalArtistAndAlbumNameIndex",
     ]
+    assert all(isinstance(index, Index) for index in table.indexes.values())
 
 
 def test_can_retrieve_available_indexes(
@@ -249,9 +250,19 @@ def test_query_table_with_pk_only(
         artist_name: str
         track_name: str
         album_name: str
+        genre_name: str
 
     my_table = Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
 
-    result = my_table.query(Track.artist_name == "AC\DC")
+    result = my_table.query(
+        Track.album_name == "Let There Be Rock"
+    )
 
-    a = 1
+    assert isinstance(result, Iterable)
+
+    all_items = []
+    for item in result:
+        all_items.append(item)
+        assert isinstance(item, Track)
+
+    assert len(all_items) == 8

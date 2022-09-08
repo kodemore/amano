@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 import string
 from abc import ABC, abstractmethod
-from typing import Dict, List, Union, Any
+from typing import Dict, List, Union, Any, Set
 
 from astroid.decorators import cachedproperty
 
@@ -25,8 +25,10 @@ def _param_suffix() -> str:
 
 class Condition(ABC):
     values: Dict[str, AttributeValue] = {}
+    attributes: Set[str]
 
     def __init__(self, **kwargs):
+        self.attributes = set()
         self.format_params = dict(kwargs)
 
     @property
@@ -47,6 +49,7 @@ class Condition(ABC):
 class AttributeExists(Condition):
     def __init__(self, attribute: AbstractAttribute):
         super().__init__(attribute=str(attribute))
+        self.attributes.add(attribute.name)
 
     @property
     def format(self) -> str:
@@ -56,6 +59,7 @@ class AttributeExists(Condition):
 class AttributeNotExists(Condition):
     def __init__(self, attribute: AbstractAttribute):
         super().__init__(attribute=str(attribute))
+        self.attributes.add(attribute.name)
 
     @property
     def format(self) -> str:
@@ -69,12 +73,13 @@ class BeginsWithCondition(Condition):
         value: str
     ):
         param_name = f":{attribute}{_param_suffix()}"
+        super().__init__(attribute=str(attribute), value=param_name)
         self.values = {
             param_name: {
                 "S": str(value)
             }
         }
-        super().__init__(attribute=str(attribute), value=param_name)
+        self.attributes.add(attribute.name)
 
     @property
     def format(self) -> str:
@@ -104,12 +109,12 @@ class ContainsCondition(Condition):
                 f"contains function and `{attribute.name}` attribute's type."
             )
 
+        super().__init__(attribute=str(attribute), value=param_name)
         serializer = serializer_registry.get_for(type(value))
         self.values = {
             param_name: serialize_value(serializer.extract(value)),
         }
-
-        super().__init__(attribute=str(attribute), value=param_name)
+        self.attributes.add(attribute.name)
 
     @property
     def format(self) -> str:
@@ -123,13 +128,13 @@ class AttributeIsType(Condition):
         expected_type: AttributeType
     ):
         param_name = f":{attribute}{_param_suffix()}"
-        self.expected_type = expected_type
+        super().__init__(attribute=str(attribute), expected_type=param_name)
         self.values = {
             param_name: {
                 "S": str(expected_type)
             }
         }
-        super().__init__(attribute=str(attribute), expected_type=param_name)
+        self.attributes.add(attribute.name)
 
     @property
     def format(self) -> str:
@@ -148,6 +153,9 @@ class LogicalCondition(Condition, ABC):
         )
         self.left_condition = left_condition
         self.right_condition = right_condition
+        self.attributes = (
+            self.left_condition.attributes | self.right_condition.attributes
+        )
 
     @cachedproperty
     def values(self) -> Dict[str, AttributeValue]:
@@ -205,6 +213,8 @@ class ComparisonCondition(Condition):
                 left_operand=left_operand,
                 right_operand=right_operand
             )
+            self.attributes.add(left_operand.name)
+            self.attributes.add(right_operand.name)
             return
 
         if isinstance(right_operand, Condition):
@@ -213,12 +223,13 @@ class ComparisonCondition(Condition):
         # validate value type
         AttributeType.from_python_type(type(right_operand))
         param_name = f":{left_operand}{_param_suffix()}"
-        self.values = {param_name: left_operand.extract(right_operand)}
         super().__init__(
             operator=operator,
             left_operand=left_operand,
             right_operand=param_name
         )
+        self.values = {param_name: left_operand.extract(right_operand)}
+        self.attributes.add(left_operand.name)
 
     @property
     def format(self) -> str:
@@ -229,6 +240,7 @@ class SizeCondition(Condition):
     def __init__(self, attribute: AbstractAttribute):
         super().__init__(attribute=attribute.name)
         self.values = {}
+        self.attributes.add(attribute.name)
 
     @property
     def format(self) -> str:

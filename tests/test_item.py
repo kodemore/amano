@@ -61,7 +61,7 @@ def test_can_get_attributes() -> None:
         name: str
         age: int
 
-    assert MyItem.attributes == ["name", "age"]
+    assert [attribute.name for attribute in MyItem.attributes.values()] == ["name", "age"]
 
 
 def test_can_hydrate_item() -> None:

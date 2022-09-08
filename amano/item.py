@@ -117,8 +117,9 @@ class Item(metaclass=ItemMeta):
             item_data[attribute.name] = attribute.default_value
 
         if args:
+            attribute_names = list(self.attributes.keys())
             for index, value in enumerate(args):
-                item_data[self.attributes[index]] = value
+                item_data[attribute_names[index]] = value
         if kwargs:
             item_data = {**item_data, **kwargs}
 
@@ -165,18 +166,22 @@ class Item(metaclass=ItemMeta):
 
     @classmethod
     @property
-    def attributes(cls) -> List[str]:
-        if not cls.__attributes__:
-            cls.__attributes__ = list(cls.__meta__.keys())
-
-        return cls.__attributes__
+    def attributes(cls) -> Dict[str, Attribute]:
+        return cls.__meta__
 
     @classmethod
     def hydrate(cls, value: Dict[str, AttributeValue]) -> Item:
         instance = cls.__new__(cls)
 
         for field, attribute in cls.__meta__.items():
-            setattr(instance, field, attribute.hydrate(value.get(attribute.name)))
+            if attribute.name not in value:
+                setattr(instance, field, None)
+                continue
+            setattr(
+                instance,
+                field,
+                attribute.hydrate(value.get(attribute.name))
+            )
 
         instance._commit()
         return instance

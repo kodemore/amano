@@ -9,8 +9,8 @@ from botocore.exceptions import ClientError
 from mypy_boto3_dynamodb.client import DynamoDBClient
 
 
-@pytest.fixture(autouse=True)
-def field_identifier(monkeypatch) -> None:
+@pytest.fixture()
+def generic_field_identifier(monkeypatch) -> None:
     monkeypatch.setattr("amano.condition._param_suffix", lambda: "")
 
 

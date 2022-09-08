@@ -22,69 +22,17 @@ pick the best matching index for your query.
 
 ## Basic Usage
 
-### Table schema
+Examples below are using [this table schema](docs/example_schema.json)
 
-```json
-{
-  "TableName": "ecommerce",
-  "KeySchema": [
-    {
-      "AttributeName": "user_id",
-      "KeyType": "HASH"
-    },
-    {
-      "AttributeName": "sku",
-      "KeyType": "RANGE"
-    }
-  ],
-  "AttributeDefinitions": [
-    {
-      "AttributeName": "user_id",
-      "AttributeType": "S"
-    },
-    {
-      "AttributeName": "sku",
-      "AttributeType": "S"
-    }
-  ],
-  "LocalSecondaryIndexes": [
-    {
-      "IndexName": "lsi-1",
-      "KeySchema": [
-        {
-          "AttributeName": "user_id",
-          "KeyType": "HASH"
-        },
-        {
-          "AttributeName": "price_value",
-          "KeyType": "RANGE"
-        }
-      ],
-      "Projection": {
-        "ProjectionType": "ALL"
-      }
-    }
-  ],
-  "GlobalSecondaryIndexes": [
-    {
-      "IndexName": "gsi-1",
-      "KeySchema": [
-        {
-          "AttributeName": "sku",
-          "KeyType": "HASH"
-        },
-        {
-          "AttributeName": "user_id",
-          "KeyType": "RANGE"
-        }
-      ],
-      "Projection": {
-        "ProjectionType": "ALL"
-      }
-    }
-  ],
-  "BillingMode": "PAY_PER_REQUEST"
-}
+```
+┌──────────────────────────────────┬─────────┬────────────────────────┬────────────────┐
+│      Primary Key         │       │
+├───────────────┬──────────┼───────┼─────────┼────────────────────────┼────────────────┤
+│ Partition key │ Sort Key │                          │ Value 2 │ 123                    │           10.0 │
+├───────────────┼──────────┼
+Separate                         │ cols    │ with a tab or 4 spaces │       -2,027.1 │
+│ This is a row with only one cell │         │                        │                │
+└──────────────────────────────────┴─────────┴────────────────────────┴────────────────┘
 ```
 
 ```python

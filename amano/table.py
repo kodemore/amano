@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from abc import ABC
 from enum import Enum
 from functools import cached_property
-from typing import Any, Dict, Generic, List, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, Generic, List, Tuple, Type, TypeVar, Union, Set, \
+    Iterator, Generator, Iterable
 
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from botocore.exceptions import ClientError, ParamValidationError
@@ -12,7 +14,8 @@ from mypy_boto3_dynamodb.type_defs import AttributeValueTypeDef
 
 from .attribute import Attribute
 from .condition import Condition
-from .constants import KEY_TYPE_HASH, KEY_TYPE_RANGE
+from .constants import KEY_TYPE_HASH, KEY_TYPE_RANGE, CONDITION_LOGICAL_OR, \
+    SELECT_SPECIFIC_ATTRIBUTES, CONDITION_FUNCTION_CONTAINS
 from .errors import ItemNotFoundError, QueryError
 from .item import Item, _AttributeChange, _ChangeType
 
@@ -41,8 +44,62 @@ class IndexType(Enum):
     PRIMARY_KEY = "primary_key"
 
 
-class Cursor(Generic[I]):
-    ...
+class Cursor(Iterable[I]):
+    def __init__(self, item_class: Type[I], query: Dict[str, Any], executor: callable):
+        self._executor = executor
+        self.query = query
+        self.hydrate = True
+        self._item_class = item_class
+        self._fetched_records = []
+        self._current_index = 0
+        self._exhausted = False
+        self._last_evaluated_key = {}
+
+    def __iter__(self) -> Union[Dict[str, Any], I]:
+        self._fetch()
+        items_count = len(self._fetched_records)
+        while self._current_index < items_count:
+            item_data = self._fetched_records[self._current_index]
+            if self.hydrate:
+                yield self._item_class.hydrate(item_data)
+            else:
+                yield item_data
+            self._current_index += 1
+
+            if self._current_index >= items_count and not self._exhausted:
+                self._fetch()
+                items_count = len(self._fetched_records)
+
+    def fetch(self, limit=0) -> List[Union[Dict[str, Any], I]]:
+        self._current_index = 0
+        fetched_items = []
+        fetched_length = 0
+        for item in self:
+            fetched_items.append(item)
+            fetched_length += 1
+            if limit and fetched_length >= limit:
+                break
+
+        self._current_index = 0
+        return fetched_items
+
+    def _fetch(self) -> None:
+        try:
+            result = self._executor(**self.query)
+        except Exception as e:
+            self._fetched_records = []
+            self._exhausted = True
+            raise QueryError(
+                f"Could not execute query "
+                f"`{self.query['KeyConditionExpression']}`, reason: {e}"
+            )
+        if "LastEvaluatedKey" in result:
+            self._last_evaluated_key = result["LastEvaluatedKey"]
+            self.query["ExclusiveStartKey"] = result["LastEvaluatedKey"]
+        else:
+            self._exhausted = True
+
+        self._fetched_records = self._fetched_records + result["Items"]
 
 
 class Index:
@@ -226,13 +283,73 @@ class Table(Generic[I]):
 
         return update_expression, attribute_values
 
+    def query(
+        self,
+        key_condition: Condition,
+        filter_condition: Condition = None,
+        limit: int = 0,
+        hint_index: Union[Index, str] = None
+    ) -> Cursor:
+        key_condition_expression = str(key_condition)
+        key_attributes = list(key_condition.attributes)
+        if len(key_attributes) > 2:
+            raise QueryError(
+                f"Could not execute query `{key_condition_expression}`, "
+                f"too many attributes in key_condition."
+            )
+
+        if any(operator in key_condition_expression for operator in [CONDITION_LOGICAL_OR, CONDITION_FUNCTION_CONTAINS]):
+            raise QueryError(
+                f"Could not execute query `{key_condition_expression}`, "
+                "used operator is not supported."
+            )
+        key_condition_values = key_condition.values
+        projection = ", ".join(self.attributes)
+
+        if hint_index and isinstance(hint_index, str):
+            if hint_index not in self.indexes:
+                raise QueryError(
+                    f"Used unknown index `{hint_index}` in query "
+                    f"`{key_condition_expression}` "
+                )
+            hint_index = self.indexes[hint_index]
+
+        if not hint_index:
+            hint_index = self._hint_index_for_attributes(
+                key_attributes
+            )
+
+        query = {
+            "TableName": self._table_name,
+            "Select": SELECT_SPECIFIC_ATTRIBUTES,
+            "KeyConditionExpression": key_condition_expression,
+            "ExpressionAttributeValues": key_condition_values,
+            "ProjectionExpression": projection,
+            "ReturnConsumedCapacity": "INDEXES",
+        }
+
+        if hint_index.name != self._PRIMARY_KEY_NAME:
+            query["IndexName"] = hint_index.name
+
+        if filter_condition:
+            query["FilterExpression"] = str(filter_condition)
+            query["ExpressionAttributeValues"] = {
+                **query["ExpressionAttributeValues"],
+                **filter_condition.values
+            }
+
+        if limit:
+            query["Limit"] = limit
+
+        return Cursor(self._item_class, query, self._db_client.query)
+
     def get(self, *keys: str, consistent_read: bool = False) -> I:
         key_query = {self.partition_key: keys[0]}
         if len(keys) > 1:
             key_query[self.sort_key] = keys[1]
 
         key_expression = _serialize_item(key_query)["M"]
-        projection = ", ".join(self._item_class.attributes)
+        projection = ", ".join(self.attributes)
         try:
             result = self._db_client.get_item(
                 TableName=self.table_name,
@@ -295,4 +412,46 @@ class Table(Generic[I]):
     def _item_class(self) -> Union[None, Type[Item]]:
         if hasattr(self, "__item_class__"):
             return getattr(self, "__item_class__")
-        return None
+        raise RuntimeError
+
+    @cached_property
+    def attributes(self) -> List[str]:
+        return [attribute.name for
+                attribute in self._item_class.attributes.values()]
+
+    def _hint_index_for_attributes(self, attributes: List[str]) -> Index:
+        if len(attributes) == 1:
+            for index in self.indexes.values():
+                if index.partition_key == attributes[0]:
+                    return index
+            raise QueryError(
+                f"No GSI index defined for `{attributes[0]}` attribute."
+            )
+
+        matched_indexes = []
+
+        for index in self.indexes.values():
+            if index.partition_key not in attributes or index.sort_key not in attributes:
+                continue
+
+            # partition key was on a first place in condition,
+            # so we assume the best index here
+            if attributes[0] == index.partition_key:
+                return index
+
+            matched_indexes.append(index)
+
+        if not matched_indexes:
+            raise QueryError(
+                f"No GSI/LSI index defined for "
+                f"`{'`,`'.join(attributes)}` attributes."
+            )
+
+        # return first matched index
+        return matched_indexes[0]
+
+
+
+
+
+
