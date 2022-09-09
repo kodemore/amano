@@ -30,9 +30,9 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Run dynamodb container
         run: sudo apt-get install -y expect && unbuffer ./create-dynamodb-container.sh
-      - uses: actions/checkout@v2
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
