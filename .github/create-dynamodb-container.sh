@@ -1,5 +1,4 @@
 #!/bin/sh -eux
-sudo apt-get install docker jq
 network=$(docker inspect --format '{{json .NetworkSettings.Networks}}' `hostname` \
   | jq -r 'keys[0]')
 docker pull -q amazon/dynamodb-local:latest
