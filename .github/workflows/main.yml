@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
           cache: 'poetry'
@@ -38,7 +38,7 @@ jobs:
           tar -xzf /tmp/dynamodb_local_latest.tar.gz -C /tmp
           java -Djava.library.path=/tmp/DynamoDBLocal_lib -jar /tmp/DynamoDBLocal.jar -inMemory -port 8000 &
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
           cache: 'poetry'
