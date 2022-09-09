@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run dynamodb container
-        run: sudo apt-get install -y expect && unbuffer ./create-dynamodb-container.sh
+        run: sudo apt-get install -y expect && sudo unbuffer ./create-dynamodb-container.sh
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
