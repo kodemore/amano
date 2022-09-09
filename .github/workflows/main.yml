@@ -13,16 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Install poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
           python-version: 3.9
           cache: 'poetry'
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry
-          poetry install
+        run: poetry install
       - name: Linting
         run: |
           poetry run isort -c setup.cfg
@@ -37,16 +38,17 @@ jobs:
           wget --quiet http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest.tar.gz -O /tmp/dynamodb_local_latest.tar.gz
           tar -xzf /tmp/dynamodb_local_latest.tar.gz -C /tmp
           java -Djava.library.path=/tmp/DynamoDBLocal_lib -jar /tmp/DynamoDBLocal.jar -inMemory -port 8000 &
+      - name: Install poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.9
           cache: 'poetry'
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry
-          poetry install
+        run: poetry install
       - name: Run tests with code coverage
         run: |
           poetry run pytest
