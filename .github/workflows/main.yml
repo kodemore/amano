@@ -31,8 +31,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Run dynamodb container
-        run: sudo apt-get install -y expect docker jq && sudo unbuffer ./.github/create-dynamodb-container.sh
+      - name: Run DynamoDB
+        run: |
+          wget --quiet http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest.tar.gz -O /tmp/dynamodb_local_latest.tar.gz
+          tar -xzf /tmp/dynamodb_local_latest.tar.gz -C /tmp
+          java -Djava.library.path=/tmp/DynamoDBLocal_lib -jar /tmp/DynamoDBLocal.jar -inMemory -port 8000 &
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
