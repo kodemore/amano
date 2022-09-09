@@ -12,18 +12,16 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Install poetry
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry
-      - name: Set up Python 3.9
+      - uses: actions/checkout@v3
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.9
-          cache: 'poetry'
       - name: Install dependencies
-        run: poetry install
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
       - name: Linting
         run: |
           poetry run isort -c setup.cfg
@@ -32,23 +30,34 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Run DynamoDB
         run: |
           wget --quiet http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest.tar.gz -O /tmp/dynamodb_local_latest.tar.gz
           tar -xzf /tmp/dynamodb_local_latest.tar.gz -C /tmp
           java -Djava.library.path=/tmp/DynamoDBLocal_lib -jar /tmp/DynamoDBLocal.jar -inMemory -port 8000 &
-      - name: Install poetry
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.9
-          cache: 'poetry'
+      - name: Setup Poetry
+        run: | 
+          python -m pip install --upgrade pip
+          pip install poetry
+      - name: Cache poetry dependencies
+        id: cache-deps
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: pydeps-${{ hashFiles('**/poetry.lock') }}
+
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --no-interaction --no-root
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+
+      - name: Setup project
+        run: poetry install --no-interaction
+
       - name: Run tests with code coverage
         run: |
           poetry run pytest
