@@ -3,9 +3,19 @@ from __future__ import annotations
 from abc import abstractmethod, ABC
 from datetime import date, datetime, time
 from decimal import Decimal
-from typing import Any, Union
-from typing import AnyStr, Dict, FrozenSet, List, Set, Tuple, TypedDict, \
-    overload, Sequence, Mapping
+from typing import Any, Union, Type, TypeVar, _SpecialForm
+from typing import (
+    AnyStr,
+    Dict,
+    FrozenSet,
+    List,
+    Set,
+    Tuple,
+    TypedDict,
+    overload,
+    Sequence,
+    Mapping,
+)
 
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from chili import HydrationStrategy, is_dataclass
@@ -13,9 +23,16 @@ from chili.hydration import StrategyRegistry
 from chili.typing import get_origin_type, get_type_args
 
 from .constants import (
-    TYPE_MAP, TYPE_STRING, TYPE_LIST, TYPE_NULL, TYPE_BINARY,
-    TYPE_BINARY_SET, TYPE_NUMBER_SET, TYPE_BOOLEAN, TYPE_NUMBER,
-    TYPE_STRING_SET
+    TYPE_MAP,
+    TYPE_STRING,
+    TYPE_LIST,
+    TYPE_NULL,
+    TYPE_BINARY,
+    TYPE_BINARY_SET,
+    TYPE_NUMBER_SET,
+    TYPE_BOOLEAN,
+    TYPE_NUMBER,
+    TYPE_STRING_SET,
 )
 from .utils import StringEnum
 
@@ -27,7 +44,9 @@ class FloatStrategy(HydrationStrategy):
     def hydrate(self, value: Any) -> float:
         return float(value)
 
-    def extract(self, value: Any) -> Decimal:  # decimal is understood by dynamodb
+    def extract(
+        self, value: Any
+    ) -> Decimal:  # decimal is understood by dynamodb
         return Decimal(str(value))
 
 
@@ -36,12 +55,22 @@ serializer_registry = StrategyRegistry()
 # Add support for floats in dynamodb
 serializer_registry.add(float, FloatStrategy())
 
-VALID_TYPE_VALUES = {
-    TYPE_STRING: (str, AnyStr, datetime, date, time),
+VALID_TYPE_VALUES: Dict[str, Tuple[Type, ...]] = {
+    TYPE_STRING: (str, datetime, date, time),
     TYPE_NUMBER: (Decimal, int, float),
-    TYPE_LIST: (list, List, Sequence, set, Set, frozenset, FrozenSet, tuple, Tuple),
-    TYPE_MAP: (dict, Mapping, Dict, TypedDict),
-    TYPE_NULL: (type(None)),
+    TYPE_LIST: (  # type: ignore
+        list,
+        List,
+        Sequence,
+        set,
+        Set,
+        frozenset,
+        FrozenSet,
+        tuple,
+        Tuple,
+    ),
+    TYPE_MAP: (dict, Mapping, Dict, TypedDict),  # type: ignore
+    TYPE_NULL: (type(None)),  # type: ignore
     TYPE_BINARY: (bytes, bytearray),
     TYPE_BOOLEAN: tuple([bool]),
     TYPE_STRING_SET: tuple([Set[str]]),
@@ -77,7 +106,7 @@ _SUPPORTED_BASE_TYPES = {
     bool: TYPE_BOOLEAN,
 }
 
-_SUPPORTED_GENERIC_TYPES = {
+_SUPPORTED_GENERIC_TYPES: Dict[type, str] = {
     list: TYPE_LIST,
     tuple: TYPE_LIST,
     set: TYPE_LIST,
@@ -85,22 +114,18 @@ _SUPPORTED_GENERIC_TYPES = {
     dict: TYPE_MAP,
 }
 
-AttributeValue = TypedDict(
-    "AttributeValue",
-    {
-        TYPE_STRING: str,
-        TYPE_NUMBER: str,
-        TYPE_BINARY: bytes,
-        TYPE_STRING_SET: Set[str],
-        TYPE_NUMBER_SET: Set[str],
-        TYPE_BINARY_SET: Set[bytes],
-        TYPE_MAP: Mapping[str, Any],
-        TYPE_LIST: Sequence[Any],
-        TYPE_NULL: bool,
-        TYPE_BOOLEAN: bool,
-    },
-    total=False,
-)
+
+class AttributeValue(TypedDict, total=False):
+    S: str
+    N: str
+    B: bytes
+    SS: Set[str]
+    NS: Set[str]
+    BS: Set[bytes]
+    M: Mapping[str, Any]
+    L: Sequence[Any]
+    NULL: bool
+    BOOl: bool
 
 
 class AttributeType(StringEnum):
@@ -143,7 +168,7 @@ class AttributeType(StringEnum):
 
         return AttributeType(_SUPPORTED_GENERIC_TYPES[origin_type])
 
-    @overload
+    @overload   # type: ignore
     def __eq__(self, other: str) -> bool:
         ...
 
@@ -158,7 +183,10 @@ class AttributeType(StringEnum):
         if isinstance(other, AttributeType):
             return self.value == other.value
 
-        raise TypeError(f"Comparison between {self.__class__} and {type(other)} is not supported.")
+        raise NotImplemented(
+            f"Comparison between {self.__class__} "
+            f"and {type(other)} is not supported."
+        )
 
 
 class AbstractAttribute(ABC):

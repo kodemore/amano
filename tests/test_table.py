@@ -254,10 +254,12 @@ def test_query_table_with_pk_only(
 
     my_table = Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
 
+    # when
     result = my_table.query(
         Track.album_name == "Let There Be Rock"
     )
 
+    # then
     assert isinstance(result, Iterable)
 
     all_items = []
@@ -266,3 +268,32 @@ def test_query_table_with_pk_only(
         assert isinstance(item, Track)
 
     assert len(all_items) == 8
+
+
+def test_query_table_with_pk_and_sk(
+    bootstrapped_dynamodb_client: DynamoDBClient,
+    dynamodb_test_table_name: str
+) -> None:
+    # given
+    @dataclass
+    class Track(Item):
+        artist_name: str
+        track_name: str
+        album_name: str
+        genre_name: str
+
+    my_table = Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
+
+    # when
+    result = my_table.query(
+        (Track.artist_name == "AC/DC") &
+        Track.track_name.startswith("W")
+    )
+
+    # then
+    assert isinstance(result, Iterable)
+
+    all_items = []
+    for item in result:
+        all_items.append(item)
+        assert isinstance(item, Track)

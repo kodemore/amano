@@ -167,3 +167,21 @@ def test_size_function() -> None:
 
     # then
     assert str(condition) == "size(field)"
+
+
+@pytest.mark.usefixtures("generic_field_identifier")
+def test_between_function() -> None:
+    # given
+    field = Attribute("field", str)
+
+    # when
+    condition = field.between("a", "z")
+
+    # then
+    assert str(condition) == "field BETWEEN :field_a AND :field_b"
+    assert condition.values[":field_a"] == {
+        "S": "a"
+    }
+    assert condition.values[":field_b"] == {
+        "S": "z"
+    }

@@ -22,7 +22,7 @@ class _ChangeType(Enum):
     CHANGE = "CHANGE"
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(\"{self.value}\")"
+        return f'{self.__class__.__name__}("{self.value}")'
 
 
 @dataclass
@@ -50,6 +50,8 @@ class _Commit:
 
 
 class ItemMeta(type):
+    __meta__: Dict[str, Attribute]
+
     def __new__(cls, what, bases, body, **meta) -> ItemMeta:
         if body["__module__"] == __name__ and what == "Item":
             return type.__new__(cls, what, bases, body)
@@ -74,22 +76,37 @@ class ItemMeta(type):
                 mapping = meta["mapping"]
             else:
                 mapping = {}
-            for attribute_name, attribute_type in body["__annotations__"].items():
+            for attribute_name, attribute_type in body[
+                "__annotations__"
+            ].items():
                 class_instance.__meta__[attribute_name] = Attribute(
-                    attribute_name if attribute_name not in mapping else mapping[attribute_name], attribute_type, body[attribute_name] if attribute_name in body else UNDEFINED
+                    attribute_name
+                    if attribute_name not in mapping
+                    else mapping[attribute_name],
+                    attribute_type,
+                    body[attribute_name]
+                    if attribute_name in body
+                    else UNDEFINED,
                 )
 
-                setattr(class_instance, attribute_name, class_instance.__meta__[attribute_name])
+                setattr(
+                    class_instance,
+                    attribute_name,
+                    class_instance.__meta__[attribute_name],
+                )
 
         return class_instance
 
     @staticmethod
-    def _get_table_attribute(attribute_name: str, item_class: Type[Item]) -> Attribute:
+    def _get_table_attribute(
+        attribute_name: str, item_class: Type[Item]
+    ) -> Attribute:
         if attribute_name in item_class:
             return item_class.__meta__[attribute_name]
 
         raise AttributeError(
-            f"{item_class.__module__}.{item_class.__qualname__} does not specify any attribute with `{attribute_name}` name."
+            f"{item_class.__module__}.{item_class.__qualname__} "
+            f"does not specify any attribute with `{attribute_name}` name."
         )
 
     def __init__(cls, name, bases, dct, **extra):
@@ -123,11 +140,19 @@ class Item(metaclass=ItemMeta):
         if kwargs:
             item_data = {**item_data, **kwargs}
 
-        for attribute, value in item_data.items():
-            setattr(self, attribute, value)
+        for name, value in item_data.items():
+            setattr(self, name, value)
 
     def __getattribute__(self, key: str) -> Any:
-        if key in ("__dict__", "__attributes__", "__log__", "__snapshots__", "__class__", "__meta__", "__module__"):
+        if key in (
+            "__dict__",
+            "__attributes__",
+            "__log__",
+            "__snapshots__",
+            "__class__",
+            "__meta__",
+            "__module__",
+        ):
             return super().__getattribute__(key)
 
         if hasattr(self.__class__, key):
@@ -135,18 +160,26 @@ class Item(metaclass=ItemMeta):
                 return super().__getattribute__(key)
 
         if key not in self.__class__:
-            raise AttributeError(f"Attribute {key} is not defined in {self.__class__} schema.")
+            raise AttributeError(
+                f"Attribute {key} is not defined in {self.__class__} schema."
+            )
 
         if key not in self.__dict__:
-            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{key}'")
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute '{key}'"
+            )
 
         return self.__dict__[key]
 
     def __setattr__(self, key, value):
         if key in self.__dict__:
-            log_item = _AttributeChange(self.__meta__[key], _ChangeType.CHANGE, value)
+            log_item = _AttributeChange(
+                self.__meta__[key], _ChangeType.CHANGE, value
+            )
         else:
-            log_item = _AttributeChange(self.__meta__[key], _ChangeType.SET, value)
+            log_item = _AttributeChange(
+                self.__meta__[key], _ChangeType.SET, value
+            )
 
         self.__log__.append(log_item)
 
@@ -162,7 +195,7 @@ class Item(metaclass=ItemMeta):
 
     @classmethod
     def __class_getitem__(cls, item: str) -> Attribute:
-        return cls.__meta__.get(item)
+        return cls.__meta__[item]
 
     @classmethod
     @property
@@ -178,9 +211,7 @@ class Item(metaclass=ItemMeta):
                 setattr(instance, field, None)
                 continue
             setattr(
-                instance,
-                field,
-                attribute.hydrate(value.get(attribute.name))
+                instance, field, attribute.hydrate(value.get(attribute.name))
             )
 
         instance._commit()

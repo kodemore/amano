@@ -3,14 +3,26 @@ from __future__ import annotations
 import random
 import string
 from abc import ABC, abstractmethod
-from typing import Dict, List, Union, Any, Set
+from typing import Dict, Union, Any, Set
 
 from astroid.decorators import cachedproperty
 
-from .base_attribute import AbstractAttribute, AttributeType, AttributeValue, VALID_TYPE_VALUES, serializer_registry, serialize_value
-from .constants import CONDITION_COMPARATOR_EQ, CONDITION_COMPARATOR_NEQ, \
-    CONDITION_COMPARATOR_LT, CONDITION_COMPARATOR_LTE, CONDITION_COMPARATOR_GT, \
-    CONDITION_COMPARATOR_GTE
+from .base_attribute import (
+    AbstractAttribute,
+    AttributeType,
+    AttributeValue,
+    VALID_TYPE_VALUES,
+    serializer_registry,
+    serialize_value,
+)
+from .constants import (
+    CONDITION_COMPARATOR_EQ,
+    CONDITION_COMPARATOR_NEQ,
+    CONDITION_COMPARATOR_LT,
+    CONDITION_COMPARATOR_LTE,
+    CONDITION_COMPARATOR_GT,
+    CONDITION_COMPARATOR_GTE,
+)
 from .utils import StringEnum
 
 _COUNTER = 0
@@ -19,8 +31,9 @@ _COUNTER = 0
 def _param_suffix() -> str:
     global _COUNTER
     _COUNTER += 1
-    return "_" + "".join(random.choices(string.ascii_letters, k=4)) \
-           + str(_COUNTER)
+    return (
+        "_" + "".join(random.choices(string.ascii_letters, k=4)) + str(_COUNTER)
+    )
 
 
 class Condition(ABC):
@@ -67,18 +80,10 @@ class AttributeNotExists(Condition):
 
 
 class BeginsWithCondition(Condition):
-    def __init__(
-        self,
-        attribute: AbstractAttribute,
-        value: str
-    ):
+    def __init__(self, attribute: AbstractAttribute, value: str):
         param_name = f":{attribute}{_param_suffix()}"
         super().__init__(attribute=str(attribute), value=param_name)
-        self.values = {
-            param_name: {
-                "S": str(value)
-            }
-        }
+        self.values = {param_name: {"S": str(value)}}
         self.attributes.add(attribute.name)
 
     @property
@@ -87,14 +92,17 @@ class BeginsWithCondition(Condition):
 
 
 class ContainsCondition(Condition):
-    def __init__(
-        self,
-        attribute: AbstractAttribute,
-        value: Any
-    ):
+    def __init__(self, attribute: AbstractAttribute, value: Any):
         param_name = f":{attribute}{_param_suffix()}"
-        if attribute.type not in (AttributeType.STRING, AttributeType.STRING_SET, AttributeType.NUMBER_SET, AttributeType.BINARY_SET):
-            raise ValueError(f"Attribute `{attribute}` does not support `contains` function.")
+        if attribute.type not in (
+            AttributeType.STRING,
+            AttributeType.STRING_SET,
+            AttributeType.NUMBER_SET,
+            AttributeType.BINARY_SET,
+        ):
+            raise ValueError(
+                f"Attribute `{attribute}` does not support `contains` function."
+            )
 
         if attribute.type is AttributeType.NUMBER_SET:
             value_type = AttributeType.NUMBER
@@ -123,17 +131,11 @@ class ContainsCondition(Condition):
 
 class AttributeIsType(Condition):
     def __init__(
-        self,
-        attribute: AbstractAttribute,
-        expected_type: AttributeType
+        self, attribute: AbstractAttribute, expected_type: AttributeType
     ):
         param_name = f":{attribute}{_param_suffix()}"
         super().__init__(attribute=str(attribute), expected_type=param_name)
-        self.values = {
-            param_name: {
-                "S": str(expected_type)
-            }
-        }
+        self.values = {param_name: {"S": str(expected_type)}}
         self.attributes.add(attribute.name)
 
     @property
@@ -145,25 +147,26 @@ class LogicalCondition(Condition, ABC):
     def __init__(
         self,
         left_condition: Union[Condition, str],
-        right_condition: Union[Condition, str]
+        right_condition: Union[Condition, str],
     ):
         super().__init__(
-            left_condition=left_condition,
-            right_condition=right_condition
+            left_condition=left_condition, right_condition=right_condition
         )
         self.left_condition = left_condition
         self.right_condition = right_condition
-        self.attributes = (
-            self.left_condition.attributes | self.right_condition.attributes
-        )
+        self.attributes = set()
+        if isinstance(self.left_condition, Condition):
+            self.attributes = self.left_condition.attributes
+        if isinstance(self.right_condition, Condition):
+            self.attributes = self.attributes | self.right_condition.attributes
 
     @cachedproperty
     def values(self) -> Dict[str, AttributeValue]:
-        values = {}
-        if hasattr(self.left_condition, "values"):
+        values: Dict[str, AttributeValue] = {}
+        if isinstance(self.left_condition, Condition):
             values = self.left_condition.values
 
-        if hasattr(self.right_condition, "values"):
+        if isinstance(self.right_condition, Condition):
             values = {**values, **self.right_condition.values}
 
         return values
@@ -183,15 +186,14 @@ class OrCondition(LogicalCondition):
 
 class NotCondition(Condition):
     def __init__(self, condition: Union[Condition, str]):
-        super().__init__(condition)
+        super().__init__(condition=condition)
 
     @property
     def format(self) -> str:
-        return "(NOT {0})"
+        return "(NOT {condition})"
 
 
 class ComparisonCondition(Condition):
-
     class ComparisonOperator(StringEnum):
         EQ = CONDITION_COMPARATOR_EQ
         NEQ = CONDITION_COMPARATOR_NEQ
@@ -204,21 +206,24 @@ class ComparisonCondition(Condition):
         self,
         operator: ComparisonOperator,
         left_operand: AbstractAttribute,
-        right_operand: Any
+        right_operand: Any,
     ):
         self.values = {}
         if isinstance(right_operand, AbstractAttribute):
             super().__init__(
                 operator=operator,
                 left_operand=left_operand,
-                right_operand=right_operand
+                right_operand=right_operand,
             )
             self.attributes.add(left_operand.name)
             self.attributes.add(right_operand.name)
             return
 
         if isinstance(right_operand, Condition):
-            raise ValueError(f"Could not compare `{left_operand}` with a condition expression.")
+            raise ValueError(
+                f"Could not compare `{left_operand}` "
+                f"with a condition expression."
+            )
 
         # validate value type
         AttributeType.from_python_type(type(right_operand))
@@ -226,7 +231,7 @@ class ComparisonCondition(Condition):
         super().__init__(
             operator=operator,
             left_operand=left_operand,
-            right_operand=param_name
+            right_operand=param_name,
         )
         self.values = {param_name: left_operand.extract(right_operand)}
         self.attributes.add(left_operand.name)
@@ -249,7 +254,7 @@ class SizeCondition(Condition):
 
         return "size({attribute}) {operator} {value}"
 
-    def __eq__(self, value: int) -> SizeCondition:
+    def __eq__(self, value: int) -> SizeCondition:  # type: ignore
         return self._compare_size(CONDITION_COMPARATOR_EQ, value)
 
     def __gt__(self, value: int) -> SizeCondition:
@@ -272,3 +277,33 @@ class SizeCondition(Condition):
             "N": str(value),
         }
         return self
+
+
+class BetweenCondition(Condition):
+    def __init__(
+        self,
+        attribute: AbstractAttribute,
+        a: Union[AbstractAttribute, str],
+        b: Union[AbstractAttribute, str]
+    ):
+        params: Dict[str, str] = {}
+        values: Dict[str, AttributeValue] = {}
+        if not isinstance(a, AbstractAttribute):
+            params["a"] = f":{attribute}_a{_param_suffix()}"
+            values[params["a"]] = attribute.extract(a)
+        else:
+            params["a"] = str(a)
+
+        if not isinstance(b, AbstractAttribute):
+            params["b"] = f":{attribute}_b{_param_suffix()}"
+            values[params["b"]] = attribute.extract(b)
+        else:
+            params["b"] = str(b)
+
+        super().__init__(attribute=str(attribute), a=params["a"], b=params["b"])
+        self.values = values
+        self.attributes.add(attribute.name)
+
+    @property
+    def format(self) -> str:
+        return "{attribute} BETWEEN {a} AND {b}"

@@ -8,7 +8,7 @@ isort:
 	poetry run isort $(sources)
 
 black:
-	poetry run black -S -l 120 --target-version py38 $(sources)
+	poetry run black -S -l 80 --target-version py38 $(sources)
 
 flake:
 	poetry run flake8 amano

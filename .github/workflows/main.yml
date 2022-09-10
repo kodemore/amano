@@ -34,9 +34,9 @@ jobs:
 
       - name: Linting
         run: |
-          poetry run isort -c setup.cfg
-          poetry run black --line-length=120 --target-version py39 amano
-          poetry run mypy amano
+          make isort
+          make black
+          make mypy
   tests:
     runs-on: ubuntu-latest
     steps:
