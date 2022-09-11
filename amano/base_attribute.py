@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod, ABC
 from datetime import date, datetime, time
 from decimal import Decimal
-from typing import Any, Union, Type, TypeVar, _SpecialForm
+from typing import Any, Union, Type, TypeVar, runtime_checkable, Protocol
 from typing import (
     AnyStr,
     Dict,
@@ -189,11 +189,12 @@ class AttributeType(StringEnum):
         )
 
 
-class AbstractAttribute(ABC):
+@runtime_checkable
+class AbstractAttribute(Protocol):
     name: str
     type: AttributeType
     default_value: Any
-    strategy: HydrationStrategy
+    __attribute_type__: Type
 
     @abstractmethod
     def extract(self, value: Any) -> AttributeValue:

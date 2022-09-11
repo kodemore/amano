@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Type, Union
 
 from .attribute import Attribute
 from .base_attribute import AttributeValue
@@ -143,7 +143,7 @@ class Item(metaclass=ItemMeta):
         for name, value in item_data.items():
             setattr(self, name, value)
 
-    def __getattribute__(self, key: str) -> Any:
+    def __getattribute__(self, key: str) -> Union[Attribute, Any]:
         if key in (
             "__dict__",
             "__attributes__",

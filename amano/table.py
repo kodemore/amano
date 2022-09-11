@@ -179,7 +179,7 @@ class Table(Generic[I]):
 
     def __init__(self, db_client: DynamoDBClient, table_name: str):
         if not self._item_class:
-            raise SyntaxError(
+            raise TypeError(
                 f"{self.__class__} must be parametrized with a "
                 f"subtype of {Item.__module__}.{Item.__qualname__}"
             )
@@ -374,7 +374,7 @@ class Table(Generic[I]):
         filter_condition: Condition = None,
         limit: int = 0,
         use_index: Union[Index, str] = None,
-    ) -> Cursor:
+    ) -> Cursor[I]:
         key_condition_expression = str(key_condition)
         key_attributes = list(key_condition.attributes)
         if len(key_attributes) > 2:
