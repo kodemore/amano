@@ -1,15 +1,10 @@
-import json
-from abc import ABC
 from dataclasses import dataclass
-from typing import Any, Dict, Generic, TypeVar, Iterable
+from typing import Iterable
 
 import pytest
-from boto3.dynamodb.conditions import Key
 from mypy_boto3_dynamodb import DynamoDBClient
-from mypy_boto3_dynamodb.service_resource import Table as DynamoDBTable
 
-from amano import Index, Item, Table, Cursor
-from amano.attribute import Attribute
+from amano import Index, Item, Table, Attribute
 from amano.errors import AmanoDBError, ItemNotFoundError, QueryError
 
 

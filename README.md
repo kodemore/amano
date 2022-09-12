@@ -21,51 +21,90 @@ might be an index to perform a query against your table amano will automatically
 pick the best matching index for your query.
 
 ## Basic Usage
+Following examples relies on [AWS Discussion Forum Data Model](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SampleData.CreateTables.html#SampleData.CreateTables2).
 
-Examples below are using [this table schema](docs/example_schema.json)
+### Defining your Forum Item
 
-```
-┌──────────────────────────────────┬─────────┬────────────────────────┬────────────────┐
-│      Primary Key         │       │
-├───────────────┬──────────┼───────┼─────────┼────────────────────────┼────────────────┤
-│ Partition key │ Sort Key │                          │ Value 2 │ 123                    │           10.0 │
-├───────────────┼──────────┼
-Separate                         │ cols    │ with a tab or 4 spaces │       -2,027.1 │
-│ This is a row with only one cell │         │                        │                │
-└──────────────────────────────────┴─────────┴────────────────────────┴────────────────┘
-```
+The example below defines an item that represents a record in dynamo database,
+and instantiates new table object which provides abstraction layer around 
+table operations:
+
 
 ```python
-from decimal import Decimal
 import boto3
-from amano import Table, Item
+from amano import Table, Item, Attribute
 
-
-class CartItem(Item):
-    user_id: str
-    sku: str
-    item_name: str
-    price_value: Decimal
-    quantity: int
+class Forum(Item, mapping={
+    "name": "ForumName",
+    "category": "Category",
+    "threads": "Threads",
+    "messages": "Messages",
+    "views": "Views"
+}):
+    name: Attribute[str]
+    category: Attribute[str]
+    threads: Attribute[int] = 0
+    messages: Attribute[int] = 0
+    views: Attribute[int] = 0
 
 
 client = boto3.client("dynamodb")
-shopping_cart = Table[CartItem](client, table_name="ecommerce")
-
-# put an item into a cart
-pillow = CartItem(
-    user_id="bob@work.it",
-    sku="pillow#1",
-    item_name="Blue Pillow",
-    price_value=Decimal("10.00"),
-    quantity=1
-)
-shopping_cart.put(pillow)
-
-# retrieve item assuming your pk
+forum_table = Table[Forum](client, table_name="Forum")
 ```
 
-# API
+`Forum` is a representation of an `Item` thus it has to extend `amano.Item` class.
+`Item` provides a mapping functionality, so you can separate in-memory 
+representation from your database representation. 
 
-## Storing item in a table
+### Storing item in a table
+
+```python
+item = Forum(name="Amano Forum", category="Amazon DynamoDB") 
+forum_table.save(item)
+```
+
+### Retrieving data by primary key
+
+```python
+forum_table.get("Amano Forum", consistent=False)
+```
+
+`consistent` parameter can be used to request a consistent read from a dynamodb
+table.
+
+### Quering a table
+
+#### Quering by pk
+
+```python
+cursor = forum_table.query(Forum.name == "Amano Forum")
+
+for item in cursor:
+    assert isinstance(item, Forum)
+```
+
+
+`consistent` parameter can be used to request a consistent read from a dynamodb
+table.
+
+# Item class internals
+
+By default, a subclass of `amano.Item` behaves a bit like a dataclass, which 
+means that initializer for the class is able to set class' properties.
+Consider the following example:
+
+```python
+dynamodb_forum = Forum(
+    name="Amazon DynamoDB",
+    category="Amazon Web Services"
+)
+
+assert dynamodb_forum.name == "Amazon DynamoDB"
+assert dynamodb_forum.threads == 0
+```
+
+`amano.Item` provides also an API, that helps to serialize and deserialize data.
+A `hydrate` method can be used to deserialize data coming from database into an
+item representation. A `extract` method can be used to store in-memory item 
+representation to a database representation.
 
