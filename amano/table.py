@@ -377,6 +377,7 @@ class Table(Generic[I]):
         filter_condition: Condition = None,
         limit: int = 0,
         use_index: Union[Index, str] = None,
+        consistent_read: bool = False,
     ) -> Cursor[I]:
         key_condition_expression = str(key_condition)
         key_attributes = list(key_condition.attributes)
@@ -417,6 +418,7 @@ class Table(Generic[I]):
             "ExpressionAttributeValues": key_condition_values,
             "ProjectionExpression": projection,
             "ReturnConsumedCapacity": "INDEXES",
+            "ConsistentRead": consistent_read,
         }
 
         if hint_index.name != self._PRIMARY_KEY_NAME:

@@ -5,10 +5,9 @@ AWS DynamoDB Abstraction Layer build on Table Data Gateway Pattern.
 ## Features
 
     - Hydration and extraction of table items
-    - Simple query mechanism
+    - Simple query mechanism with elegant abstraction
     - Interface for easy storing and retriving data
-    - Mechanism which automatically picks index for your queries
-    - Saves your DynamoDB quota for PAY_PER_REQUEST provisioning
+    - Intelligent algorithms that saves your DynamoDB quota and your money
 
 ## What Amano is
 
@@ -160,7 +159,53 @@ forum_table.get("Amazon DynamoDB", "Tagging tables", consistent_read=True)
 
 ### Querying a table
 
+Use `key_condition` attribute to specify search criteria. A key condition is a
+condition that is executed against all items within a specific index. Amano can
+determine which index to use by looking at the fields that are present in your 
+key condition and table's schema. 
+If corresponding index cannot be determined the `query` method will throw 
+an exception and no real request will be made to table. Amano does all of this 
+behind the scenes to save you from using your dynamodb's quota.
 
+
+```python
+import boto3
+from amano import Table, Item, Attribute
+
+client = boto3.client("dynamodb")
+
+class Thread(Item):
+    ForumName: Attribute[str]
+    Subject: Attribute[str]
+    Message: Attribute[str]
+    LastPostedBy: Attribute[str]
+    Replies: Attribute[int] = 0
+    Views: Attribute[int] = 0
+    
+# It is not required but consider wrapping class properties' 
+# types with an Attribute generic
+
+forum_table = Table[Thread](client, table_name="Thread")
+
+cursor = forum_table.query(
+    key_condition=(Thread.ForumName == "Amazon DynamoDB")
+)
+
+for item in cursor:
+    assert isinstance(item, Thread)  # item is an instance of a `Thread` class
+```
+
+The above query will look for all items in the `Thread` table, where `ForumName`
+equals `Amazon DynamoDB`. Because `Thread` table specifies sort key (`Subject`), 
+you can refine your search by using it in `key_condition`. 
+
+The sort key condition must use one of the following comparison operators:
+ - `Thread.Subject == "value"` - true if `Subject` equals `value`
+ - `Thread.Subject > "value"` - ...
+
+
+> The result of a query is always `amano.Cursor`. The cursor implements iterable 
+> interface, and you can iterate through it like over an ordinary list.
 
 
 ### Mapping item's fields
