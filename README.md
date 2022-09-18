@@ -62,33 +62,80 @@ It does not take into consideration any context of the passed item.
 Both `put` and `save` methods allow using conditional expressions.
 
 ```python
+import boto3
+from amano import Table, Item
+
+client = boto3.client("dynamodb")
+
+class Forum(Item):
+    ForumName: str
+    Category: str
+    Threads: int = 0
+    Messages: int = 0
+    Views: int = 0
+
+forum_table = Table[Forum](client, table_name="Forum")
 forum_table.put(Forum(ForumName="Amano Forum", Category="Amazon DynamoDB"))
 ```
 
-### Retrieving data by primary key
+### Retrieving data by a primary key
 
 Dynamodb allows to choose between two types of primary key:
-- __Partition key__.
-- __Composite key__. Partition key + sort key
+- __Partition key__. It is a simplified primary key. This means there 
+should be no two items in a table with the same partition key value.
+- __Composite key__. It is a combination of partition key and sort key. 
+This means there might be items in a table with the same partition key, but they
+must have different sort key values.
 
+
+#### Retrieving by a partition key
 ```python
-forum_table.get("Amano Forum", consistent=False)
+import boto3
+from amano import Table, Item
+
+client = boto3.client("dynamodb")
+
+class Forum(Item):
+    ForumName: str
+    Category: str
+    Threads: int = 0
+    Messages: int = 0
+    Views: int = 0
+
+forum_table = Table[Forum](client, table_name="Forum")
+
+forum_table.get("Amazon DynamoDB")
 ```
 
-### Retrieving data by composite primary key
+#### Retrieving data by a composite key
 
 ```python
-forum_table.get("Amano Forum", consistent=False)
+import boto3
+from amano import Table, Item
+
+client = boto3.client("dynamodb")
+
+class Thread(Item):
+    ForumName: str
+    Subject: str
+    Message: str
+    LastPostedBy: str
+    Replies: int = 0
+    Views: int = 0
+
+forum_table = Table[Thread](client, table_name="Thread")
+
+forum_table.get("Amazon DynamoDB", "Tagging tables")
 ```
+
+#### Ensuring consistency reads
 
 `consistent` parameter can be used to request a consistent read from a dynamodb
 table.
 
-### Quering a table
+### Querying a table
 
 
-`consistent` parameter can be used to request a consistent read from a dynamodb
-table.
 
 
 ### Mapping item's fields
