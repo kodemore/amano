@@ -65,6 +65,32 @@ Both `put` and `save` methods allow using conditional expressions.
 forum_table.put(Forum(ForumName="Amano Forum", Category="Amazon DynamoDB"))
 ```
 
+### Retrieving data by primary key
+
+Dynamodb allows to choose between two types of primary key:
+- __Partition key__.
+- __Composite key__. Partition key + sort key
+
+```python
+forum_table.get("Amano Forum", consistent=False)
+```
+
+### Retrieving data by composite primary key
+
+```python
+forum_table.get("Amano Forum", consistent=False)
+```
+
+`consistent` parameter can be used to request a consistent read from a dynamodb
+table.
+
+### Quering a table
+
+
+`consistent` parameter can be used to request a consistent read from a dynamodb
+table.
+
+
 ### Mapping item's fields
 
 Usually schema of persisted data is different from its memory representation.
@@ -89,36 +115,41 @@ class Forum(Item, mapping=Mapping.PASCAL_CASE):
 forum_table = Table[Forum](client, table_name="Forum")
 ```
 
-The above example will use built-in mapping strategy, which expects table field
-names to follow PascalCase convention, and it will map them to standard python's
-snake case.
+The above example will use built-in mapping strategy, which expects table's 
+field names to follow PascalCase convention, and it will map them to standard 
+python's snake case.
 
 The following is the list of available mapping strategies:
-- `Mapping.NONE`
+- `Mapping.PASS_THROUGH`
 - `Mapping.PASCAL_CASE`
 - `Mapping.CAMEL_CASE`
 - `Mapping.HYPHENS`
 
-The `mapping` argument can also accept a dict value
-
-
-
-
-### Retrieving data by primary key
+The `mapping` argument can also accept any `Dict[str, str]`. 
+The dict keys should correspond to class attributes and its values 
+to table's field names. Please see the example below:
 
 ```python
-forum_table.get("Amano Forum", consistent=False)
+import boto3
+from amano import Table, Item
+
+client = boto3.client("dynamodb")
+
+class Forum(Item, mapping={
+    "forum_name": "ForumName",
+    "category": "Category",
+    "threads": "Threads",
+    "messages": "Messages",
+    "views": "Views",
+}):
+    forum_name: str
+    category: str
+    threads: int = 0
+    messages: int = 0
+    views: int = 0
+
+forum_table = Table[Forum](client, table_name="Forum")
 ```
-
-`consistent` parameter can be used to request a consistent read from a dynamodb
-table.
-
-### Quering a table
-
-
-
-`consistent` parameter can be used to request a consistent read from a dynamodb
-table.
 
 # Item class internals
 
