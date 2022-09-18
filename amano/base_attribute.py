@@ -197,8 +197,8 @@ class AbstractAttribute(Protocol):
     __attribute_type__: Type
 
     @abstractmethod
-    def extract(self, value: Any) -> AttributeValue:
+    def extract(self, value: Any, simple: bool = False) -> AttributeValue:
         ...
 
-    def hydrate(self, value: AttributeValue) -> Any:
+    def hydrate(self, value: AttributeValue, simple: bool = False) -> Any:
         ...

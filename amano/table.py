@@ -289,6 +289,7 @@ class Table(Generic[I]):
         return f"attribute_not_exists({self.partition_key})"
 
     def save(self, item: I) -> None:
+        # @todo: save or update item depending on its state
         ...
 
     def put(self, item: I, condition: Condition = None) -> bool:
@@ -331,7 +332,9 @@ class Table(Generic[I]):
             UpdateExpression=...,
             ExpressionAttributeValues=...,
         )
-        ...
+        # @todo: there should be session information and each table operation
+        # should put into the session the dynamodb information about
+        # read and write capacity utilisation
 
     def _generate_update_expression(
         self, item: I
@@ -487,6 +490,8 @@ class Table(Generic[I]):
 
     @classmethod
     def __class_getitem__(cls, item: Type[Item]) -> Type[Table]:
+        if not issubclass(item, Item):
+            raise TypeError(f"Expected subclass of {Item}, got {item} instead.")
         return type(  # type: ignore
             f"Table[{item.__module__}.{item.__qualname__}]",
             tuple([Table]),

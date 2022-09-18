@@ -21,47 +21,88 @@ might be an index to perform a query against your table amano will automatically
 pick the best matching index for your query.
 
 ## Basic Usage
-Following examples relies on [AWS Discussion Forum Data Model](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SampleData.CreateTables.html#SampleData.CreateTables2).
+Following examples rely on [AWS Discussion Forum Data Model](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SampleData.CreateTables.html#SampleData.CreateTables2).
 
-### Defining your Forum Item
+### Defining your first Item
 
-The example below defines an item that represents a record in dynamo database,
-and instantiates new table object which provides abstraction layer around 
-table operations:
-
+The example below defines a `Forum` class, which is a representation of a 
+record in a dynamodb's table. This class is required to instantiate parametrized
+`Table` class that abstract access do dynamodb's table.
 
 ```python
 import boto3
-from amano import Table, Item, Attribute
-
-class Forum(Item, mapping={
-    "name": "ForumName",
-    "category": "Category",
-    "threads": "Threads",
-    "messages": "Messages",
-    "views": "Views"
-}):
-    name: Attribute[str]
-    category: Attribute[str]
-    threads: Attribute[int] = 0
-    messages: Attribute[int] = 0
-    views: Attribute[int] = 0
-
+from amano import Table, Item
 
 client = boto3.client("dynamodb")
+
+class Forum(Item):
+    ForumName: str
+    Category: str
+    Threads: int = 0
+    Messages: int = 0
+    Views: int = 0
+
 forum_table = Table[Forum](client, table_name="Forum")
 ```
 
-`Forum` is a representation of an `Item` thus it has to extend `amano.Item` class.
-`Item` provides a mapping functionality, so you can separate in-memory 
-representation from your database representation. 
+> Please note: `Forum` class extends `amano.Item` class. This is required 
+> by `amano.Table` to properly work. 
+
 
 ### Storing item in a table
 
+To store item, you can use the `put` or `save` method of `amano.Table` class.
+The difference between those two methods is that `save` can execute either 
+`PutItem` or `UpdateItem` operations. It inspects an instance of `amano.Item` 
+subclass to identify its state and generates an update expression if needed.
+
+On the other hand, the `Put` method always executes `PutItem` expression. 
+It does not take into consideration any context of the passed item.
+
+Both `put` and `save` methods allow using conditional expressions.
+
 ```python
-item = Forum(name="Amano Forum", category="Amazon DynamoDB") 
-forum_table.save(item)
+forum_table.put(Forum(ForumName="Amano Forum", Category="Amazon DynamoDB"))
 ```
+
+### Mapping item's fields
+
+Usually schema of persisted data is different from its memory representation.
+Amano provides a powerful mapping mechanism to cover this scenario. Mapping is
+an operation which associates each element from one set of data 
+(in-memory representation) to one or more elements of another set of data 
+(dynamodb table).
+
+```python
+import boto3
+from amano import Table, Item, Mapping
+
+client = boto3.client("dynamodb")
+
+class Forum(Item, mapping=Mapping.PASCAL_CASE):
+    forum_name: str
+    category: str
+    threads: int = 0
+    messages: int = 0
+    views: int = 0
+
+forum_table = Table[Forum](client, table_name="Forum")
+```
+
+The above example will use built-in mapping strategy, which expects table field
+names to follow PascalCase convention, and it will map them to standard python's
+snake case.
+
+The following is the list of available mapping strategies:
+- `Mapping.NONE`
+- `Mapping.PASCAL_CASE`
+- `Mapping.CAMEL_CASE`
+- `Mapping.HYPHENS`
+
+The `mapping` argument can also accept a dict value
+
+
+
 
 ### Retrieving data by primary key
 
@@ -74,14 +115,6 @@ table.
 
 ### Quering a table
 
-#### Quering by pk
-
-```python
-cursor = forum_table.query(Forum.name == "Amano Forum")
-
-for item in cursor:
-    assert isinstance(item, Forum)
-```
 
 
 `consistent` parameter can be used to request a consistent read from a dynamodb

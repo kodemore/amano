@@ -45,10 +45,15 @@ class Attribute(AbstractAttribute, Generic[_T]):
         )
         self.default_value = default_value
 
-    def extract(self, value: Any) -> Any:
+    def extract(self, value: Any, simple: bool = False) -> Any:
+        if simple:
+            return self._strategy.extract(value)
         return serialize_value(self._strategy.extract(value))
 
-    def hydrate(self, value: Any) -> Any:
+    def hydrate(self, value: Any, simple: bool = False) -> Any:
+        if simple:
+            return self._strategy.hydrate(value)
+
         return self._strategy.hydrate(deserialize_value(value))
 
     def __str__(self) -> str:
