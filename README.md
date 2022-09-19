@@ -31,7 +31,7 @@ record in a dynamodb's table. This class is required to instantiate parametrized
 > Please note: property names in the following example are not following 
 > the PEP standards. The reason for that is the fact that those names are
 > corresponding to field names present in dynamodb's item. You can have a look
-> into a [mapping section](#mapping-items-fields) to fix this problem.
+> into a [mapping section](#mapping-items-fields) to fix this issue.
 
 ```python
 import boto3
