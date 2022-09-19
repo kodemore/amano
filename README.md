@@ -50,7 +50,9 @@ forum_table = Table[Forum](client, table_name="Forum")
 ```
 
 > Please note: `Forum` class extends `amano.Item` class. This is required 
-> by `amano.Table` to properly work. 
+> by `amano.Table` to properly work. All the table's information including; 
+> indexes, fields, projections, etc. are handled automatically and do not
+> require any work on developer's side.
 
 
 ### Storing item in a table
