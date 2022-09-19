@@ -13,6 +13,7 @@ from typing import (
     Union,
     Iterator,
     Callable,
+    Optional,
 )
 
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
@@ -62,7 +63,7 @@ class Cursor(Generic[I]):
         self, item_class: Type[I], query: Dict[str, Any], executor: Callable
     ):
         self._executor = executor
-        self.query = query  # @todo: this should be readonly
+        self._query = query
         self.hydrate = True
         self._item_class = item_class
         self._fetched_records: List[Dict[str, AttributeValue]] = []
@@ -100,17 +101,17 @@ class Cursor(Generic[I]):
 
     def _fetch(self) -> None:
         try:
-            result = self._executor(**self.query)
+            result = self._executor(**self._query)
         except Exception as e:
             self._fetched_records = []
             self._exhausted = True
             raise QueryError(
                 f"Could not execute query "
-                f"`{self.query['KeyConditionExpression']}`, reason: {e}"
+                f"`{self._query['KeyConditionExpression']}`, reason: {e}"
             )
         if "LastEvaluatedKey" in result:
             self._last_evaluated_key = result["LastEvaluatedKey"]
-            self.query["ExclusiveStartKey"] = result["LastEvaluatedKey"]
+            self._query["ExclusiveStartKey"] = result["LastEvaluatedKey"]
         else:
             self._exhausted = True
 
@@ -516,10 +517,11 @@ class Table(Generic[I]):
         return self.primary_key.sort_key
 
     @cached_property
-    def _item_class(self) -> Type[Item]:
+    def _item_class(self) -> Optional[Type[Item]]:
         if hasattr(self, "__item_class__"):
             return getattr(self, "__item_class__")
-        raise RuntimeError
+
+        return None
 
     @cached_property
     def attributes(self) -> List[str]:

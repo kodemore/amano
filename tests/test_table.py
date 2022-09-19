@@ -26,7 +26,7 @@ def test_fail_instantiation_on_non_parametrized_table(
     bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str
 ) -> None:
     # when
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=".* must be parametrized with a subtype of .*"):
         Table(bootstrapped_dynamodb_client, table_name=dynamodb_test_table_name)
 
 
