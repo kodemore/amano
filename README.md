@@ -9,7 +9,7 @@ AWS DynamoDB Abstraction Layer build on Table Data Gateway Pattern.
     - Interface for easy storing and retriving data
     - Intelligent algorithms that saves your DynamoDB quota and your money
 
-## What Amano is
+## What is Amano?
 
 As mentioned above amano is a Table Data Gateway Patter implementation, which
 means it relies on already existing schema of your table. It can understand
@@ -268,12 +268,32 @@ This operation is __case-sensitive__.
 
 ### Working with `amano.Cursor`
 
-The result of a query is always an instance of `amano.Cursor`.
+The result of a query is always an instance of `amano.Cursor`. Cursor can be
+used to fetch all the records simply by iterating through it or by calling 
+the `fetch` method.
+
+```python
+
+```
 
 
 ### Improved typehints
 
+In order to get better type support in mypy and your IDE it is recommended 
+to use `amano.Attribute` class when defining item's attributes. 
+Consider the following example which is redefining the `Thread` class:
 
+```python
+from amano import Item, Attribute
+
+class Thread(Item):
+    ForumName: Attribute[str]
+    Subject: Attribute[str]
+    Message: Attribute[str]
+    LastPostedBy: Attribute[str]
+    Replies: Attribute[int] = 0
+    Views: Attribute[int] = 0
+```
 
 ### Mapping item's fields
 
