@@ -4,8 +4,7 @@ from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from enum import Enum
 from functools import reduce
-from typing import Any, Dict, List, Type, Union, Protocol, runtime_checkable
-import re
+from typing import Any, Dict, List, Type, Union
 
 from .attribute import Attribute
 from .base_attribute import AttributeValue

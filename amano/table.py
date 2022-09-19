@@ -62,7 +62,7 @@ class Cursor(Generic[I]):
         self, item_class: Type[I], query: Dict[str, Any], executor: Callable
     ):
         self._executor = executor
-        self.query = query
+        self.query = query  # @todo: this should be readonly
         self.hydrate = True
         self._item_class = item_class
         self._fetched_records: List[Dict[str, AttributeValue]] = []
@@ -115,6 +115,10 @@ class Cursor(Generic[I]):
             self._exhausted = True
 
         self._fetched_records = self._fetched_records + result["Items"]
+
+    # @todo: missing count method
+
+    # @todo: missing information about used capacity
 
 
 class Index:
@@ -283,9 +287,13 @@ class Table(Generic[I]):
 
         return f"attribute_not_exists({self.partition_key})"
 
+    def scan(self, condition: Condition) -> Cursor:
+        # @todo: implement this
+        raise NotImplemented
+
     def save(self, item: I) -> None:
         # @todo: save or update item depending on its state
-        ...
+        raise NotImplemented
 
     def put(self, item: I, condition: Condition = None) -> bool:
         if not isinstance(item, self._item_class):
@@ -490,7 +498,7 @@ class Table(Generic[I]):
         if not issubclass(item, Item):
             raise TypeError(f"Expected subclass of {Item}, got {item} instead.")
         return type(  # type: ignore
-            f"Table[{item.__module__}.{item.__qualname__}]",
+            f"{Table.__qualname__}[{item.__module__}.{item.__qualname__}]",
             tuple([Table]),
             {"__item_class__": item}
         )

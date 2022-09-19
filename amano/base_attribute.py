@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from abc import abstractmethod, ABC
+from abc import abstractmethod
 from datetime import date, datetime, time
 from decimal import Decimal
-from typing import Any, Union, Type, TypeVar, runtime_checkable, Protocol
+from typing import Any, Union, Type, runtime_checkable, Protocol
 from typing import (
     AnyStr,
     Dict,
