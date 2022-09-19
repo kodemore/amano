@@ -224,26 +224,47 @@ abstraction which simplifies querying and filtering your dynamodb tables.
 
 #### `Item.field_any == {value}`
 
-true if the corresponding field's value is equal to `{value}`.
+Matches all items in a table where `field_any` field's value is equal to a `{value}`.
 
 > `{value}` can be of any supported types.
 
 #### `Item.field_numeric < {value}`
 
-true if the corresponding field's value is less than `{value}`.
+Matches all items in a table where `field_numeric` field's value is lower than `{value}`.
 
-> `{value}` should be a numeric type
+> `{value}` should be a numeric or a string.
 
 #### `Item.field_numeric <= {value}`
 
+Matches all items in a table where `field_numeric` field's value is lower or equal to `{value}`.
+
+> `{value}` should be a numeric or a string.
+
 #### `Item.field_numeric > {value}`
+
+Matches all items in a table where `field_numeric` field's value is greater than `{value}`.
+
+> `{value}` should be a numeric or a string.
 
 #### `Item.field_numeric >= {value}`
 
-#### `Item.field_numeric.between({value}, {value})`
+Matches all items in a table where `field_numeric` field's value is lower or equal to `{value}`.
+
+> `{value}` should be a numeric or a string.
+
+#### `Item.field_numeric.between({value_a}, {value_b})`
+
+Matches all items in a table where `field_numeric` field's value is greater than or equals `{value_a}` and
+lower than or equals to `{value_b}`.
+
+> `{value}` should be a numeric or a string.
 
 #### `Item.field_str.begins_with({value})`
 
+Matches all items in a table where `field_str` field's value starts with a `{value}`.
+This operation is __case-sensitive__.
+
+> `{value}` should be a string.
 
 ### Working with `amano.Cursor`
 
