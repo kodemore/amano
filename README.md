@@ -4,10 +4,10 @@ AWS DynamoDB Abstraction Layer build on Table Data Gateway Pattern.
 
 ## Features
 
-    - Hydration and extraction of table items
-    - Simple query mechanism with elegant abstraction
-    - Interface for easy storing and retriving data
-    - Intelligent algorithms that saves your DynamoDB quota and your money
+ - Hydration and extraction of table items
+ - Simple query mechanism with elegant abstraction
+ - Interface for easy storing and retriving data
+ - Intelligent algorithms that saves your DynamoDB quota and your money
 
 ## What is Amano?
 
