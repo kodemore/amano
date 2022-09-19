@@ -13,6 +13,7 @@ from typing import (
     Union,
     Iterator,
     Callable,
+    Optional,
 )
 
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
@@ -516,10 +517,11 @@ class Table(Generic[I]):
         return self.primary_key.sort_key
 
     @cached_property
-    def _item_class(self) -> Type[Item]:
+    def _item_class(self) -> Optional[Type[Item]]:
         if hasattr(self, "__item_class__"):
             return getattr(self, "__item_class__")
-        raise RuntimeError
+
+        return None
 
     @cached_property
     def attributes(self) -> List[str]:
