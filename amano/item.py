@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from functools import reduce
@@ -39,7 +39,7 @@ class PascalCaseMapping(MappingStrategy):
                 return val[0].upper() + val[1:]
             return val.upper()
 
-        camel_case = reduce(lambda x, y:  x + upper_first(y), item.split("_"))
+        camel_case = reduce(lambda x, y: x + upper_first(y), item.split("_"))
         if len(camel_case) > 1:
             return camel_case[0].upper() + camel_case[1:]
         return camel_case.upper()
@@ -47,7 +47,7 @@ class PascalCaseMapping(MappingStrategy):
 
 class CamelCaseMapping(MappingStrategy):
     def __getitem__(self, item: str) -> str:
-        return reduce(lambda x, y:  x + y.capitalize(), item.split("_"))
+        return reduce(lambda x, y: x + y.capitalize(), item.split("_"))
 
 
 class Mapping(Enum):
@@ -111,7 +111,7 @@ class ItemMeta(type):
         if body["__module__"] == __name__ and what == "Item":
             return type.__new__(cls, what, bases, body)
 
-        class_instance = type.__new__(
+        new_class = type.__new__(
             cls,
             what,
             bases,
@@ -134,7 +134,7 @@ class ItemMeta(type):
             for attribute_name, attribute_type in body[
                 "__annotations__"
             ].items():
-                class_instance.__meta__[attribute_name] = Attribute(
+                new_class.__meta__[attribute_name] = Attribute(  # type: ignore[abstract]
                     attribute_name
                     if attribute_name not in mapping
                     else mapping[attribute_name],
@@ -145,12 +145,12 @@ class ItemMeta(type):
                 )
 
                 setattr(
-                    class_instance,
+                    new_class,
                     attribute_name,
-                    class_instance.__meta__[attribute_name],
+                    new_class.__meta__[attribute_name],
                 )
 
-        return class_instance
+        return new_class
 
     @staticmethod
     def _get_table_attribute(

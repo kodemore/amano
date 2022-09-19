@@ -1,19 +1,20 @@
 from __future__ import annotations
 
+import typing
 from enum import Enum
 from functools import cached_property
 from typing import (
     Any,
+    Callable,
     Dict,
     Generic,
+    Iterator,
     List,
+    Optional,
     Tuple,
     Type,
     TypeVar,
     Union,
-    Iterator,
-    Callable,
-    Optional,
 )
 
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
@@ -24,11 +25,11 @@ from mypy_boto3_dynamodb.type_defs import AttributeValueTypeDef
 from .base_attribute import AttributeValue
 from .condition import Condition
 from .constants import (
+    CONDITION_FUNCTION_CONTAINS,
+    CONDITION_LOGICAL_OR,
     KEY_TYPE_HASH,
     KEY_TYPE_RANGE,
-    CONDITION_LOGICAL_OR,
     SELECT_SPECIFIC_ATTRIBUTES,
-    CONDITION_FUNCTION_CONTAINS,
 )
 from .errors import ItemNotFoundError, QueryError
 from .item import Item, _ChangeType
@@ -175,7 +176,7 @@ def extract_indexes(
 
 class Table(Generic[I]):
     _PRIMARY_KEY_NAME = "#"
-    __item_class__: Type[Item]
+    __item_class__: Type[I]
 
     def __init__(self, db_client: DynamoDBClient, table_name: str):
         if not self._item_class:
@@ -268,13 +269,13 @@ class Table(Generic[I]):
         return available_indexes
 
     def _validate_table_primary_key(self) -> None:
-        if self.partition_key not in self._item_class:
+        if self.partition_key not in self._item_class:  # type: ignore[operator]
             raise AttributeError(
                 f"Table `{self.table_name}` defines partition key "
                 f"{self.partition_key}, which was not found in the item class "
                 f"`{self._item_class}`"
             )
-        if self.sort_key and self.sort_key not in self._item_class:
+        if self.sort_key and self.sort_key not in self._item_class:  # type: ignore[operator]
             raise AttributeError(
                 f"Table `{self.table_name}` defines sort key {self.sort_key}, "
                 f"which was not found in the item class `{self._item_class}`"
@@ -283,8 +284,10 @@ class Table(Generic[I]):
     @cached_property
     def _prevent_override_condition(self) -> str:
         if self.sort_key:
-            return f"attribute_not_exists({self.partition_key}) AND " \
-                   f"attribute_not_exists({self.sort_key})"
+            return (
+                f"attribute_not_exists({self.partition_key}) AND "
+                f"attribute_not_exists({self.sort_key})"
+            )
 
         return f"attribute_not_exists({self.partition_key})"
 
@@ -324,6 +327,7 @@ class Table(Generic[I]):
 
         return result["ResponseMetadata"]["HTTPStatusCode"] == 200
 
+    @typing.no_type_check
     def update(self, item: I) -> None:
         (
             update_expression,
@@ -336,6 +340,9 @@ class Table(Generic[I]):
             UpdateExpression=...,
             ExpressionAttributeValues=...,
         )
+        raise NotImplemented
+
+        # @todo: implement this
         # @todo: there should be session information and each table operation
         # should put into the session the dynamodb information about
         # read and write capacity utilisation
@@ -431,8 +438,8 @@ class Table(Generic[I]):
         if filter_condition:
             query["FilterExpression"] = str(filter_condition)
             query["ExpressionAttributeValues"] = {
-                **query["ExpressionAttributeValues"],
-                **filter_condition.values,
+                **query["ExpressionAttributeValues"],  # type: ignore
+                **filter_condition.values,  # type: ignore
             }
 
         if limit:
@@ -468,7 +475,7 @@ class Table(Generic[I]):
                 key_query,
             )
 
-        return self._item_class.hydrate(result["Item"])
+        return self._item_class.hydrate(result["Item"])  # type: ignore
 
     def _get_key_expression(self, item: I) -> KeyExpression:
         key_expression = {
@@ -501,7 +508,7 @@ class Table(Generic[I]):
         return type(  # type: ignore
             f"{Table.__qualname__}[{item.__module__}.{item.__qualname__}]",
             tuple([Table]),
-            {"__item_class__": item}
+            {"__item_class__": item},
         )
 
     @cached_property
@@ -517,16 +524,16 @@ class Table(Generic[I]):
         return self.primary_key.sort_key
 
     @cached_property
-    def _item_class(self) -> Optional[Type[Item]]:
+    def _item_class(self) -> Type[I]:
         if hasattr(self, "__item_class__"):
             return getattr(self, "__item_class__")
 
-        return None
+        raise AttributeError()
 
     @cached_property
     def attributes(self) -> List[str]:
         return [
-            attribute.name for attribute in self._item_class.attributes.values()
+            attribute.name for attribute in self._item_class.attributes.values()  # type: ignore
         ]
 
     def _hint_index_for_attributes(self, attributes: List[str]) -> Index:

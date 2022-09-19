@@ -3,18 +3,22 @@ from __future__ import annotations
 from abc import abstractmethod
 from datetime import date, datetime, time
 from decimal import Decimal
-from typing import Any, Union, Type, runtime_checkable, Protocol
 from typing import (
+    Any,
     AnyStr,
     Dict,
     FrozenSet,
     List,
+    Mapping,
+    Protocol,
+    Sequence,
     Set,
     Tuple,
+    Type,
     TypedDict,
+    Union,
     overload,
-    Sequence,
-    Mapping,
+    runtime_checkable,
 )
 
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
@@ -23,15 +27,15 @@ from chili.hydration import StrategyRegistry
 from chili.typing import get_origin_type, get_type_args
 
 from .constants import (
-    TYPE_MAP,
-    TYPE_STRING,
-    TYPE_LIST,
-    TYPE_NULL,
     TYPE_BINARY,
     TYPE_BINARY_SET,
-    TYPE_NUMBER_SET,
     TYPE_BOOLEAN,
+    TYPE_LIST,
+    TYPE_MAP,
+    TYPE_NULL,
     TYPE_NUMBER,
+    TYPE_NUMBER_SET,
+    TYPE_STRING,
     TYPE_STRING_SET,
 )
 from .utils import StringEnum
@@ -168,7 +172,7 @@ class AttributeType(StringEnum):
 
         return AttributeType(_SUPPORTED_GENERIC_TYPES[origin_type])
 
-    @overload   # type: ignore
+    @overload  # type: ignore
     def __eq__(self, other: str) -> bool:
         ...
 

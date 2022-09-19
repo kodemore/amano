@@ -17,7 +17,7 @@ pylint:
 	poetry run pylint amano
 
 mypy:
-	poetry run mypy --install-types --non-interactive .
+	poetry run mypy --install-types --show-error-codes --non-interactive .
 
 audit_dependencies:
 	poetry export --without-hashes -f requirements.txt | poetry run safety check --full-report --stdin

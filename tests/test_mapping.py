@@ -1,13 +1,17 @@
-from amano import Mapping, Item
 import pytest
 
+from amano import Item, Mapping
 
-@pytest.mark.parametrize("given, expected", [
-    ["a", "a"],
-    ["a_b_c", "a_b_c"],
-    ["a_BC", "a_BC"],
-    ["", ""],
-])
+
+@pytest.mark.parametrize(
+    "given, expected",
+    [
+        ["a", "a"],
+        ["a_b_c", "a_b_c"],
+        ["a_BC", "a_BC"],
+        ["", ""],
+    ],
+)
 def test_pass_through_mapping(given, expected) -> None:
     mapping = Mapping.PASS_THROUGH
     assert mapping[given] == expected
@@ -31,12 +35,15 @@ def test_pass_through_mapping_integration() -> None:
     assert instance.a_BC == "c"
 
 
-@pytest.mark.parametrize("given, expected", [
-    ["a", "A"],
-    ["a_b_c", "ABC"],
-    ["a_BC", "ABC"],
-    ["", ""],
-])
+@pytest.mark.parametrize(
+    "given, expected",
+    [
+        ["a", "A"],
+        ["a_b_c", "ABC"],
+        ["a_BC", "ABC"],
+        ["", ""],
+    ],
+)
 def test_pascal_case_mapping(given, expected) -> None:
     mapping = Mapping.PASCAL_CASE
     assert mapping[given] == expected, f"Failed for {given}"
@@ -66,12 +73,15 @@ def test_pascal_case_mapping_integration() -> None:
     assert data == {"A": {"S": "a"}, "ABC": {"S": "b"}, "ABcd": {"S": "c"}}
 
 
-@pytest.mark.parametrize("given, expected", [
-    ["a", "a"],
-    ["a_b_c", "aBC"],
-    ["a_BC", "aBc"],
-    ["", ""],
-])
+@pytest.mark.parametrize(
+    "given, expected",
+    [
+        ["a", "a"],
+        ["a_b_c", "aBC"],
+        ["a_BC", "aBc"],
+        ["", ""],
+    ],
+)
 def test_camel_case_mapping(given, expected) -> None:
     mapping = Mapping.CAMEL_CASE
     assert mapping[given] == expected, f"Failed for {given}"

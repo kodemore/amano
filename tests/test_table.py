@@ -4,18 +4,22 @@ from typing import Iterable
 import pytest
 from mypy_boto3_dynamodb import DynamoDBClient
 
-from amano import Index, Item, Table, Attribute
+from amano import Attribute, Index, Item, Table
 from amano.errors import AmanoDBError, ItemNotFoundError, QueryError
 
 
-def test_can_instantiate(bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str) -> None:
+def test_can_instantiate(
+    bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str
+) -> None:
     # given
     class Track(Item):
         artist_name: str
         track_name: str
 
     # when
-    my_table = Table[Track](bootstrapped_dynamodb_client, table_name=dynamodb_test_table_name)
+    my_table = Table[Track](
+        bootstrapped_dynamodb_client, table_name=dynamodb_test_table_name
+    )
 
     # then
     assert isinstance(my_table, Table)
@@ -26,11 +30,15 @@ def test_fail_instantiation_on_non_parametrized_table(
     bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str
 ) -> None:
     # when
-    with pytest.raises(TypeError, match=".* must be parametrized with a subtype of .*"):
+    with pytest.raises(
+        TypeError, match=".* must be parametrized with a subtype of .*"
+    ):
         Table(bootstrapped_dynamodb_client, table_name=dynamodb_test_table_name)
 
 
-def test_fail_instantiation_on_unknown_table(bootstrapped_dynamodb_client: DynamoDBClient) -> None:
+def test_fail_instantiation_on_unknown_table(
+    bootstrapped_dynamodb_client: DynamoDBClient,
+) -> None:
     # given
     class TestItem(Item):
         pk: str
@@ -50,20 +58,26 @@ def test_can_retrieve_partition_key(
         track_name: str
 
     # when
-    my_table = Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
+    my_table = Table[Track](
+        bootstrapped_dynamodb_client, dynamodb_test_table_name
+    )
 
     # then
     assert my_table.partition_key == "artist_name"
 
 
-def test_can_retrieve_sort_key(bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str) -> None:
+def test_can_retrieve_sort_key(
+    bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str
+) -> None:
     # given
     class Track(Item):
         artist_name: str
         track_name: str
 
     # when
-    my_table = Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
+    my_table = Table[Track](
+        bootstrapped_dynamodb_client, dynamodb_test_table_name
+    )
 
     # then
     assert my_table.sort_key == "track_name"
@@ -82,7 +96,9 @@ def test_fails_when_item_has_no_pk_defined(
         Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
 
 
-def test_fails_when_item_has_no_sk_defined(bootstrapped_dynamodb_client, dynamodb_test_table_name) -> None:
+def test_fails_when_item_has_no_sk_defined(
+    bootstrapped_dynamodb_client, dynamodb_test_table_name
+) -> None:
     # given
     class Track(Item):
         artist_name: str
@@ -93,7 +109,9 @@ def test_fails_when_item_has_no_sk_defined(bootstrapped_dynamodb_client, dynamod
         Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
 
 
-def test_can_retrieve_indexes(bootstrapped_dynamodb_client, dynamodb_test_table_name) -> None:
+def test_can_retrieve_indexes(
+    bootstrapped_dynamodb_client, dynamodb_test_table_name
+) -> None:
     # given
     class Track(Item):
         artist_name: str
@@ -143,7 +161,9 @@ def test_can_query_item_by_pk_and_sk(
         track_name: str
         album_name: str
 
-    my_table = Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
+    my_table = Table[Track](
+        bootstrapped_dynamodb_client, dynamodb_test_table_name
+    )
 
     # when
     item = my_table.get("AC/DC", "Let There Be Rock")
@@ -164,7 +184,9 @@ def test_fail_query_item_by_pk_only(
         track_name: str
         album_name: str
 
-    my_table = Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
+    my_table = Table[Track](
+        bootstrapped_dynamodb_client, dynamodb_test_table_name
+    )
 
     # when
     with pytest.raises(AmanoDBError) as e:
@@ -174,7 +196,9 @@ def test_fail_query_item_by_pk_only(
     assert isinstance(e.value, QueryError)
 
 
-def test_fail_get_unexisting_item(bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str) -> None:
+def test_fail_get_unexisting_item(
+    bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str
+) -> None:
 
     # given
     class Track(Item):
@@ -182,7 +206,9 @@ def test_fail_get_unexisting_item(bootstrapped_dynamodb_client: DynamoDBClient, 
         track_name: str
         album_name: str
 
-    my_table = Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
+    my_table = Table[Track](
+        bootstrapped_dynamodb_client, dynamodb_test_table_name
+    )
 
     # when
     with pytest.raises(AmanoDBError) as e:
@@ -190,10 +216,15 @@ def test_fail_get_unexisting_item(bootstrapped_dynamodb_client: DynamoDBClient, 
 
     # then
     assert isinstance(e.value, ItemNotFoundError)
-    assert e.value.query == {"artist_name": "AC/DC", "track_name": "Let There Be No Rock"}
+    assert e.value.query == {
+        "artist_name": "AC/DC",
+        "track_name": "Let There Be No Rock",
+    }
 
 
-def test_can_put_item(bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str) -> None:
+def test_can_put_item(
+    bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str
+) -> None:
     # given
     @dataclass
     class Track(Item):
@@ -201,7 +232,9 @@ def test_can_put_item(bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_tes
         track_name: str
         album_name: str
 
-    my_table = Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
+    my_table = Table[Track](
+        bootstrapped_dynamodb_client, dynamodb_test_table_name
+    )
 
     # when
     item = Track("Tool", "Reflection", "Lateralus")
@@ -212,8 +245,7 @@ def test_can_put_item(bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_tes
 
 
 def test_can_put_item_with_condition(
-    bootstrapped_dynamodb_client: DynamoDBClient,
-    dynamodb_test_table_name: str
+    bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str
 ) -> None:
 
     # given
@@ -224,8 +256,7 @@ def test_can_put_item_with_condition(
         album_name: str
 
     my_table = Table[Track](
-        bootstrapped_dynamodb_client,
-        dynamodb_test_table_name
+        bootstrapped_dynamodb_client, dynamodb_test_table_name
     )
 
     # when
@@ -237,8 +268,7 @@ def test_can_put_item_with_condition(
 
 
 def test_query_table_with_pk_only(
-    bootstrapped_dynamodb_client: DynamoDBClient,
-    dynamodb_test_table_name: str
+    bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str
 ) -> None:
     # given
     @dataclass
@@ -248,12 +278,12 @@ def test_query_table_with_pk_only(
         album_name: str
         genre_name: str
 
-    my_table = Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
+    my_table = Table[Track](
+        bootstrapped_dynamodb_client, dynamodb_test_table_name
+    )
 
     # when
-    result = my_table.query(
-        Track.album_name == "Let There Be Rock"
-    )
+    result = my_table.query(Track.album_name == "Let There Be Rock")
 
     # then
     assert isinstance(result, Iterable)
@@ -267,8 +297,7 @@ def test_query_table_with_pk_only(
 
 
 def test_query_table_with_pk_and_sk(
-    bootstrapped_dynamodb_client: DynamoDBClient,
-    dynamodb_test_table_name: str
+    bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str
 ) -> None:
     # given
     @dataclass
@@ -278,12 +307,13 @@ def test_query_table_with_pk_and_sk(
         album_name: str
         genre_name: str
 
-    my_table = Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
+    my_table = Table[Track](
+        bootstrapped_dynamodb_client, dynamodb_test_table_name
+    )
 
     # when
     result = my_table.query(
-        (Track.artist_name == "AC/DC") &
-        Track.track_name.startswith("S")
+        (Track.artist_name == "AC/DC") & Track.track_name.startswith("S")
     )
 
     # then
@@ -298,8 +328,7 @@ def test_query_table_with_pk_and_sk(
 
 
 def test_query_table_with_pk_and_filter(
-    bootstrapped_dynamodb_client: DynamoDBClient,
-    dynamodb_test_table_name: str
+    bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str
 ) -> None:
     # given
     @dataclass
@@ -309,7 +338,9 @@ def test_query_table_with_pk_and_filter(
         album_name: Attribute[str]
         genre_name: Attribute[str]
 
-    my_table = Table[Track](bootstrapped_dynamodb_client, dynamodb_test_table_name)
+    my_table = Table[Track](
+        bootstrapped_dynamodb_client, dynamodb_test_table_name
+    )
 
     # when
     result = my_table.query(

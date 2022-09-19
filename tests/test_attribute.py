@@ -2,7 +2,18 @@ from dataclasses import dataclass
 from datetime import date, datetime, time
 from decimal import Decimal
 from numbers import Integral
-from typing import AnyStr, Callable, Dict, FrozenSet, Generic, List, Set, TextIO, Tuple, TypedDict
+from typing import (
+    AnyStr,
+    Callable,
+    Dict,
+    FrozenSet,
+    Generic,
+    List,
+    Set,
+    TextIO,
+    Tuple,
+    TypedDict,
+)
 
 import pytest
 
@@ -78,7 +89,9 @@ def test_unsupported_from_python_type(given_type: type) -> None:
         [Set[bytearray], AttributeType.BINARY_SET],
     ],
 )
-def test_supported_from_python_type(given_type: type, expected_type: AttributeType) -> None:
+def test_supported_from_python_type(
+    given_type: type, expected_type: AttributeType
+) -> None:
     # given
     resolved_attribute = AttributeType.from_python_type(given_type)
 

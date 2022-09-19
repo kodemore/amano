@@ -73,7 +73,10 @@ def test_comparison_with_complex_expression() -> None:
     condition = ((field > 12) & (field < 20)) | ((field == 12) | (field == 13))
 
     # then
-    assert str(condition) == "((field > :field AND field < :field) OR (field = :field OR field = :field))"
+    assert (
+        str(condition)
+        == "((field > :field AND field < :field) OR (field = :field OR field = :field))"
+    )
 
 
 def test_attribute_exists_function() -> None:
@@ -108,9 +111,7 @@ def test_attribute_type_function() -> None:
 
     # then
     assert str(condition) == "attribute_type(field, :field)"
-    assert condition.values[":field"] == {
-        "S": "S"
-    }
+    assert condition.values[":field"] == {"S": "S"}
 
 
 @pytest.mark.usefixtures("generic_field_identifier")
@@ -123,9 +124,7 @@ def test_begins_with_function() -> None:
 
     # then
     assert str(condition) == "begins_with(field, :field)"
-    assert condition.values[":field"] == {
-        "S": "test"
-    }
+    assert condition.values[":field"] == {"S": "test"}
 
 
 @pytest.mark.usefixtures("generic_field_identifier")
@@ -138,9 +137,7 @@ def test_contains_function() -> None:
 
     # then
     assert str(condition) == "contains(field, :field)"
-    assert condition.values[":field"] == {
-        "N": "12"
-    }
+    assert condition.values[":field"] == {"N": "12"}
 
 
 @pytest.mark.usefixtures("generic_field_identifier")
@@ -153,9 +150,7 @@ def test_size_function_with_comparison() -> None:
 
     # then
     assert str(condition) == "size(field) > :field_size"
-    assert condition.values[":field_size"] == {
-        "N": "11"
-    }
+    assert condition.values[":field_size"] == {"N": "11"}
 
 
 def test_size_function() -> None:
@@ -179,9 +174,5 @@ def test_between_function() -> None:
 
     # then
     assert str(condition) == "field BETWEEN :field_a AND :field_b"
-    assert condition.values[":field_a"] == {
-        "S": "a"
-    }
-    assert condition.values[":field_b"] == {
-        "S": "z"
-    }
+    assert condition.values[":field_a"] == {"S": "a"}
+    assert condition.values[":field_b"] == {"S": "z"}

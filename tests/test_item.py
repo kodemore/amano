@@ -1,8 +1,7 @@
 from dataclasses import dataclass, field
 
-from amano.item import Item
-from amano.attribute import AttributeType, Attribute
-from amano.item import _AttributeChange, _ItemState, _ChangeType
+from amano.attribute import Attribute, AttributeType
+from amano.item import Item, _AttributeChange, _ChangeType, _ItemState
 
 
 def test_can_instantiate() -> None:
@@ -61,7 +60,10 @@ def test_can_get_attributes() -> None:
         name: str
         age: int
 
-    assert [attribute.name for attribute in MyItem.attributes.values()] == ["name", "age"]
+    assert [attribute.name for attribute in MyItem.attributes.values()] == [
+        "name",
+        "age",
+    ]
 
 
 def test_can_hydrate_item() -> None:
@@ -91,7 +93,9 @@ def test_can_hydrate_item_with_mapping() -> None:
         age: int
 
     # when
-    item = MyItem.hydrate({"mapped_name": {"S": "Bobik"}, "mapped_age": {"N": "10"}})
+    item = MyItem.hydrate(
+        {"mapped_name": {"S": "Bobik"}, "mapped_age": {"N": "10"}}
+    )
 
     # then
     assert item.name == "Bobik"

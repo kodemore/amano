@@ -1,26 +1,26 @@
 from __future__ import annotations
-import inspect
 
-from typing import Any, Generic, TypeVar, Type
+import inspect
+from typing import Any, Generic, Type, TypeVar
 
 from .base_attribute import (
-    AttributeType,
+    _SUPPORTED_BASE_TYPES,
     AbstractAttribute,
-    serializer_registry,
-    serialize_value,
+    AttributeType,
     deserialize_value,
-    _SUPPORTED_BASE_TYPES
+    serialize_value,
+    serializer_registry,
 )
 from .condition import (
-    ComparisonCondition,
     AttributeExists,
-    AttributeNotExists,
     AttributeIsType,
+    AttributeNotExists,
     BeginsWithCondition,
+    BetweenCondition,
+    ComparisonCondition,
     ContainsCondition,
-    SizeCondition, BetweenCondition,
+    SizeCondition,
 )
-
 
 _T = TypeVar('_T')
 
@@ -30,8 +30,9 @@ class Attribute(AbstractAttribute, Generic[_T]):
         self, name: str, attribute_type: type, default_value: Any = None
     ):
         self.name = name
-        if inspect.isclass(attribute_type) and\
-                issubclass(attribute_type, Attribute):
+        if inspect.isclass(attribute_type) and issubclass(
+            attribute_type, Attribute
+        ):
             if not attribute_type.__attribute_type__:
                 raise TypeError(
                     f"Cannot use non parametrized Attribute `{name}` as a value"
@@ -40,8 +41,7 @@ class Attribute(AbstractAttribute, Generic[_T]):
 
         self.type = AttributeType.from_python_type(attribute_type)
         self._strategy = serializer_registry.get_for(
-            attribute_type,
-            strict=True
+            attribute_type, strict=True
         )
         self.default_value = default_value
 
@@ -119,5 +119,5 @@ class Attribute(AbstractAttribute, Generic[_T]):
         return type(  # type: ignore
             f"Attribute[{item}]",
             tuple([Attribute]),
-            {"__attribute_type__": item}
+            {"__attribute_type__": item},
         )

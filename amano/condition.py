@@ -3,25 +3,25 @@ from __future__ import annotations
 import random
 import string
 from abc import ABC, abstractmethod
-from typing import Dict, Union, Any, Set
+from typing import Any, Dict, Set, Union
 
 from astroid.decorators import cachedproperty
 
 from .base_attribute import (
+    VALID_TYPE_VALUES,
     AbstractAttribute,
     AttributeType,
     AttributeValue,
-    VALID_TYPE_VALUES,
-    serializer_registry,
     serialize_value,
+    serializer_registry,
 )
 from .constants import (
     CONDITION_COMPARATOR_EQ,
-    CONDITION_COMPARATOR_NEQ,
-    CONDITION_COMPARATOR_LT,
-    CONDITION_COMPARATOR_LTE,
     CONDITION_COMPARATOR_GT,
     CONDITION_COMPARATOR_GTE,
+    CONDITION_COMPARATOR_LT,
+    CONDITION_COMPARATOR_LTE,
+    CONDITION_COMPARATOR_NEQ,
 )
 from .utils import StringEnum
 
@@ -284,7 +284,7 @@ class BetweenCondition(Condition):
         self,
         attribute: AbstractAttribute,
         a: Union[AbstractAttribute, str],
-        b: Union[AbstractAttribute, str]
+        b: Union[AbstractAttribute, str],
     ):
         params: Dict[str, str] = {}
         values: Dict[str, AttributeValue] = {}
