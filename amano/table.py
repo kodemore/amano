@@ -10,7 +10,6 @@ from typing import (
     Generic,
     Iterator,
     List,
-    Optional,
     Tuple,
     Type,
     TypeVar,
@@ -179,7 +178,7 @@ class Table(Generic[I]):
     __item_class__: Type[I]
 
     def __init__(self, db_client: DynamoDBClient, table_name: str):
-        if not self._item_class:
+        if not hasattr(self, "__item_class__"):
             raise TypeError(
                 f"{self.__class__} must be parametrized with a "
                 f"subtype of {Item.__module__}.{Item.__qualname__}"
