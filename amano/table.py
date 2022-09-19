@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from abc import ABC
 from enum import Enum
 from functools import cached_property
 from typing import (
@@ -12,19 +11,15 @@ from typing import (
     Type,
     TypeVar,
     Union,
-    Set,
     Iterator,
-    Generator,
-    Iterable, Callable,
+    Callable,
 )
 
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from botocore.exceptions import ClientError, ParamValidationError
 from mypy_boto3_dynamodb.client import DynamoDBClient
-from mypy_boto3_dynamodb.service_resource import Table as DynamoDBTable
 from mypy_boto3_dynamodb.type_defs import AttributeValueTypeDef
 
-from .attribute import Attribute
 from .base_attribute import AttributeValue
 from .condition import Condition
 from .constants import (
@@ -35,7 +30,7 @@ from .constants import (
     CONDITION_FUNCTION_CONTAINS,
 )
 from .errors import ItemNotFoundError, QueryError
-from .item import Item, _AttributeChange, _ChangeType
+from .item import Item, _ChangeType
 
 I = TypeVar("I", bound=Item)
 

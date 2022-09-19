@@ -170,42 +170,81 @@ behind the scenes to save you from using your dynamodb's quota.
 
 ```python
 import boto3
-from amano import Table, Item, Attribute
+from amano import Table, Item
 
 client = boto3.client("dynamodb")
 
 class Thread(Item):
-    ForumName: Attribute[str]
-    Subject: Attribute[str]
-    Message: Attribute[str]
-    LastPostedBy: Attribute[str]
-    Replies: Attribute[int] = 0
-    Views: Attribute[int] = 0
-    
-# It is not required but consider wrapping class properties' 
-# types with an Attribute generic
+    ForumName: str
+    Subject: str
+    Message: str
+    LastPostedBy: str
+    Replies: int = 0
+    Views: int = 0
 
 forum_table = Table[Thread](client, table_name="Thread")
 
-cursor = forum_table.query(
+result = forum_table.query(
     key_condition=(Thread.ForumName == "Amazon DynamoDB")
 )
-
-for item in cursor:
-    assert isinstance(item, Thread)  # item is an instance of a `Thread` class
 ```
 
 The above query will look for all items in the `Thread` table, where `ForumName`
 equals `Amazon DynamoDB`. Because `Thread` table specifies sort key (`Subject`), 
-you can refine your search by using it in `key_condition`. 
+you can refine your search by using it in the `key_condition`. 
 
 The sort key condition must use one of the following comparison operators:
- - `Thread.Subject == "value"` - true if `Subject` equals `value`
- - `Thread.Subject > "value"` - ...
+ - equals `==`
+ - greater than `>`
+ - greater or equals `>=`
+ - lower than `<`
+ - lower or equals `<=`
+ - between `field.between(a, b)`
+
+### Supported conditions
+
+Amano supports all the conditions of dynamodb and provides an elegant 
+abstraction which simplifies querying and filtering your dynamodb tables.
+
+> This guide is using the following symbols to provide you a comprehensive list
+> of examples:
+> 
+> __`{value}`__ is used to reference any valid value you may use in a condition.
+>
+> __`Item.field_{type}`__ is used to reference to a __class__' property, 
+> e.g.:`Item.field_int` may represent any valid class' property of an integer
+> type.
+
+#### `Item.field_any == {value}`
+
+true if the corresponding field's value is equal to `{value}`.
+
+> `{value}` can be of any supported types.
+
+#### `Item.field_numeric < {value}`
+
+true if the corresponding field's value is less than `{value}`.
+
+> `{value}` should be a numeric type
+
+#### `Item.field_numeric <= {value}`
+
+#### `Item.field_numeric > {value}`
+
+#### `Item.field_numeric >= {value}`
+
+#### `Item.field_numeric.between({value}, {value})`
+
+#### `Item.field_str.begins_with({value})`
 
 
-> The result of a query is always `amano.Cursor`. The cursor implements iterable 
-> interface, and you can iterate through it like over an ordinary list.
+### Working with `amano.Cursor`
+
+The result of a query is always an instance of `amano.Cursor`.
+
+
+### Improved typehints
+
 
 
 ### Mapping item's fields
