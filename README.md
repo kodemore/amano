@@ -28,6 +28,11 @@ The example below defines a `Forum` class, which is a representation of a
 record in a dynamodb's table. This class is required to instantiate parametrized
 `Table` class that abstract access do dynamodb's table.
 
+> Please note: property names in the following example are not following 
+> the PEP standards. The reason for that is the fact that those names are
+> corresponding to field names present in dynamodb's item. You can have a look
+> into a [mapping section](#mapping-items-fields) to fix this problem.
+
 ```python
 import boto3
 from amano import Table, Item
