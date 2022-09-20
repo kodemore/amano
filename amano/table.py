@@ -28,6 +28,7 @@ from .constants import (
     CONDITION_FUNCTION_CONTAINS,
     CONDITION_LOGICAL_OR,
     GLOBAL_SECONDARY_INDEXES,
+    KEY_SCHEMA,
     KEY_TYPE_HASH,
     KEY_TYPE_RANGE,
     LOCAL_SECONDARY_INDEXES,
@@ -149,7 +150,7 @@ def extract_indexes(
             and index_data["IndexStatus"] != "ACTIVE"
         ):
             continue
-        key_schema = index_data["KeySchema"]
+        key_schema = index_data[KEY_SCHEMA]
         if len(key_schema) > 1:
             if key_schema[0]["KeyType"] == KeyType.PARTITION_KEY:
                 index = Index(
@@ -210,7 +211,7 @@ class Table(Generic[I]):
             ) from e
 
     def _hydrate_indexes(self):
-        key_schema = self._table_meta.get("KeySchema")
+        key_schema = self._table_meta.get(KEY_SCHEMA)
         if len(key_schema) > 1:
             if key_schema[0]["KeyType"] == KeyType.PARTITION_KEY:
                 primary_key = Index(
