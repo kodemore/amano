@@ -24,10 +24,13 @@ from mypy_boto3_dynamodb.type_defs import AttributeValueTypeDef
 from .base_attribute import AttributeValue
 from .condition import Condition
 from .constants import (
+    ATTRIBUTE_NAME,
     CONDITION_FUNCTION_CONTAINS,
     CONDITION_LOGICAL_OR,
+    GLOBAL_SECONDARY_INDEXES,
     KEY_TYPE_HASH,
     KEY_TYPE_RANGE,
+    LOCAL_SECONDARY_INDEXES,
     SELECT_SPECIFIC_ATTRIBUTES,
 )
 from .errors import ItemNotFoundError, QueryError
@@ -152,21 +155,21 @@ def extract_indexes(
                 index = Index(
                     index_type,
                     index_data["IndexName"],
-                    key_schema[0]["AttributeName"],
-                    key_schema[1]["AttributeName"],
+                    key_schema[0][ATTRIBUTE_NAME],
+                    key_schema[1][ATTRIBUTE_NAME],
                 )
             else:
                 index = Index(
                     index_type,
                     index_data["IndexName"],
-                    key_schema[1]["AttributeName"],
-                    key_schema[0]["AttributeName"],
+                    key_schema[1][ATTRIBUTE_NAME],
+                    key_schema[0][ATTRIBUTE_NAME],
                 )
         else:
             index = Index(
                 index_type,
                 index_data["IndexName"],
-                key_schema[0]["AttributeName"],
+                key_schema[0][ATTRIBUTE_NAME],
             )
         indexes[index.name] = index
 
@@ -213,36 +216,36 @@ class Table(Generic[I]):
                 primary_key = Index(
                     IndexType.PRIMARY_KEY,
                     self._PRIMARY_KEY_NAME,
-                    key_schema[0]["AttributeName"],
-                    key_schema[1]["AttributeName"],
+                    key_schema[0][ATTRIBUTE_NAME],
+                    key_schema[1][ATTRIBUTE_NAME],
                 )
             else:
                 primary_key = Index(
                     IndexType.PRIMARY_KEY,
                     self._PRIMARY_KEY_NAME,
-                    key_schema[1]["AttributeName"],
-                    key_schema[0]["AttributeName"],
+                    key_schema[1][ATTRIBUTE_NAME],
+                    key_schema[0][ATTRIBUTE_NAME],
                 )
         else:
             primary_key = Index(
                 IndexType.PRIMARY_KEY,
                 self._PRIMARY_KEY_NAME,
-                key_schema[0]["AttributeName"],
+                key_schema[0][ATTRIBUTE_NAME],
             )
         indexes = {primary_key.name: primary_key}
-        if "GlobalSecondaryIndexes" in self._table_meta:
+        if GLOBAL_SECONDARY_INDEXES in self._table_meta:
             indexes = {
                 **indexes,
                 **extract_indexes(
-                    self._table_meta["GlobalSecondaryIndexes"],
+                    self._table_meta[GLOBAL_SECONDARY_INDEXES],
                     IndexType.GLOBAL_INDEX,
                 ),
             }
-        if "LocalSecondaryIndexes" in self._table_meta:
+        if LOCAL_SECONDARY_INDEXES in self._table_meta:
             indexes = {
                 **indexes,
                 **extract_indexes(
-                    self._table_meta["LocalSecondaryIndexes"],
+                    self._table_meta[LOCAL_SECONDARY_INDEXES],
                     IndexType.LOCAL_INDEX,
                 ),
             }
