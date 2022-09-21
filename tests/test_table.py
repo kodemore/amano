@@ -357,3 +357,34 @@ def test_query_table_with_pk_and_filter(
         assert isinstance(item, Track)
 
     assert len(all_items) == 18
+
+
+def test_can_update_item(
+    bootstrapped_dynamodb_client: DynamoDBClient, dynamodb_test_table_name: str
+) -> None:
+    # given
+    @dataclass
+    class Track(Item):
+        artist_name: Attribute[str]
+        track_name: Attribute[str]
+        album_name: Attribute[str]
+        genre_name: Attribute[str]
+
+    tracks = Table[Track](
+        bootstrapped_dynamodb_client, dynamodb_test_table_name
+    )
+
+    track = tracks.get("AC/DC", "Let There Be Rock")
+    assert isinstance(track, Track)
+
+    # when
+    track.album_name = "Undefined Album"
+    tracks.update(track)
+
+    # then
+    track = tracks.get("AC/DC", "Let There Be Rock")
+    assert isinstance(track, Track)
+    assert track.album_name == "Undefined Album"
+
+
+
