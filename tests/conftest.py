@@ -43,18 +43,28 @@ def dynamodb_client() -> DynamoDBClient:
 
 
 @pytest.fixture
-def dynamodb_test_table_name() -> str:
+def readonly_table() -> str:
     return "tracks"
 
 
 @pytest.fixture
-def bootstrapped_dynamodb_client(
-    dynamodb_client, dynamodb_test_table_name, tracks_with_artists_json
+def default_table() -> str:
+    return "default_table"
+
+
+@pytest.fixture
+def readonly_dynamodb_client(
+    dynamodb_client, readonly_table, tracks_with_artists_json
 ) -> Generator[DynamoDBClient, None, None]:
+
+    table_info = False
     try:
-        table_exists = False
+        table_info = dynamodb_client.describe_table(
+            TableName=readonly_table
+        )
+    except ClientError:
         dynamodb_client.create_table(
-            TableName=dynamodb_test_table_name,
+            TableName=readonly_table,
             KeySchema=[
                 {"AttributeName": "artist_name", "KeyType": "HASH"},
                 {"AttributeName": "track_name", "KeyType": "RANGE"},
@@ -101,19 +111,15 @@ def bootstrapped_dynamodb_client(
             ],
             BillingMode="PAY_PER_REQUEST",
         )
-    except ClientError as e:
-        if e.operation_name == "CreateTable":
-            table_exists = True
-            yield dynamodb_client  # Table is already created probably due to test failure
-        else:
-            raise e
 
-    if table_exists:
+    if table_info:
+        yield dynamodb_client
+
         return
 
     for item in tracks_with_artists_json:
-        result = dynamodb_client.put_item(
-            TableName=dynamodb_test_table_name,
+        dynamodb_client.put_item(
+            TableName=readonly_table,
             Item={
                 "album_name": {"S": item["album_name"]},
                 "track_name": {"S": item["track_name"]},
@@ -126,6 +132,71 @@ def bootstrapped_dynamodb_client(
 
     yield dynamodb_client
 
-    # dynamodb_client.delete_table(
-    #    TableName=dynamodb_test_table_name,
-    # )
+
+@pytest.fixture
+def default_dynamodb_client(
+    dynamodb_client, default_table
+) -> Generator[DynamoDBClient, None, None]:
+    table_info = None
+    try:
+        table_info = dynamodb_client.describe_table(
+            TableName=default_table
+        )
+    except ClientError:
+        dynamodb_client.create_table(
+            TableName=default_table,
+            KeySchema=[
+                {"AttributeName": "artist_name", "KeyType": "HASH"},
+                {"AttributeName": "track_name", "KeyType": "RANGE"},
+            ],
+            AttributeDefinitions=[
+                {"AttributeName": "artist_name", "AttributeType": "S"},
+                {"AttributeName": "track_name", "AttributeType": "S"},
+                {"AttributeName": "album_name", "AttributeType": "S"},
+                {"AttributeName": "genre_name", "AttributeType": "S"},
+            ],
+            LocalSecondaryIndexes=[
+                {
+                    "IndexName": "LocalArtistAndAlbumNameIndex",
+                    "KeySchema": [
+                        {"AttributeName": "artist_name", "KeyType": "HASH"},
+                        {"AttributeName": "album_name", "KeyType": "RANGE"},
+                    ],
+                    "Projection": {
+                        "ProjectionType": "ALL",
+                    },
+                }
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    "IndexName": "GlobalAlbumAndTrackNameIndex",
+                    "KeySchema": [
+                        {"AttributeName": "album_name", "KeyType": "HASH"},
+                        {"AttributeName": "track_name", "KeyType": "RANGE"},
+                    ],
+                    "Projection": {
+                        "ProjectionType": "ALL",
+                    },
+                },
+                {
+                    "IndexName": "GlobalGenreAndAlbumNameIndex",
+                    "KeySchema": [
+                        {"AttributeName": "genre_name", "KeyType": "HASH"},
+                        {"AttributeName": "album_name", "KeyType": "RANGE"},
+                    ],
+                    "Projection": {
+                        "ProjectionType": "ALL",
+                    },
+                },
+            ],
+            BillingMode="PAY_PER_REQUEST",
+        )
+
+    if table_info:
+        yield dynamodb_client
+
+        dynamodb_client.delete_table(TableName=default_table)
+        return
+
+    yield dynamodb_client
+    dynamodb_client.delete_table(TableName=default_table)
