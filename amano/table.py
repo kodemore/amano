@@ -35,7 +35,7 @@ from .constants import (
     SELECT_SPECIFIC_ATTRIBUTES,
 )
 from .errors import ItemNotFoundError, QueryError
-from .item import Item, _ChangeType
+from .item import Item, _ChangeType, _ItemState
 
 I = TypeVar("I", bound=Item)
 
@@ -328,10 +328,21 @@ class Table(Generic[I]):
         except ParamValidationError as e:
             raise QueryError(str(e)) from e
 
-        return result["ResponseMetadata"]["HTTPStatusCode"] == 200
+        success = result["ResponseMetadata"]["HTTPStatusCode"] == 200
+
+        if success:
+            item._commit()
+
+        return success
 
     @typing.no_type_check
     def update(self, item: I) -> bool:
+        if item._state() == _ItemState.CLEAN:
+            return False
+
+        if item._state() == _ItemState.NEW:
+            raise
+
         (
             update_expression,
             expression_attribute_values,
