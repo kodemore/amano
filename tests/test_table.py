@@ -324,6 +324,7 @@ def test_query_table_with_pk_and_filter(
     # then
     assert isinstance(result, Iterable)
 
+    assert result.count() == 18
     all_items = []
     for item in result:
         all_items.append(item)
@@ -380,3 +381,61 @@ def test_ignore_update_for_non_modified_item(
 
     # then
     assert track._state() == _ItemState.CLEAN
+
+
+def test_query_table_with_limit(readonly_dynamodb_client: DynamoDBClient, readonly_table: str) -> None:
+    # given
+    @dataclass
+    class Track(Item):
+        artist_name: Attribute[str]
+        track_name: Attribute[str]
+        album_name: Attribute[str]
+        genre_name: Attribute[str]
+
+    my_table = Table[Track](
+        readonly_dynamodb_client, readonly_table
+    )
+
+    # when
+    result = my_table.query(
+        key_condition=(Track.artist_name == "AC/DC"),
+        filter_condition=Track.genre_name.startswith("R"),
+        limit=10
+    )
+
+    # then
+    assert isinstance(result, Iterable)
+
+    assert result.count() == 10
+    all_items = []
+    for item in result:
+        all_items.append(item)
+        assert isinstance(item, Track)
+
+    assert len(all_items) == 10
+
+
+def test_query_table_returns_consumed_capacity(readonly_dynamodb_client: DynamoDBClient, readonly_table: str) -> None:
+    # given
+    @dataclass
+    class Track(Item):
+        artist_name: Attribute[str]
+        track_name: Attribute[str]
+        album_name: Attribute[str]
+        genre_name: Attribute[str]
+
+    my_table = Table[Track](
+        readonly_dynamodb_client, readonly_table
+    )
+
+    # when
+    result = my_table.query(
+        key_condition=(Track.artist_name == "AC/DC"),
+        filter_condition=Track.genre_name.startswith("R")
+    )
+
+    # then
+    assert isinstance(result, Iterable)
+
+    assert result.count() == 18
+    assert result.consumed_capacity == 0.5
