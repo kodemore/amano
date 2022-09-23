@@ -74,6 +74,7 @@ class Cursor(Generic[I]):
         self._current_index = 0
         self._exhausted = False
         self._last_evaluated_key: Dict[str, AttributeValue] = {}
+        self._consumed_capacity: float = 0
 
     def __iter__(self) -> Iterator[Union[I, Dict[str, Any]]]:
         self._fetch()
@@ -84,7 +85,11 @@ class Cursor(Generic[I]):
                 yield self._item_class.hydrate(item_data)  # type: ignore
             else:
                 yield item_data
+
             self._current_index += 1
+
+            if self._query.get("Limit") and self._current_index == self._query["Limit"]:
+                break
 
             if self._current_index >= items_count and not self._exhausted:
                 self._fetch()
@@ -106,6 +111,7 @@ class Cursor(Generic[I]):
     def _fetch(self) -> None:
         try:
             result = self._executor(**self._query)
+            self._consumed_capacity = result["ConsumedCapacity"]["Table"]["CapacityUnits"]
         except Exception as e:
             self._fetched_records = []
             self._exhausted = True
@@ -121,9 +127,19 @@ class Cursor(Generic[I]):
 
         self._fetched_records = self._fetched_records + result["Items"]
 
-    # @todo: missing count method
+    def count(self) -> int:
+        count = len([item for item in self])
+        self._current_index = 0
+        self._fetched_records = []
+        self._last_evaluated_key = {}
+        self._exhausted = False
+        if "ExclusiveStartKey" in self._query:
+            del self._query["ExclusiveStartKey"]
+        return count
 
-    # @todo: missing information about used capacity
+    @property
+    def consumed_capacity(self) -> float:
+        return self._consumed_capacity
 
 
 class Index:
