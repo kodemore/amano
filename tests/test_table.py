@@ -383,7 +383,9 @@ def test_ignore_update_for_non_modified_item(
     assert track._state() == _ItemState.CLEAN
 
 
-def test_query_table_with_limit(readonly_dynamodb_client: DynamoDBClient, readonly_table: str) -> None:
+def test_query_table_with_limit(
+    readonly_dynamodb_client: DynamoDBClient, readonly_table: str
+) -> None:
     # given
     @dataclass
     class Track(Item):
@@ -392,15 +394,13 @@ def test_query_table_with_limit(readonly_dynamodb_client: DynamoDBClient, readon
         album_name: Attribute[str]
         genre_name: Attribute[str]
 
-    my_table = Table[Track](
-        readonly_dynamodb_client, readonly_table
-    )
+    my_table = Table[Track](readonly_dynamodb_client, readonly_table)
 
     # when
     result = my_table.query(
         key_condition=(Track.artist_name == "AC/DC"),
         filter_condition=Track.genre_name.startswith("R"),
-        limit=10
+        limit=10,
     )
 
     # then
@@ -415,7 +415,9 @@ def test_query_table_with_limit(readonly_dynamodb_client: DynamoDBClient, readon
     assert len(all_items) == 10
 
 
-def test_query_table_returns_consumed_capacity(readonly_dynamodb_client: DynamoDBClient, readonly_table: str) -> None:
+def test_query_table_returns_consumed_capacity(
+    readonly_dynamodb_client: DynamoDBClient, readonly_table: str
+) -> None:
     # given
     @dataclass
     class Track(Item):
@@ -424,14 +426,12 @@ def test_query_table_returns_consumed_capacity(readonly_dynamodb_client: DynamoD
         album_name: Attribute[str]
         genre_name: Attribute[str]
 
-    my_table = Table[Track](
-        readonly_dynamodb_client, readonly_table
-    )
+    my_table = Table[Track](readonly_dynamodb_client, readonly_table)
 
     # when
     result = my_table.query(
         key_condition=(Track.artist_name == "AC/DC"),
-        filter_condition=Track.genre_name.startswith("R")
+        filter_condition=Track.genre_name.startswith("R"),
     )
 
     # then

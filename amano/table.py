@@ -1,27 +1,14 @@
 from __future__ import annotations
 
 import typing
-from enum import Enum
 from functools import cached_property
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generic,
-    Iterator,
-    List,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Any, Dict, Generic, List, Tuple, Type, Union
 
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from botocore.exceptions import ClientError, ParamValidationError
 from mypy_boto3_dynamodb.client import DynamoDBClient
 from mypy_boto3_dynamodb.type_defs import AttributeValueTypeDef
 
-from .base_attribute import AttributeValue
 from .condition import Condition
 from .constants import (
     ATTRIBUTE_NAME,
@@ -29,168 +16,18 @@ from .constants import (
     CONDITION_LOGICAL_OR,
     GLOBAL_SECONDARY_INDEXES,
     KEY_SCHEMA,
-    KEY_TYPE_HASH,
-    KEY_TYPE_RANGE,
     LOCAL_SECONDARY_INDEXES,
     SELECT_SPECIFIC_ATTRIBUTES,
 )
+from .cursor import Cursor
 from .errors import ItemNotFoundError, QueryError
-from .item import Item, _ChangeType, _ItemState
-
-I = TypeVar("I", bound=Item)
+from .index import Index, IndexType, KeyType, extract_indexes
+from .item import I, Item, _ChangeType, _ItemState
 
 _serialize_item = TypeSerializer().serialize
 _deserialize_item = TypeDeserializer().deserialize
 
 KeyExpression = Dict[str, AttributeValueTypeDef]
-
-
-class KeyType(Enum):
-    PARTITION_KEY = KEY_TYPE_HASH
-    SORT_KEY = KEY_TYPE_RANGE
-
-    def __eq__(self, other):
-        if isinstance(other, str):
-            return self.value == other
-
-        return other == self
-
-
-class IndexType(Enum):
-    LOCAL_INDEX = "local_index"
-    GLOBAL_INDEX = "global_index"
-    PRIMARY_KEY = "primary_key"
-
-
-class Cursor(Generic[I]):
-    def __init__(
-        self, item_class: Type[I], query: Dict[str, Any], executor: Callable
-    ):
-        self._executor = executor
-        self._query = query
-        self.hydrate = True
-        self._item_class = item_class
-        self._fetched_records: List[Dict[str, AttributeValue]] = []
-        self._current_index = 0
-        self._exhausted = False
-        self._last_evaluated_key: Dict[str, AttributeValue] = {}
-        self._consumed_capacity: float = 0
-
-    def __iter__(self) -> Iterator[Union[I, Dict[str, Any]]]:
-        self._fetch()
-        items_count = len(self._fetched_records)
-        while self._current_index < items_count:
-            item_data = self._fetched_records[self._current_index]
-            if self.hydrate:
-                yield self._item_class.hydrate(item_data)  # type: ignore
-            else:
-                yield item_data
-
-            self._current_index += 1
-
-            if self._query.get("Limit") and self._current_index == self._query["Limit"]:
-                break
-
-            if self._current_index >= items_count and not self._exhausted:
-                self._fetch()
-                items_count = len(self._fetched_records)
-
-    def fetch(self, limit=0) -> List[Union[Dict[str, Any], I]]:
-        self._current_index = 0
-        fetched_items = []
-        fetched_length = 0
-        for item in self:
-            fetched_items.append(item)
-            fetched_length += 1
-            if limit and fetched_length >= limit:
-                break
-
-        self._current_index = 0
-        return fetched_items
-
-    def _fetch(self) -> None:
-        try:
-            result = self._executor(**self._query)
-            self._consumed_capacity = result["ConsumedCapacity"]["Table"]["CapacityUnits"]
-        except Exception as e:
-            self._fetched_records = []
-            self._exhausted = True
-            raise QueryError(
-                f"Could not execute query "
-                f"`{self._query['KeyConditionExpression']}`, reason: {e}"
-            )
-        if "LastEvaluatedKey" in result:
-            self._last_evaluated_key = result["LastEvaluatedKey"]
-            self._query["ExclusiveStartKey"] = result["LastEvaluatedKey"]
-        else:
-            self._exhausted = True
-
-        self._fetched_records = self._fetched_records + result["Items"]
-
-    def count(self) -> int:
-        count = len([item for item in self])
-        self._current_index = 0
-        self._fetched_records = []
-        self._last_evaluated_key = {}
-        self._exhausted = False
-        if "ExclusiveStartKey" in self._query:
-            del self._query["ExclusiveStartKey"]
-        return count
-
-    @property
-    def consumed_capacity(self) -> float:
-        return self._consumed_capacity
-
-
-class Index:
-    def __init__(
-        self,
-        index_type: IndexType,
-        name: str,
-        partition_key: str,
-        sort_key: str = "",
-    ):
-        self.index_type = index_type
-        self.name = name
-        self.partition_key = partition_key
-        self.sort_key = sort_key
-
-
-def extract_indexes(
-    index_list: List[Dict[str, Any]], index_type: IndexType
-) -> Dict[str, Index]:
-    indexes = {}
-    for index_data in index_list:
-        if (
-            "IndexStatus" in index_data
-            and index_data["IndexStatus"] != "ACTIVE"
-        ):
-            continue
-        key_schema = index_data[KEY_SCHEMA]
-        if len(key_schema) > 1:
-            if key_schema[0]["KeyType"] == KeyType.PARTITION_KEY:
-                index = Index(
-                    index_type,
-                    index_data["IndexName"],
-                    key_schema[0][ATTRIBUTE_NAME],
-                    key_schema[1][ATTRIBUTE_NAME],
-                )
-            else:
-                index = Index(
-                    index_type,
-                    index_data["IndexName"],
-                    key_schema[1][ATTRIBUTE_NAME],
-                    key_schema[0][ATTRIBUTE_NAME],
-                )
-        else:
-            index = Index(
-                index_type,
-                index_data["IndexName"],
-                key_schema[0][ATTRIBUTE_NAME],
-            )
-        indexes[index.name] = index
-
-    return indexes
 
 
 class Table(Generic[I]):
@@ -357,7 +194,7 @@ class Table(Generic[I]):
             return False
 
         if item._state() == _ItemState.NEW:
-            raise
+            raise  # @todo: fixme
 
         (
             update_expression,
