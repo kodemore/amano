@@ -371,8 +371,9 @@ class Table(Generic[I]):
         for change in changes.values():
             if change.type in (_ChangeType.CHANGE, _ChangeType.SET):
                 set_fields.append(change.attribute.name)
-                attribute_values[":" + change.attribute.name] = \
-                    change.attribute.extract(change.value)
+                attribute_values[
+                    ":" + change.attribute.name
+                ] = change.attribute.extract(change.value)
                 continue
             if change.type is _ChangeType.UNSET:
                 delete_fields.append(change.attribute.name)

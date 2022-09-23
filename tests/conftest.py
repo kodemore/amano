@@ -59,9 +59,7 @@ def readonly_dynamodb_client(
 
     table_info = False
     try:
-        table_info = dynamodb_client.describe_table(
-            TableName=readonly_table
-        )
+        table_info = dynamodb_client.describe_table(TableName=readonly_table)
     except ClientError:
         dynamodb_client.create_table(
             TableName=readonly_table,
@@ -139,9 +137,7 @@ def default_dynamodb_client(
 ) -> Generator[DynamoDBClient, None, None]:
     table_info = None
     try:
-        table_info = dynamodb_client.describe_table(
-            TableName=default_table
-        )
+        table_info = dynamodb_client.describe_table(TableName=default_table)
     except ClientError:
         dynamodb_client.create_table(
             TableName=default_table,
