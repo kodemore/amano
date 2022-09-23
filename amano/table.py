@@ -368,7 +368,9 @@ class Table(Generic[I]):
 
         return success
 
-    def _generate_update_expression(self, item: I) -> Tuple[str, Dict[str, Any]]:
+    def _generate_update_expression(
+        self, item: I
+    ) -> Tuple[str, Dict[str, Any]]:
 
         changes = {
             attribute_change.attribute.name: attribute_change

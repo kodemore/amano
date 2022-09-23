@@ -360,8 +360,7 @@ def test_can_update_item(default_dynamodb_client, default_table) -> None:
 
 
 def test_ignore_update_for_non_modified_item(
-        default_dynamodb_client,
-        default_table
+    default_dynamodb_client, default_table
 ) -> None:
     # given
     class Track(Item):
