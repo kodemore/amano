@@ -288,7 +288,7 @@ class Item(metaclass=ItemMeta):
         self.__snapshots__.append(commit)
 
     def _state(self) -> _ItemState:
-        if not self.__log__ and len(self.__snapshots__) == 1:
+        if not self.__log__ and len(self.__snapshots__) >= 1:
             return _ItemState.CLEAN
 
         if not self.__snapshots__:

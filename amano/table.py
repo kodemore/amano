@@ -35,7 +35,7 @@ from .constants import (
     SELECT_SPECIFIC_ATTRIBUTES,
 )
 from .errors import ItemNotFoundError, QueryError
-from .item import Item, _ChangeType
+from .item import Item, _ChangeType, _ItemState
 
 I = TypeVar("I", bound=Item)
 
@@ -328,27 +328,45 @@ class Table(Generic[I]):
         except ParamValidationError as e:
             raise QueryError(str(e)) from e
 
-        return result["ResponseMetadata"]["HTTPStatusCode"] == 200
+        success = result["ResponseMetadata"]["HTTPStatusCode"] == 200
+
+        if success:
+            item._commit()
+
+        return success
 
     @typing.no_type_check
-    def update(self, item: I) -> None:
+    def update(self, item: I) -> bool:
+        if item._state() == _ItemState.CLEAN:
+            return False
+
+        if item._state() == _ItemState.NEW:
+            raise
+
         (
             update_expression,
             expression_attribute_values,
         ) = self._generate_update_expression(item)
 
-        self._db_client.update_item(
-            TableName=self._table_name,
-            Key=self._get_key_expression(item),
-            UpdateExpression=...,
-            ExpressionAttributeValues=...,
-        )
-        raise NotImplemented
+        query = {
+            "TableName": self._table_name,
+            "Key": self._get_key_expression(item),
+            "UpdateExpression": update_expression,
+            "ExpressionAttributeValues": expression_attribute_values,
+            "ReturnConsumedCapacity": "INDEXES",
+        }
+        try:
+            result = self._db_client.update_item(**query)
+        except ClientError as e:
+            error = e.response.get("Error")
+            raise QueryError(error["Message"]) from error
 
-        # @todo: implement this
-        # @todo: there should be session information and each table operation
-        # should put into the session the dynamodb information about
-        # read and write capacity utilisation
+        success = result["ResponseMetadata"]["HTTPStatusCode"] == 200
+
+        if success:
+            item._commit()
+
+        return success
 
     def _generate_update_expression(
         self, item: I
@@ -365,9 +383,9 @@ class Table(Generic[I]):
         for change in changes.values():
             if change.type in (_ChangeType.CHANGE, _ChangeType.SET):
                 set_fields.append(change.attribute.name)
-                attribute_values[":" + change.attribute.name] = _serialize_item(
-                    change.attribute.extract(change.value)
-                )
+                attribute_values[
+                    ":" + change.attribute.name
+                ] = change.attribute.extract(change.value)
                 continue
             if change.type is _ChangeType.UNSET:
                 delete_fields.append(change.attribute.name)
@@ -488,7 +506,7 @@ class Table(Generic[I]):
         if self.sort_key:
             key_expression[self.sort_key] = getattr(item, self.sort_key)
 
-        return _serialize_item(key_expression)
+        return _serialize_item(key_expression)["M"]
 
     @property
     def indexes(self) -> Dict[str, Index]:
