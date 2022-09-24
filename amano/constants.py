@@ -68,6 +68,7 @@ KEY_TYPE_HASH = "HASH"
 KEY_TYPE_RANGE = "RANGE"
 INDEX_NAME = "IndexName"
 ATTRIBUTE_NAME = "AttributeName"
+PRIMARY_KEY_NAME = "#"
 
 # Projection constants
 PROJECTION = "Projection"

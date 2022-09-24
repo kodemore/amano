@@ -11,17 +11,13 @@ from mypy_boto3_dynamodb.type_defs import AttributeValueTypeDef
 
 from .condition import Condition
 from .constants import (
-    ATTRIBUTE_NAME,
     CONDITION_FUNCTION_CONTAINS,
     CONDITION_LOGICAL_OR,
-    GLOBAL_SECONDARY_INDEXES,
-    KEY_SCHEMA,
-    LOCAL_SECONDARY_INDEXES,
     SELECT_SPECIFIC_ATTRIBUTES,
 )
 from .cursor import Cursor
 from .errors import ItemNotFoundError, QueryError
-from .index import Index, IndexType, KeyType, extract_indexes
+from .index import Index, create_indexes_from_schema
 from .item import I, Item, _ChangeType, _ItemState
 
 _serialize_item = TypeSerializer().serialize
@@ -45,7 +41,7 @@ class Table(Generic[I]):
         self._table_name = table_name
         self._table_meta: Dict[str, Any] = {}
         self._fetch_table_meta(table_name)
-        self._hydrate_indexes()
+        self._indexes = create_indexes_from_schema(self._table_meta)
         self._validate_table_primary_key()
 
     def _fetch_table_meta(self, table_name):
@@ -53,57 +49,15 @@ class Table(Generic[I]):
             self._table_meta = self._db_client.describe_table(
                 TableName=self._table_name
             )["Table"]
-        except ClientError as e:
+        except ClientError as error:
             raise ValueError(
                 f"Table with name {table_name} was not found"
-            ) from e
-        except KeyError as e:
+            ) from error
+        except KeyError as error:
             raise ValueError(
                 f"There was an error while retrieving "
                 f"`{table_name}` information."
-            ) from e
-
-    def _hydrate_indexes(self):
-        key_schema = self._table_meta.get(KEY_SCHEMA)
-        if len(key_schema) > 1:
-            if key_schema[0]["KeyType"] == KeyType.PARTITION_KEY:
-                primary_key = Index(
-                    IndexType.PRIMARY_KEY,
-                    self._PRIMARY_KEY_NAME,
-                    key_schema[0][ATTRIBUTE_NAME],
-                    key_schema[1][ATTRIBUTE_NAME],
-                )
-            else:
-                primary_key = Index(
-                    IndexType.PRIMARY_KEY,
-                    self._PRIMARY_KEY_NAME,
-                    key_schema[1][ATTRIBUTE_NAME],
-                    key_schema[0][ATTRIBUTE_NAME],
-                )
-        else:
-            primary_key = Index(
-                IndexType.PRIMARY_KEY,
-                self._PRIMARY_KEY_NAME,
-                key_schema[0][ATTRIBUTE_NAME],
-            )
-        indexes = {primary_key.name: primary_key}
-        if GLOBAL_SECONDARY_INDEXES in self._table_meta:
-            indexes = {
-                **indexes,
-                **extract_indexes(
-                    self._table_meta[GLOBAL_SECONDARY_INDEXES],
-                    IndexType.GLOBAL_INDEX,
-                ),
-            }
-        if LOCAL_SECONDARY_INDEXES in self._table_meta:
-            indexes = {
-                **indexes,
-                **extract_indexes(
-                    self._table_meta[LOCAL_SECONDARY_INDEXES],
-                    IndexType.LOCAL_INDEX,
-                ),
-            }
-        self._indexes = indexes
+            ) from error
 
     def _get_indexes_for_field_list(
         self, fields: List[str]
@@ -136,16 +90,6 @@ class Table(Generic[I]):
                 f"Table `{self.table_name}` defines sort key {self.sort_key}, "
                 f"which was not found in the item class `{self._item_class}`"
             )
-
-    @cached_property
-    def _prevent_override_condition(self) -> str:
-        if self.sort_key:
-            return (
-                f"attribute_not_exists({self.partition_key}) AND "
-                f"attribute_not_exists({self.sort_key})"
-            )
-
-        return f"attribute_not_exists({self.partition_key})"
 
     def scan(self, condition: Condition) -> Cursor:
         # @todo: implement this

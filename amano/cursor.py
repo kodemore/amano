@@ -60,12 +60,12 @@ class Cursor(Generic[I]):
             self._consumed_capacity = result["ConsumedCapacity"]["Table"][
                 "CapacityUnits"
             ]
-        except Exception as e:
+        except Exception as error:
             self._fetched_records = []
             self._exhausted = True
             raise QueryError(
                 f"Could not execute query "
-                f"`{self._query['KeyConditionExpression']}`, reason: {e}"
+                f"`{self._query['KeyConditionExpression']}`, reason: {error}"
             )
         if "LastEvaluatedKey" in result:
             self._last_evaluated_key = result["LastEvaluatedKey"]
