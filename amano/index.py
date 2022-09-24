@@ -89,9 +89,9 @@ def _extract_index_list(
     return indexes
 
 
-def create_indexes_from_schema(table_schema: Dict[str, Any]):
+def create_indexes_from_schema(table_schema: Dict[str, List[Dict[str, Any]]]):
     primary_key = _extract_index(
-        table_schema.get(KEY_SCHEMA), PRIMARY_KEY_NAME, IndexType.PRIMARY_KEY
+        table_schema[KEY_SCHEMA], PRIMARY_KEY_NAME, IndexType.PRIMARY_KEY
     )
     indexes = {primary_key.name: primary_key}
     if GLOBAL_SECONDARY_INDEXES in table_schema:
