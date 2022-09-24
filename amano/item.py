@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from functools import reduce
-from typing import Any, Dict, List, Type, Union
+from typing import Any, Dict, List, Type, TypeVar, Union
 
 from .attribute import Attribute
 from .base_attribute import AttributeValue
@@ -299,3 +299,6 @@ class Item(metaclass=ItemMeta):
 
 class VersionedItem(Item):
     ...
+
+
+I = TypeVar("I", bound=Item)
