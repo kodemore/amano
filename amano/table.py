@@ -16,7 +16,13 @@ from .constants import (
     SELECT_SPECIFIC_ATTRIBUTES,
 )
 from .cursor import Cursor
-from .errors import ItemNotFoundError, QueryError
+from .errors import (
+    ItemNotFoundError,
+    PutItemError,
+    QueryError,
+    ReadError,
+    UpdateItemError,
+)
 from .index import Index, create_indexes_from_schema
 from .item import I, Item, _ChangeType, _ItemState
 
@@ -100,6 +106,15 @@ class Table(Generic[I]):
         raise NotImplemented
 
     def put(self, item: I, condition: Condition = None) -> bool:
+        """
+        Creates or overrides item in a table for the same PK.
+
+        :param item: an item to be stored
+        :param condition: an optional condition on which to put
+        :return: `True` on success or `False` on condition failure
+        :raises ValueError: when invalid value is passed as an item
+        :raises amano.errors.PuItemError: when validation or client fails
+        """
         if not isinstance(item, self._item_class):
             ValueError(
                 f"Could not persist item of type `{type(item)}`, "
@@ -121,9 +136,9 @@ class Table(Generic[I]):
             error = e.response.get("Error")
             if error["Code"] == "ConditionalCheckFailedException":
                 return False
-            raise QueryError(error["Message"]) from e
+            raise PutItemError.for_client_error(error["Message"]) from e
         except ParamValidationError as e:
-            raise QueryError(str(e)) from e
+            raise PutItemError.for_validation_error(item, str(e)) from e
 
         success = result["ResponseMetadata"]["HTTPStatusCode"] == 200
 
@@ -132,13 +147,12 @@ class Table(Generic[I]):
 
         return success
 
-    @typing.no_type_check
     def update(self, item: I) -> bool:
         if item._state() == _ItemState.CLEAN:
             return False
 
         if item._state() == _ItemState.NEW:
-            raise  # @todo: fixme
+            raise UpdateItemError.for_new_item(item)
 
         (
             update_expression,
@@ -153,10 +167,10 @@ class Table(Generic[I]):
             "ReturnConsumedCapacity": "INDEXES",
         }
         try:
-            result = self._db_client.update_item(**query)
+            result = self._db_client.update_item(**query)  # type: ignore[arg-type]
         except ClientError as e:
             error = e.response.get("Error")
-            raise QueryError(error["Message"]) from error
+            raise UpdateItemError.for_client_error(error["Message"]) from error
 
         success = result["ResponseMetadata"]["HTTPStatusCode"] == 200
 
@@ -211,18 +225,16 @@ class Table(Generic[I]):
         key_condition_expression = str(key_condition)
         key_attributes = list(key_condition.attributes)
         if len(key_attributes) > 2:
-            raise QueryError(
-                f"Could not execute query `{key_condition_expression}`, "
-                f"too many attributes in key_condition."
+            raise QueryError.for_invalid_key_condition(
+                key_condition, f"Too many attributes in key_condition."
             )
 
         if any(
             operator in key_condition_expression
             for operator in [CONDITION_LOGICAL_OR, CONDITION_FUNCTION_CONTAINS]
         ):
-            raise QueryError(
-                f"Could not execute query `{key_condition_expression}`, "
-                "used operator is not supported."
+            raise QueryError.for_invalid_key_condition(
+                key_condition, "Detected unsupported operator."
             )
         key_condition_values = key_condition.values
         projection = ", ".join(self.attributes)
@@ -230,10 +242,7 @@ class Table(Generic[I]):
         if use_index:
             if isinstance(use_index, str):
                 if use_index not in self.indexes:
-                    raise QueryError(
-                        f"Used unknown index `{use_index}` in query "
-                        f"`{key_condition_expression}` "
-                    )
+                    raise QueryError.for_invalid_index(use_index, key_condition)
                 hint_index = self.indexes[use_index]
             else:
                 hint_index = use_index
@@ -280,10 +289,8 @@ class Table(Generic[I]):
                 ConsistentRead=consistent_read,
             )
         except ClientError as e:
-            raise QueryError(
-                f"Retrieving item using query `{key_query}` "
-                f"failed with message: {e.response['Error']['Message']}",
-                key_query,
+            raise ReadError.for_client_error(
+                e.response['Error']['Message']
             ) from e
 
         if "Item" not in result:

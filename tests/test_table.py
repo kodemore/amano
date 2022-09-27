@@ -5,7 +5,7 @@ import pytest
 from mypy_boto3_dynamodb import DynamoDBClient
 
 from amano import Attribute, Index, Item, Table
-from amano.errors import AmanoDBError, ItemNotFoundError, QueryError
+from amano.errors import AmanoDBError, ItemNotFoundError, QueryError, ReadError
 from amano.item import _ItemState
 
 
@@ -180,7 +180,7 @@ def test_fail_query_item_by_pk_only(
         item = my_table.get("AC/DC")
 
     # then
-    assert isinstance(e.value, QueryError)
+    assert isinstance(e.value, ReadError)
 
 
 def test_fail_get_unexisting_item(
