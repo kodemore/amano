@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
+from .condition import Condition
 from .item import Item
 
 
@@ -12,7 +13,23 @@ class AmanoDBError(Exception):
 
 
 class QueryError(AmanoDBError):
-    pass
+    @classmethod
+    def for_invalid_key_condition(
+        cls, condition: Condition, reason: str = ""
+    ) -> QueryError:
+        return cls(f"Key condition `{condition}` is invalid. {reason}")
+
+    @classmethod
+    def for_invalid_index(
+        cls, index: str, condition: Condition = None
+    ) -> QueryError:
+        if condition:
+            return cls(
+                f"Used unknown or invalid index `{index}` "
+                f"for key condition `{condition}`"
+            )
+
+        return cls(f"Used unknown or invalid index `{index}` in query.")
 
 
 class ReadError(AmanoDBError):
@@ -32,12 +49,13 @@ class ItemNotFoundError(ReadError):
 class PutItemError(WriteError):
     @classmethod
     def for_validation_error(cls, item: Item, message: str) -> PutItemError:
-        return cls(f"Could not validate item {item}. "
-                   f"Validation failed with message: {message}")
+        return cls(
+            f"Could not validate item {item}. "
+            f"Validation failed with message: {message}"
+        )
 
 
 class UpdateItemError(WriteError):
-
     @classmethod
     def for_new_item(cls, item: Item) -> UpdateItemError:
         return cls(f"Could not update new item {item}.")

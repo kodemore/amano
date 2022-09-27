@@ -63,10 +63,7 @@ class Cursor(Generic[I]):
         except Exception as error:
             self._fetched_records = []
             self._exhausted = True
-            raise QueryError(
-                f"Could not execute query "
-                f"`{self._query['KeyConditionExpression']}`, reason: {error}"
-            ) from error
+            raise QueryError.for_client_error(str(error)) from error
         if "LastEvaluatedKey" in result:
             self._last_evaluated_key = result["LastEvaluatedKey"]
             self._query["ExclusiveStartKey"] = result["LastEvaluatedKey"]
