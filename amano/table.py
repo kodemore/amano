@@ -18,10 +18,10 @@ from .constants import (
 from .cursor import Cursor
 from .errors import (
     ItemNotFoundError,
-    QueryError,
     PutItemError,
-    UpdateItemError,
+    QueryError,
     ReadError,
+    UpdateItemError,
 )
 from .index import Index, create_indexes_from_schema
 from .item import I, Item, _ChangeType, _ItemState
