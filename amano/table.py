@@ -16,7 +16,7 @@ from .constants import (
     SELECT_SPECIFIC_ATTRIBUTES,
 )
 from .cursor import Cursor
-from .errors import ItemNotFoundError, QueryError
+from .errors import ItemNotFoundError, QueryError, PutItemError, UpdateItemError
 from .index import Index, create_indexes_from_schema
 from .item import I, Item, _ChangeType, _ItemState
 
@@ -100,6 +100,15 @@ class Table(Generic[I]):
         raise NotImplemented
 
     def put(self, item: I, condition: Condition = None) -> bool:
+        """
+        Creates or overrides item in a table for the same PK.
+
+        :param item: an item to be stored
+        :param condition: an optional condition on which to put
+        :return: `True` on success or `False` on condition failure
+        :raises ValueError: when invalid value is passed as an item
+        :raises amano.errors.PuItemError: when validation or client fails
+        """
         if not isinstance(item, self._item_class):
             ValueError(
                 f"Could not persist item of type `{type(item)}`, "
@@ -121,9 +130,9 @@ class Table(Generic[I]):
             error = e.response.get("Error")
             if error["Code"] == "ConditionalCheckFailedException":
                 return False
-            raise QueryError(error["Message"]) from e
+            raise PutItemError.for_client_error(error["Message"]) from e
         except ParamValidationError as e:
-            raise QueryError(str(e)) from e
+            raise PutItemError.for_validation_error(item, str(e)) from e
 
         success = result["ResponseMetadata"]["HTTPStatusCode"] == 200
 
@@ -132,13 +141,12 @@ class Table(Generic[I]):
 
         return success
 
-    @typing.no_type_check
     def update(self, item: I) -> bool:
         if item._state() == _ItemState.CLEAN:
             return False
 
         if item._state() == _ItemState.NEW:
-            raise  # @todo: fixme
+            raise UpdateItemError.for_new_item(item)
 
         (
             update_expression,
@@ -156,7 +164,7 @@ class Table(Generic[I]):
             result = self._db_client.update_item(**query)
         except ClientError as e:
             error = e.response.get("Error")
-            raise QueryError(error["Message"]) from error
+            raise UpdateItemError.for_client_error(error["Message"]) from error
 
         success = result["ResponseMetadata"]["HTTPStatusCode"] == 200
 

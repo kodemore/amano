@@ -296,6 +296,9 @@ class Item(metaclass=ItemMeta):
 
         return _ItemState.DIRTY
 
+    def __str__(self) -> str:
+        return f"{self.__class__}()"
+
 
 class VersionedItem(Item):
     ...

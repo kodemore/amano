@@ -66,7 +66,7 @@ class Cursor(Generic[I]):
             raise QueryError(
                 f"Could not execute query "
                 f"`{self._query['KeyConditionExpression']}`, reason: {error}"
-            )
+            ) from error
         if "LastEvaluatedKey" in result:
             self._last_evaluated_key = result["LastEvaluatedKey"]
             self._query["ExclusiveStartKey"] = result["LastEvaluatedKey"]

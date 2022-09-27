@@ -155,7 +155,9 @@ class AttributeType(StringEnum):
         origin_type = get_origin_type(value_type)
 
         if origin_type not in _SUPPORTED_GENERIC_TYPES:
-            raise TypeError(f"Unsupported type {value_type}")
+            raise TypeError(
+                f"Unsupported type `{value_type}` used for an attribute"
+            )
 
         if origin_type is set or origin_type is frozenset:
             value_subtype = get_type_args(value_type)[0]
