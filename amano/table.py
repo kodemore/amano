@@ -167,7 +167,7 @@ class Table(Generic[I]):
             "ReturnConsumedCapacity": "INDEXES",
         }
         try:
-            result = self._db_client.update_item(**query)
+            result = self._db_client.update_item(**query)  # type: ignore[arg-type]
         except ClientError as e:
             error = e.response.get("Error")
             raise UpdateItemError.for_client_error(error["Message"]) from error
