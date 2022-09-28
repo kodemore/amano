@@ -133,8 +133,8 @@ class Table(Generic[I]):
 
             result = self._db_client.put_item(**put_query)  # type: ignore
         except ClientError as e:
-            error = e.response.get("Error")
-            if error["Code"] == "ConditionalCheckFailedException":
+            error = e.response.get("Error", {})
+            if error.get("Code") == "ConditionalCheckFailedException":
                 return False
             raise PutItemError.for_client_error(error["Message"]) from e
         except ParamValidationError as e:
@@ -164,7 +164,7 @@ class Table(Generic[I]):
             expression_attribute_values,
         ) = self._generate_update_expression(item)
 
-        query = {
+        query: Dict[str, Any] = {
             "TableName": self._table_name,
             "Key": self._get_key_expression(item),
             "UpdateExpression": update_expression,
@@ -175,12 +175,15 @@ class Table(Generic[I]):
         if condition:
             query["ConditionExpression"] = str(condition)
             if condition.values:
-                query["ExpressionAttributeValues"] = {**query["ExpressionAttributeValues"], **condition.values}
+                query["ExpressionAttributeValues"] = {
+                    **query["ExpressionAttributeValues"],
+                    **condition.values,
+                }
         try:
             result = self._db_client.update_item(**query)  # type: ignore[arg-type]
         except ClientError as e:
-            error = e.response.get("Error")
-            if error["Code"] == "ConditionalCheckFailedException":
+            error = e.response.get("Error", {})
+            if error.get("Code") == "ConditionalCheckFailedException":
                 return False
             raise UpdateItemError.for_client_error(error["Message"]) from e
 
@@ -322,7 +325,7 @@ class Table(Generic[I]):
         if self.sort_key:
             key_expression[self.sort_key] = getattr(item, self.sort_key)
 
-        return _serialize_item(key_expression)["M"]
+        return _serialize_item(key_expression)["M"]  # type: ignore[return-value]
 
     @property
     def indexes(self) -> Dict[str, Index]:
