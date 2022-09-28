@@ -120,7 +120,7 @@ class ContainsCondition(Condition):
         super().__init__(attribute=str(attribute), value=param_name)
         serializer = serializer_registry.get_for(type(value))
         self.values = {
-            param_name: serialize_value(serializer.extract(value)),
+            param_name: serialize_value(serializer.extract(value)),  # type: ignore[dict-item]
         }
         self.attributes.add(attribute.name)
 
