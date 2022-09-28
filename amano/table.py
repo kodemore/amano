@@ -147,7 +147,12 @@ class Table(Generic[I]):
 
         return success
 
-    def update(self, item: I) -> bool:
+    def update(self, item: I, condition: Condition = None) -> bool:
+        if not isinstance(item, self._item_class):
+            ValueError(
+                f"Could not update item of type `{type(item)}`, "
+                f"expected instance of `{self._item_class}` instead."
+            )
         if item._state() == _ItemState.CLEAN:
             return False
 
@@ -166,11 +171,18 @@ class Table(Generic[I]):
             "ExpressionAttributeValues": expression_attribute_values,
             "ReturnConsumedCapacity": "INDEXES",
         }
+
+        if condition:
+            query["ConditionExpression"] = str(condition)
+            if condition.values:
+                query["ExpressionAttributeValues"] = {**query["ExpressionAttributeValues"], **condition.values}
         try:
             result = self._db_client.update_item(**query)  # type: ignore[arg-type]
         except ClientError as e:
             error = e.response.get("Error")
-            raise UpdateItemError.for_client_error(error["Message"]) from error
+            if error["Code"] == "ConditionalCheckFailedException":
+                return False
+            raise UpdateItemError.for_client_error(error["Message"]) from e
 
         success = result["ResponseMetadata"]["HTTPStatusCode"] == 200
 

@@ -67,6 +67,11 @@ class Attribute(AbstractAttribute, Generic[_T]):
             ComparisonCondition.ComparisonOperator.EQ, self, other
         )
 
+    def __ne__(self, other) -> ComparisonCondition:  # type: ignore
+        return ComparisonCondition(
+            ComparisonCondition.ComparisonOperator.NEQ, self, other
+        )
+
     def __gt__(self, other) -> ComparisonCondition:
         return ComparisonCondition(
             ComparisonCondition.ComparisonOperator.GT, self, other
