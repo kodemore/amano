@@ -1,37 +1,28 @@
 # Amano DB
 
-AWS DynamoDB Abstraction Layer build on Table Data Gateway Pattern.
+AWS DynamoDB Abstraction Layer built on Table Data Gateway Pattern.
 
 ## Features
 
  - Hydration and extraction of table items
  - Simple query mechanism with elegant abstraction
- - Interface for easy storing and retriving data
- - Intelligent algorithms that saves your DynamoDB quota and your money
+ - Interface for easy storing and retrieving data
+ - Intelligent algorithm that saves DynamoDB's quota and money
 
 ## What is Amano?
 
-As mentioned above amano is a Table Data Gateway Patter implementation, which
-means it relies on already existing schema of your table. It can understand
-existing schema to simplify daily tasks like; storing, retrieving and query
-data.
-Amano has built-in mechanism to auto-picking index. This means as long as there
-might be an index to perform a query against your table amano will automatically
-pick the best matching index for your query.
+As mentioned above, Amano is a Table Data Gateway Patter implementation, which relies on a table's already existing schema. It can understand existing schema to simplify daily tasks like; storing, retrieving and querying data.
+
+Amano has a built-in index auto-use mechanism when performing a query. If there is an index, it will automatically pick the best matching index for the query.
 
 ## Basic Usage
-Following examples rely on [AWS Discussion Forum Data Model](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SampleData.CreateTables.html#SampleData.CreateTables2).
+The following examples rely on [AWS Discussion Forum Data Model](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SampleData.CreateTables.html#SampleData.CreateTables2).
 
 ### Defining your first Item
 
-The example below defines a `Forum` class, which is a representation of a 
-record in a dynamodb's table. This class is required to instantiate parametrized
-`Table` class that abstract access do dynamodb's table.
+The example below defines a `Forum` class, which represents a record in a Dynamodb table. This class is required to instantiate parametrised `Table` class that abstracts access to Dynamodb's table.
 
-> Please note: property names in the following example are not following 
-> the PEP standards. The reason for that is the fact that those names are
-> corresponding to field names present in dynamodb's item. You can have a look
-> into a [mapping section](#mapping-items-fields) to fix this issue.
+> Please note that property names in the following example do not follow the PEP standards. The reason is that those names correspond to field names present in Dynamodb's Item. To fix this issue, please look into a [mapping section](#mapping-items-fields).
 
 ```python
 import boto3
@@ -49,23 +40,17 @@ class Forum(Item):
 forum_table = Table[Forum](client, table_name="Forum")
 ```
 
-> Please note: `Forum` class extends `amano.Item` class. This is required 
-> by `amano.Table` to properly work. All the table's information including; 
-> indexes, fields, projections, etc. are handled automatically and do not
-> require any work on developer's side.
+> Please note: `Forum` class extends `amano.Item` class. This is required by `amano.Table` to work properly. All the table's information, including; indexes, fields, projections, etc., are handled automatically and do not require any work on the developer's side.
 
 
-### Storing item in a table
+### Storing Item in a table
 
-To store item, you can use the `put` or `save` method of `amano.Table` class.
-The difference between those two methods is that `save` can execute either 
-`PutItem` or `UpdateItem` operations. It inspects an instance of `amano.Item` 
-subclass to identify its state and generates an update expression if needed.
+To store Item, you can use the `put` or `save` method of `amano.Table` class.
+The difference between those two methods is that `save` can understand state of the Item and can execute either `PutItem` or `UpdateItem` operation depending on the scenario. 
 
-On the other hand, the `Put` method always executes `PutItem` expression. 
-It does not take into consideration any context of the passed item.
+On the other hand, the `Put` method always executes `PutItem` expression. Which creates or fully overrides existing Item in case where no condition is provided.
 
-Both `put` and `save` methods allow using conditional expressions.
+> Both `put` and `save` methods allow using conditional expressions.
 
 ```python
 import boto3
@@ -84,14 +69,64 @@ forum_table = Table[Forum](client, table_name="Forum")
 forum_table.put(Forum(ForumName="Amano Forum", Category="Amazon DynamoDB"))
 ```
 
+### Updating item in a table
+
+`Table.update` edits an existing item's attributes. The difference between `put` and `update` is that update calculates Item's changes and performs a query only for the attributes that were changed. To update an Item, it must be retrieved first.
+
+```python
+import boto3
+from amano import Table, Item
+
+client = boto3.client("dynamodb")
+
+class Forum(Item):
+    ForumName: str
+    Category: str
+    Threads: int = 0
+    Messages: int = 0
+    Views: int = 0
+
+forum_table = Table[Forum](client, table_name="Forum")
+amano_forum = forum_table.get("Amano Forum")
+amano_forum.Category = "Other Category"
+
+assert forum_table.update(amano_forum)
+```
+
+### Conditional writes
+
+`Put`, `update` and `save` can perform conditional expressions (update Item only if given attribute exists, or when it asserts against given value). Amano provides abstraction which is built on the top of python's comparison operators (`==`, `=!`, `>`, `>=` `<`, `<=`) and bitwise operators (`&` - and, `|` - or).
+
+```python
+import boto3
+from amano import Table, Item
+
+client = boto3.client("dynamodb")
+
+class Forum(Item):
+    ForumName: str
+    Category: str
+    Threads: int = 0
+    Messages: int = 0
+    Views: int = 0
+
+forum_table = Table[Forum](client, table_name="Forum")
+amano_forum = forum_table.get("Amano Forum")
+amano_forum.Category = "Other Category"
+
+# Update forum only if there are no messages
+assert forum_table.update(amano_forum, Forum.Messages == 0)
+```
+
+The above example shows how to update an Item in a certain situation. More complex conditions can be used, to learn more head to [Supported Conditions Section](#supported-conditions).
+
 ### Retrieving data by a primary key
 
-Dynamodb allows to choose between two types of primary key:
-- __Partition key__. It is a simplified primary key. This means there 
+Dynamodb allows to choose between two types of primary keys:
+- __Partition key__. It is a simplified primary key. It means there 
 should be no two items in a table with the same partition key value.
-- __Composite key__. It is a combination of partition key and sort key. 
-This means there might be items in a table with the same partition key, but they
-must have different sort key values.
+- __Composite key__. It is a combination of the partition key and sort key. 
+This means there might be items in a table with the same partition key, but they must have different sort key values.
 
 
 #### Retrieving by a partition key
@@ -136,9 +171,7 @@ forum_table.get("Amazon DynamoDB", "Tagging tables")
 
 #### Ensuring consistency reads
 
-Both `query` and `get` methods of the `Table` class are supporting strongly 
-consistent reads. To use strongly consistent reads set `consistent_read` 
-parameter to `True`:
+Both `query` and `get` methods of the `Table` class are supporting strongly consistent reads. To use strongly consistent reads, set `consistent_read` parameter to `True`:
 
 ```python
 import boto3
@@ -160,19 +193,12 @@ forum_table.get("Amazon DynamoDB", "Tagging tables", consistent_read=True)
 ```
 
 
-> To learn more about dynamodb's read consistency click 
-> [here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html)
+> To learn more about Dynamodb's read consistency click [here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html)
 
 
 ### Querying a table
 
-Use `key_condition` attribute to specify search criteria. A key condition is a
-condition that is executed against all items within a specific index. Amano can
-determine which index to use by looking at the fields that are present in your 
-key condition and table's schema. 
-If corresponding index cannot be determined the `query` method will throw 
-an exception and no real request will be made to table. Amano does all of this 
-behind the scenes to save you from using your dynamodb's quota.
+Use the `key_condition` attribute to specify search criteria. A key condition is a condition that is executed against all items within a specific index. Amano can determine which index to use by looking at the fields in your key condition and table schema. If the corresponding index cannot be determined, the `query` method will throw an exception, and no actual request will be made to the table. Amano does all of this behind the scenes to save Dynamodb's quota.
 
 
 ```python
@@ -196,9 +222,7 @@ result = forum_table.query(
 )
 ```
 
-The above query will look for all items in the `Thread` table, where `ForumName`
-equals `Amazon DynamoDB`. Because `Thread` table specifies sort key (`Subject`), 
-you can refine your search by using it in the `key_condition`. 
+The above query will look for all items in the `Thread` table, where `ForumName` equals `Amazon DynamoDB`. Because the `Thread` table specifies the sort key (`Subject`), a search might be refined by using it in the `key_condition`. 
 
 The sort key condition must use one of the following comparison operators:
  - equals `==`
@@ -210,23 +234,19 @@ The sort key condition must use one of the following comparison operators:
 
 ### Supported conditions
 
-Amano supports all the conditions of dynamodb and provides an elegant 
-abstraction which simplifies querying and filtering your dynamodb tables.
+Amano supports all the conditions of Dynamodb and provides an elegant abstraction, which simplifies querying and filtering Dynamodb tables.
 
-> This guide is using the following symbols to provide you a comprehensive list
-> of examples:
+> This guide uses the following symbols to provide a comprehensive list of examples:
 > 
 > __`{value}`__ is used to reference any valid value you may use in a condition.
 >
-> __`Item.field_{type}`__ is used to reference to a __class__' property, 
-> e.g.:`Item.field_int` may represent any valid class' property of an integer
-> type.
+> __`Item.field_{type}`__ is used to reference to a __class__' property, e.g.:`Item.field_int` may represent any valid class' property of an integer type.
 
 #### `Item.field_any == {value}`
 
 Matches all items in a table where `field_any` field's value is equal to a `{value}`.
 
-> `{value}` can be of any supported types.
+> `{value}` can be of any supported type.
 
 #### `Item.field_numeric < {value}`
 
@@ -254,33 +274,29 @@ Matches all items in a table where `field_numeric` field's value is lower or equ
 
 #### `Item.field_numeric.between({value_a}, {value_b})`
 
-Matches all items in a table where `field_numeric` field's value is greater than or equals `{value_a}` and
-lower than or equals to `{value_b}`.
+Matches all items in a table where `field_numeric` field's value is greater than or equals `{value_a}` and lower than or equals to `{value_b}`.
 
 > `{value}` should be a numeric or a string.
 
 #### `Item.field_str.begins_with({value})`
 
-Matches all items in a table where `field_str` field's value starts with a `{value}`.
-This operation is __case-sensitive__.
+Matches all items in a table where `field_str` field's value starts with a `{value}`. This operation is __case-sensitive__.
 
 > `{value}` should be a string.
 
 ### Working with `amano.Cursor`
 
-The result of a query is always an instance of `amano.Cursor`. Cursor can be
-used to fetch all the records simply by iterating through it or by calling 
-the `fetch` method.
+The result of a query is always an instance of `amano.Cursor`. Cursor can be used to fetch all the records simply by iterating through it or by calling the `fetch` method.
 
 ```python
 
 ```
 
 
-### Improved typehints
+### Improved type hints
 
 In order to get better type support in mypy and your IDE it is recommended 
-to use `amano.Attribute` class when defining item's attributes. 
+to use `amano.Attribute` class when defining Item's attributes. 
 Consider the following example which is redefining the `Thread` class:
 
 ```python
@@ -297,11 +313,8 @@ class Thread(Item):
 
 ### Mapping item's fields
 
-Usually schema of persisted data is different from its memory representation.
-Amano provides a powerful mapping mechanism to cover this scenario. Mapping is
-an operation which associates each element from one set of data 
-(in-memory representation) to one or more elements of another set of data 
-(dynamodb table).
+Usually, schema of persisted data is different from its memory representation.
+Amano provides a powerful mapping mechanism to cover this scenario. Mapping is an operation which associates each element from one set of data (in-memory representation) to one or more elements of another set of data (Dynamodb table).
 
 ```python
 import boto3
@@ -319,9 +332,7 @@ class Forum(Item, mapping=Mapping.PASCAL_CASE):
 forum_table = Table[Forum](client, table_name="Forum")
 ```
 
-The above example will use built-in mapping strategy, which expects table's 
-field names to follow PascalCase convention, and it will map them to standard 
-python's snake case.
+The above example will use a built-in mapping strategy, which expects table's field names to follow PascalCase convention, and it will map them to standard python's snake case.
 
 The following is the list of available mapping strategies:
 - `Mapping.PASS_THROUGH`
@@ -357,8 +368,8 @@ forum_table = Table[Forum](client, table_name="Forum")
 
 # Item class internals
 
-By default, a subclass of `amano.Item` behaves a bit like a dataclass, which 
-means that initializer for the class is able to set class' properties.
+By default, a subclass of `amano.Item` behaves a bit like a dataclass, which means that the class's initialiser can set class' properties.
+
 Consider the following example:
 
 ```python
@@ -371,8 +382,4 @@ assert dynamodb_forum.name == "Amazon DynamoDB"
 assert dynamodb_forum.threads == 0
 ```
 
-`amano.Item` provides also an API, that helps to serialize and deserialize data.
-A `hydrate` method can be used to deserialize data coming from database into an
-item representation. A `extract` method can be used to store in-memory item 
-representation to a database representation.
-
+`amano.Item` also provides an API that helps to serialise and deserialise data. An `extract` method can be used to store in-memory item representation to a table representation. A `hydrate` method can be used to deserialise data coming from a table into an item representation.
