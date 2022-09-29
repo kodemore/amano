@@ -97,9 +97,33 @@ class Table(Generic[I]):
                 f"which was not found in the item class `{self._item_class}`"
             )
 
-    def scan(self, condition: Condition) -> Cursor:
-        # @todo: implement this
-        raise NotImplemented
+    def scan(self, condition: Condition = None, limit: int = 0, use_index: Union[Index, str] = None, consistent_read: bool = False,) -> Cursor:
+        scan_params = {
+            "TableName": self._table_name,
+            "ReturnConsumedCapacity": "INDEXES",
+            "ConsistentRead": consistent_read
+        }
+
+        if condition:
+            scan_params["FilterExpression"] = str(condition)
+            scan_params["ExpressionAttributeValues"] = {
+                **condition.values,  # type: ignore
+            }
+
+        if use_index:
+            if isinstance(use_index, str):
+                if use_index not in self.indexes:
+                    raise QueryError.for_invalid_index(use_index, condition)
+                hint_index = self.indexes[use_index]
+            else:
+                hint_index = use_index
+
+            scan_params["IndexName"] = str(hint_index)
+
+        if limit:
+            scan_params["Limit"] = limit
+
+        return Cursor(self._item_class, scan_params, self._db_client.scan)
 
     def save(self, item: I) -> None:
         # @todo: save or update item depending on its state
