@@ -46,9 +46,9 @@ forum_table = Table[Forum](client, table_name="Forum")
 ### Storing Item in a table
 
 To store Item, you can use the `put` or `save` method of `amano.Table` class.
-The difference between those two methods is that `save` can execute either `PutItem` or `UpdateItem` operations. It inspects an instance of `amano.Item` subclass to identify its state and generates an update expression if needed.
+The difference between those two methods is that `save` can understand state of the Item and can execute either `PutItem` or `UpdateItem` operation depending on the scenario. 
 
-On the other hand, the `Put` method always executes `PutItem` expression. It does not take into consideration any context of the passed Item.
+On the other hand, the `Put` method always executes `PutItem` expression. Which creates or fully overrides existing Item in case where no condition is provided.
 
 > Both `put` and `save` methods allow using conditional expressions.
 
@@ -68,6 +68,57 @@ class Forum(Item):
 forum_table = Table[Forum](client, table_name="Forum")
 forum_table.put(Forum(ForumName="Amano Forum", Category="Amazon DynamoDB"))
 ```
+
+### Updating item in a table
+
+`Table.update` edits an existing item's attributes. The difference between `put` and `update` is that update calculates Item's changes and performs a query only for the attributes that were changed. To update an Item, it must be retrieved first.
+
+```python
+import boto3
+from amano import Table, Item
+
+client = boto3.client("dynamodb")
+
+class Forum(Item):
+    ForumName: str
+    Category: str
+    Threads: int = 0
+    Messages: int = 0
+    Views: int = 0
+
+forum_table = Table[Forum](client, table_name="Forum")
+amano_forum = forum_table.get("Amano Forum")
+amano_forum.Category = "Other Category"
+
+assert forum_table.update(amano_forum)
+```
+
+### Conditional writes
+
+`Put`, `update` and `save` can perform conditional expressions (update Item only if given attribute exists, or when it asserts against given value). Amano provides abstraction which is built on the top of python's comparison operators (`==`, `=!`, `>`, `>=` `<`, `<=`) and bitwise operators (`&` - and, `|` - or).
+
+```python
+import boto3
+from amano import Table, Item
+
+client = boto3.client("dynamodb")
+
+class Forum(Item):
+    ForumName: str
+    Category: str
+    Threads: int = 0
+    Messages: int = 0
+    Views: int = 0
+
+forum_table = Table[Forum](client, table_name="Forum")
+amano_forum = forum_table.get("Amano Forum")
+amano_forum.Category = "Other Category"
+
+# Update forum only if there are no messages
+assert forum_table.update(amano_forum, Forum.Messages == 0)
+```
+
+The above example shows how to update an Item in a certain situation. More complex conditions can be used, to learn more head to [Supported Conditions Section](#supported-conditions).
 
 ### Retrieving data by a primary key
 
