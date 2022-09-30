@@ -459,14 +459,14 @@ def test_scan_table(
 
     # then
     assert isinstance(result, Iterable)
-    assert result.count() == 201
+    assert result.count() == 200
 
     all_items = []
     for item in result:
         all_items.append(item)
         assert isinstance(item, Track)
 
-    assert len(all_items) == 201
+    assert len(all_items) == 200
 
 
 def test_scan_table_with_filter(
@@ -546,10 +546,10 @@ def test_scan_table_with_index(
     # then
     assert isinstance(result, Iterable)
 
-    assert result.count() == 201
+    assert result.count() == 200
     all_items = []
     for item in result:
         all_items.append(item)
         assert isinstance(item, Track)
 
-    assert len(all_items) == 201
+    assert len(all_items) == 200
