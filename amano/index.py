@@ -44,6 +44,9 @@ class Index:
         self.partition_key = partition_key
         self.sort_key = sort_key
 
+    def __str__(self) -> str:
+        return self.name
+
 
 def _extract_index(
     key_schema: List[Dict[str, Any]], index_name: str, index_type: IndexType
