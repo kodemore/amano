@@ -7,8 +7,6 @@ from .base_attribute import (
     _SUPPORTED_BASE_TYPES,
     AbstractAttribute,
     AttributeType,
-    deserialize_value,
-    serialize_value,
     serializer_registry,
 )
 from .condition import (
@@ -27,7 +25,7 @@ _T = TypeVar('_T')
 
 class Attribute(AbstractAttribute, Generic[_T]):
     def __init__(
-        self, name: str, attribute_type: type, default_value: Any = None
+        self, name: str, attribute_type: type, default_factory: callable = None # noqa: 501
     ):
         self.name = name
         if inspect.isclass(attribute_type) and issubclass(
@@ -43,18 +41,19 @@ class Attribute(AbstractAttribute, Generic[_T]):
         self._strategy = serializer_registry.get_for(
             attribute_type, strict=True
         )
-        self.default_value = default_value
+        self.default_factory = default_factory
 
-    def extract(self, value: Any, simple: bool = False) -> Any:
-        if simple:
-            return self._strategy.extract(value)
-        return serialize_value(self._strategy.extract(value))
+    @property
+    def default_value(self) -> Any:
+        if not self.default_factory:
+            return None
+        return self.default_factory()
 
-    def hydrate(self, value: Any, simple: bool = False) -> Any:
-        if simple:
-            return self._strategy.hydrate(value)
+    def extract(self, value: Any) -> Any:
+        return self._strategy.extract(value)
 
-        return self._strategy.hydrate(deserialize_value(value))
+    def hydrate(self, value: Any) -> Any:
+        return self._strategy.hydrate(value)
 
     def __str__(self) -> str:
         return f"{self.name}"

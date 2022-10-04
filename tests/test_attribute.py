@@ -107,10 +107,10 @@ def test_float_attribute() -> None:
     extracted_value = attribute.extract(10.4213)
 
     # then
-    assert extracted_value == {"N": "10.4213"}
+    assert extracted_value == Decimal("10.4213")
 
     # when
-    hydrated_value = attribute.hydrate({"N": "10.4213"})
+    hydrated_value = attribute.hydrate("10.4213")
 
     # then
     assert isinstance(hydrated_value, float)

@@ -233,7 +233,9 @@ class ComparisonCondition(Condition):
             left_operand=left_operand,
             right_operand=param_name,
         )
-        self.values = {param_name: left_operand.extract(right_operand)}
+        self.values = {
+            param_name: serialize_value(left_operand.extract(right_operand))
+        }
         self.attributes.add(left_operand.name)
 
     @property
@@ -301,7 +303,7 @@ class BetweenCondition(Condition):
             params["b"] = str(b)
 
         super().__init__(attribute=str(attribute), a=params["a"], b=params["b"])
-        self.values = values
+        self.values = serialize_value(values).get("M")
         self.attributes.add(attribute.name)
 
     @property

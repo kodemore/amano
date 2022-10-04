@@ -199,12 +199,12 @@ class AttributeType(StringEnum):
 class AbstractAttribute(Protocol):
     name: str
     type: AttributeType
-    default_value: Any
+    default_factory: Any
     __attribute_type__: Type
 
     @abstractmethod
-    def extract(self, value: Any, simple: bool = False) -> AttributeValue:
+    def extract(self, value: Any) -> Any:
         ...
 
-    def hydrate(self, value: AttributeValue, simple: bool = False) -> Any:
+    def hydrate(self, value: Any) -> Any:
         ...

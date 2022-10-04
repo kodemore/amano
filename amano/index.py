@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from enum import Enum
 from typing import Any, Dict, List
 
 from .constants import (
@@ -12,20 +11,15 @@ from .constants import (
     LOCAL_SECONDARY_INDEXES,
     PRIMARY_KEY_NAME,
 )
+from .utils import StringEnum
 
 
-class KeyType(Enum):
+class KeyType(StringEnum):
     PARTITION_KEY = KEY_TYPE_HASH
     SORT_KEY = KEY_TYPE_RANGE
 
-    def __eq__(self, other):
-        if isinstance(other, str):
-            return self.value == other
 
-        return other == self
-
-
-class IndexType(Enum):
+class IndexType(StringEnum):
     LOCAL_INDEX = "local_index"
     GLOBAL_INDEX = "global_index"
     PRIMARY_KEY = "primary_key"

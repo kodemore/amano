@@ -6,7 +6,7 @@ from mypy_boto3_dynamodb import DynamoDBClient
 
 from amano import Attribute, Index, Item, Table
 from amano.errors import AmanoDBError, ItemNotFoundError, QueryError, ReadError
-from amano.item import _ItemState
+from amano.item import ItemState, get_item_state
 
 
 def test_can_instantiate(readonly_dynamodb_client, readonly_table) -> None:
@@ -335,6 +335,7 @@ def test_query_table_with_pk_and_filter(
 
 def test_can_update_item(default_dynamodb_client, default_table) -> None:
     # given
+    @dataclass()
     class Track(Item):
         artist_name: Attribute[str]
         track_name: Attribute[str]
@@ -353,7 +354,7 @@ def test_can_update_item(default_dynamodb_client, default_table) -> None:
     tracks.update(track)
 
     # then
-    assert track._state() == _ItemState.CLEAN
+    assert get_item_state(track) == ItemState.CLEAN
 
     track = tracks.get("AC/DC", "Let There Be Rock")
     assert isinstance(track, Track)
@@ -364,6 +365,7 @@ def test_can_update_item_with_condition(
     default_dynamodb_client, default_table
 ) -> None:
     # given
+    @dataclass
     class Track(Item):
         artist_name: Attribute[str]
         track_name: Attribute[str]
@@ -389,7 +391,7 @@ def test_fail_update_item_with_condition(
     default_dynamodb_client, default_table
 ) -> None:
     # given
-    class Track(Item):
+    class Track(Item, init=True):
         artist_name: Attribute[str]
         track_name: Attribute[str]
         album_name: Attribute[str]
@@ -414,6 +416,7 @@ def test_ignore_update_for_non_modified_item(
     default_dynamodb_client, default_table
 ) -> None:
     # given
+    @dataclass
     class Track(Item):
         artist_name: Attribute[str]
         track_name: Attribute[str]
@@ -424,13 +427,13 @@ def test_ignore_update_for_non_modified_item(
 
     track = Track("Artist", "Track", "Album", "Genre")
     tracks.put(track)
-    assert track._state() == _ItemState.CLEAN
+    assert get_item_state(track) == ItemState.CLEAN
 
     # when
     assert not tracks.update(track)
 
     # then
-    assert track._state() == _ItemState.CLEAN
+    assert get_item_state(track) == ItemState.CLEAN
 
 
 def test_query_table_with_limit(

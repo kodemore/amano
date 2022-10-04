@@ -1,6 +1,7 @@
 import pytest
 
 from amano import Item, Mapping
+from amano.item import hydrate, extract
 
 
 @pytest.mark.parametrize(
@@ -25,7 +26,8 @@ def test_pass_through_mapping_integration() -> None:
         a_BC: str
 
     # when
-    instance = MyItem.hydrate(
+    instance = hydrate(
+        MyItem,
         {"a": {"S": "a"}, "a_b_c": {"S": "b"}, "a_BC": {"S": "c"}}
     )
 
@@ -57,7 +59,8 @@ def test_pascal_case_mapping_integration() -> None:
         a_bcd: str
 
     # when
-    instance = MyItem.hydrate(
+    instance = hydrate(
+        MyItem,
         {"A": {"S": "a"}, "ABC": {"S": "b"}, "ABcd": {"S": "c"}}
     )
 
@@ -67,7 +70,7 @@ def test_pascal_case_mapping_integration() -> None:
     assert instance.a_bcd == "c"
 
     # when
-    data = instance.extract()
+    data = extract(instance)
 
     # then
     assert data == {"A": {"S": "a"}, "ABC": {"S": "b"}, "ABcd": {"S": "c"}}
@@ -95,7 +98,8 @@ def test_camel_case_mapping_integration() -> None:
         a_bc_d: str
 
     # when
-    instance = MyItem.hydrate(
+    instance = hydrate(
+        MyItem,
         {"a": {"S": "a"}, "aBC": {"S": "b"}, "aBcD": {"S": "c"}}
     )
 
@@ -105,7 +109,7 @@ def test_camel_case_mapping_integration() -> None:
     assert instance.a_bc_d == "c"
 
     # when
-    data = instance.extract()
+    data = extract(instance)
 
     # then
     assert data == {"a": {"S": "a"}, "aBC": {"S": "b"}, "aBcD": {"S": "c"}}

@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import typing
 from functools import cached_property
-from typing import Any, Dict, Generic, List, Tuple, Type, Union
+from typing import Any, Dict, Generic, List, Type, Union
 
-from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from botocore.exceptions import ClientError, ParamValidationError
 from mypy_boto3_dynamodb.client import DynamoDBClient
 from mypy_boto3_dynamodb.type_defs import AttributeValueTypeDef
 
+from .base_attribute import serialize_value
 from .condition import Condition
 from .constants import (
     CONDITION_FUNCTION_CONTAINS,
@@ -24,12 +24,12 @@ from .errors import (
     UpdateItemError,
 )
 from .index import Index, create_indexes_from_schema
-from .item import I, Item, _ChangeType, _ItemState
-
-_serialize_item = TypeSerializer().serialize
-_deserialize_item = TypeDeserializer().deserialize
+from .item import Item, ItemState, get_item_state, commit, \
+    extract, hydrate, diff
 
 KeyExpression = Dict[str, AttributeValueTypeDef]
+
+I = typing.TypeVar("I", bound=Item)
 
 
 class Table(Generic[I]):
@@ -85,13 +85,13 @@ class Table(Generic[I]):
         return available_indexes
 
     def _validate_table_primary_key(self) -> None:
-        if self.partition_key not in self._item_class:  # type: ignore[operator]
+        if self.partition_key not in self._item_class.__schema__:
             raise AttributeError(
                 f"Table `{self.table_name}` defines partition key "
                 f"{self.partition_key}, which was not found in the item class "
                 f"`{self._item_class}`"
             )
-        if self.sort_key and self.sort_key not in self._item_class:  # type: ignore[operator]
+        if self.sort_key and self.sort_key not in self._item_class.__schema__:
             raise AttributeError(
                 f"Table `{self.table_name}` defines sort key {self.sort_key}, "
                 f"which was not found in the item class `{self._item_class}`"
@@ -147,7 +147,7 @@ class Table(Generic[I]):
         try:
             put_query = {
                 "TableName": self._table_name,
-                "Item": item.extract(),
+                "Item": extract(item),
                 "ReturnConsumedCapacity": "TOTAL",
             }
             if condition:
@@ -167,7 +167,7 @@ class Table(Generic[I]):
         success = result["ResponseMetadata"]["HTTPStatusCode"] == 200
 
         if success:
-            item._commit()
+            commit(item)
 
         return success
 
@@ -177,22 +177,23 @@ class Table(Generic[I]):
                 f"Could not update item of type `{type(item)}`, "
                 f"expected instance of `{self._item_class}` instead."
             )
-        if item._state() == _ItemState.CLEAN:
+        item_state = get_item_state(item)
+        if item_state == ItemState.CLEAN:
             return False
 
-        if item._state() == _ItemState.NEW:
+        if item_state == ItemState.NEW:
             raise UpdateItemError.for_new_item(item)
 
         (
             update_expression,
             expression_attribute_values,
-        ) = self._generate_update_expression(item)
+        ) = diff(item)
 
         query: Dict[str, Any] = {
             "TableName": self._table_name,
             "Key": self._get_key_expression(item),
             "UpdateExpression": update_expression,
-            "ExpressionAttributeValues": expression_attribute_values,
+            "ExpressionAttributeValues": serialize_value(expression_attribute_values).get("M"),
             "ReturnConsumedCapacity": "INDEXES",
         }
 
@@ -214,44 +215,9 @@ class Table(Generic[I]):
         success = result["ResponseMetadata"]["HTTPStatusCode"] == 200
 
         if success:
-            item._commit()
+            commit(item)
 
         return success
-
-    def _generate_update_expression(
-        self, item: I
-    ) -> Tuple[str, Dict[str, Any]]:
-
-        changes = {
-            attribute_change.attribute.name: attribute_change
-            for attribute_change in item.__log__
-        }
-
-        set_fields = []
-        delete_fields = []
-        attribute_values = {}
-        for change in changes.values():
-            if change.type in (_ChangeType.CHANGE, _ChangeType.SET):
-                set_fields.append(change.attribute.name)
-                attribute_values[
-                    ":" + change.attribute.name
-                ] = change.attribute.extract(change.value)
-                continue
-            if change.type is _ChangeType.UNSET:
-                delete_fields.append(change.attribute.name)
-
-        update_expression = ""
-        if set_fields:
-            set_fields_expression = ','.join(
-                [field_name + ' = :' + field_name for field_name in set_fields]
-            )
-            update_expression = f"SET {set_fields_expression} "
-        if delete_fields:
-            update_expression += (
-                f"DELETE {','.join([field_name for field_name in set_fields])} "
-            )
-
-        return update_expression, attribute_values
 
     def query(
         self,
@@ -318,7 +284,7 @@ class Table(Generic[I]):
         if len(keys) > 1:
             key_query[self.sort_key] = keys[1]
 
-        key_expression = _serialize_item(key_query)["M"]
+        key_expression = serialize_value(key_query)["M"]
         projection = ", ".join(self.attributes)
         try:
             result = self._db_client.get_item(
@@ -339,7 +305,7 @@ class Table(Generic[I]):
                 key_query,
             )
 
-        return self._item_class.hydrate(result["Item"])  # type: ignore
+        return hydrate(self._item_class, result["Item"])
 
     def _get_key_expression(self, item: I) -> KeyExpression:
         key_expression = {
@@ -349,7 +315,7 @@ class Table(Generic[I]):
         if self.sort_key:
             key_expression[self.sort_key] = getattr(item, self.sort_key)
 
-        return _serialize_item(key_expression)["M"]  # type: ignore[return-value]
+        return serialize_value(key_expression).get("M")  # type: ignore[return-value]
 
     @property
     def indexes(self) -> Dict[str, Index]:
@@ -362,13 +328,16 @@ class Table(Generic[I]):
     @cached_property
     def available_indexes(self) -> Dict[str, Index]:
         return self._get_indexes_for_field_list(
-            list(self._item_class.__meta__.keys())
+            list(self._item_class.__schema__.keys())
         )
 
     @classmethod
-    def __class_getitem__(cls, item: Type[Item]) -> Type[Table]:
+    def __class_getitem__(cls, item: Type[Item], schema: Any = None) -> Type[Table]:  # noqa: E501
         if not issubclass(item, Item):
-            raise TypeError(f"Expected subclass of {Item}, got {item} instead.")
+            raise TypeError(
+                f"Expected subclass of `{Item}`, "
+                f"got {item} instead."
+            )
         return type(  # type: ignore
             f"{Table.__qualname__}[{item.__module__}.{item.__qualname__}]",
             tuple([Table]),
@@ -397,7 +366,7 @@ class Table(Generic[I]):
     @cached_property
     def attributes(self) -> List[str]:
         return [
-            attribute.name for attribute in self._item_class.attributes.values()  # type: ignore
+            attribute.name for attribute in self._item_class.__schema__.values()  # type: ignore
         ]
 
     def _hint_index_for_attributes(self, attributes: List[str]) -> Index:

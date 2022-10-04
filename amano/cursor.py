@@ -2,7 +2,7 @@ from typing import Any, Callable, Dict, Generic, Iterator, List, Type, Union
 
 from .base_attribute import AttributeValue
 from .errors import QueryError
-from .item import I
+from .item import I, hydrate
 
 
 class Cursor(Generic[I]):
@@ -25,7 +25,7 @@ class Cursor(Generic[I]):
         while self._current_index < items_count:
             item_data = self._fetched_records[self._current_index]
             if self.hydrate:
-                yield self._item_class.hydrate(item_data)  # type: ignore
+                yield hydrate(self._item_class, item_data)  # type: ignore
             else:
                 yield item_data
 

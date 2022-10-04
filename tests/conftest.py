@@ -56,8 +56,6 @@ def default_table() -> str:
 def readonly_dynamodb_client(
     dynamodb_client, readonly_table, tracks_with_artists_json
 ) -> Generator[DynamoDBClient, None, None]:
-
-    table_info = False
     try:
         table_info = dynamodb_client.describe_table(TableName=readonly_table)
     except ClientError:
