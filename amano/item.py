@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, Field
+from dataclasses import Field, dataclass
 from enum import Enum
-from typing import Type, List, Dict, Any, Tuple, TypeVar, Union, Callable
+from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar, Union
 
 from .attribute import Attribute
-from .base_attribute import AttributeValue, serialize_value, deserialize_value
+from .base_attribute import AttributeValue, deserialize_value, serialize_value
 from .mapping import Mapping, MappingStrategy
 from .undefined import UNDEFINED
 
@@ -84,7 +84,7 @@ class ItemMeta(type):
         schema = ItemMeta._create_schema(
             ItemMeta._read_annotations(bases, body),
             ItemMeta._get_mapping(meta),
-            body
+            body,
         )
 
         if "init" in meta and meta["init"] is True:
@@ -112,9 +112,7 @@ class ItemMeta(type):
         schema = {}
         for attr_name, attr_type in all_annotations.items():
             schema[attr_name] = ItemMeta._create_attribute(
-                mapping[attr_name],
-                attr_type,
-                body.get(attr_name, UNDEFINED)
+                mapping[attr_name], attr_type, body.get(attr_name, UNDEFINED)
             )
 
         return schema
@@ -123,30 +121,19 @@ class ItemMeta(type):
     def _create_attribute(attr_name: str, attr_type: type, field: Any):
         if isinstance(field, Field):
             if field.default_factory:
-                return Attribute(
-                    attr_name,
-                    attr_type,
-                    field.default_factory
-                )
+                return Attribute(attr_name, attr_type, field.default_factory)
 
-            return Attribute(
-                attr_name,
-                attr_type,
-                lambda: field.default
-            )
+            return Attribute(attr_name, attr_type, lambda: field.default)
 
-        return Attribute(
-            attr_name,
-            attr_type,
-            lambda: field
-        )
+        return Attribute(attr_name, attr_type, lambda: field)
 
     @staticmethod
     def _get_mapping(meta):
         mapping = Mapping.PASS_THROUGH
         if "mapping" in meta:
-            if not isinstance(meta["mapping"], MappingStrategy) and \
-                    not isinstance(meta, dict):
+            if not isinstance(
+                meta["mapping"], MappingStrategy
+            ) and not isinstance(meta, dict):
                 raise TypeError(
                     f"mapping must be type of {MappingStrategy.__qualname__} "
                     f"or dict, {type(meta['mapping'])} passed instead."
@@ -163,9 +150,13 @@ class ItemMeta(type):
                 continue
             if not hasattr(base, "__annotations__"):
                 continue
-            class_annotations = {att_name: att_type for att_name, att_type in
-                                 getattr(base, "__annotations__").items() if
-                                 not att_name.startswith("_")}
+            class_annotations = {
+                att_name: att_type
+                for att_name, att_type in getattr(
+                    base, "__annotations__"
+                ).items()
+                if not att_name.startswith("_")
+            }
             all_annotations = {**all_annotations, **class_annotations}
         if "__annotations__" in body:
             all_annotations = {**all_annotations, **body["__annotations__"]}
@@ -226,8 +217,9 @@ class Item(metaclass=ItemMeta):
     def __delattr__(self, key: str) -> None:
         if key not in self.__dict__:
             return
-        log_item = AttributeChange(self.__schema__[key],
-                                   AttributeChange.Type.UNSET, None)
+        log_item = AttributeChange(
+            self.__schema__[key], AttributeChange.Type.UNSET, None
+        )
         self.__log__.append(log_item)
         del self.__dict__[key]
 
@@ -253,11 +245,13 @@ def diff(item: Item) -> Diff:
 
     for change in item.__log__:
         if change.type in (
-                AttributeChange.Type.CHANGE, AttributeChange.Type.SET):
+            AttributeChange.Type.CHANGE,
+            AttributeChange.Type.SET,
+        ):
             set_fields.append(change.attribute.name)
             attribute_values[
                 ":" + change.attribute.name
-                ] = change.attribute.extract(change.value)
+            ] = change.attribute.extract(change.value)
             continue
         if change.type is AttributeChange.Type.UNSET:
             delete_fields.append(change.attribute.name)
@@ -291,9 +285,7 @@ def from_dict(what: Type[I], value: Dict[str, Any]) -> I:
     for field, attribute in what.__schema__.items():
         if attribute.name not in value:
             continue
-        setattr(
-            instance, field, attribute.hydrate(value.get(attribute.name))
-        )
+        setattr(instance, field, attribute.hydrate(value.get(attribute.name)))
 
     commit(instance)
     return instance

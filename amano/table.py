@@ -24,8 +24,15 @@ from .errors import (
     UpdateItemError,
 )
 from .index import Index, create_indexes_from_schema
-from .item import Item, ItemState, get_item_state, commit, \
-    extract, hydrate, diff
+from .item import (
+    Item,
+    ItemState,
+    commit,
+    diff,
+    extract,
+    get_item_state,
+    hydrate,
+)
 
 KeyExpression = Dict[str, AttributeValueTypeDef]
 
@@ -97,11 +104,17 @@ class Table(Generic[I]):
                 f"which was not found in the item class `{self._item_class}`"
             )
 
-    def scan(self, condition: Condition = None, limit: int = 0, use_index: Union[Index, str] = None, consistent_read: bool = False,) -> Cursor:
+    def scan(
+        self,
+        condition: Condition = None,
+        limit: int = 0,
+        use_index: Union[Index, str] = None,
+        consistent_read: bool = False,
+    ) -> Cursor:
         scan_params = {
             "TableName": self._table_name,
             "ReturnConsumedCapacity": "INDEXES",
-            "ConsistentRead": consistent_read
+            "ConsistentRead": consistent_read,
         }
 
         if condition:
@@ -193,7 +206,9 @@ class Table(Generic[I]):
             "TableName": self._table_name,
             "Key": self._get_key_expression(item),
             "UpdateExpression": update_expression,
-            "ExpressionAttributeValues": serialize_value(expression_attribute_values).get("M"),
+            "ExpressionAttributeValues": serialize_value(
+                expression_attribute_values
+            ).get("M"),
             "ReturnConsumedCapacity": "INDEXES",
         }
 
@@ -332,11 +347,12 @@ class Table(Generic[I]):
         )
 
     @classmethod
-    def __class_getitem__(cls, item: Type[Item], schema: Any = None) -> Type[Table]:  # noqa: E501
+    def __class_getitem__(
+        cls, item: Type[Item], schema: Any = None
+    ) -> Type[Table]:  # noqa: E501
         if not issubclass(item, Item):
             raise TypeError(
-                f"Expected subclass of `{Item}`, "
-                f"got {item} instead."
+                f"Expected subclass of `{Item}`, " f"got {item} instead."
             )
         return type(  # type: ignore
             f"{Table.__qualname__}[{item.__module__}.{item.__qualname__}]",

@@ -25,7 +25,10 @@ _T = TypeVar('_T')
 
 class Attribute(AbstractAttribute, Generic[_T]):
     def __init__(
-        self, name: str, attribute_type: type, default_factory: callable = None # noqa: 501
+        self,
+        name: str,
+        attribute_type: type,
+        default_factory: callable = None,  # noqa: 501
     ):
         self.name = name
         if inspect.isclass(attribute_type) and issubclass(

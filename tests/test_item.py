@@ -3,8 +3,17 @@ from typing import List
 
 from amano import Mapping
 from amano.attribute import Attribute, AttributeType
-from amano.item import Item, AttributeChange, ItemState, hydrate, extract, \
-    get_item_state, commit, from_dict, as_dict
+from amano.item import (
+    AttributeChange,
+    Item,
+    ItemState,
+    as_dict,
+    commit,
+    extract,
+    from_dict,
+    get_item_state,
+    hydrate,
+)
 
 
 def test_can_instantiate() -> None:
@@ -87,8 +96,7 @@ def test_can_hydrate_item_with_mapping() -> None:
 
     # when
     item = hydrate(
-        MyItem,
-        {"mapped_name": {"S": "Bobik"}, "mapped_age": {"N": "10"}}
+        MyItem, {"mapped_name": {"S": "Bobik"}, "mapped_age": {"N": "10"}}
     )
 
     # then
@@ -103,10 +111,7 @@ def test_can_hydrate_item_with_mapping_strategy() -> None:
         age: int
 
     # when
-    item = hydrate(
-        MyItem,
-        {"Name": {"S": "Bobik"}, "Age": {"N": "10"}}
-    )
+    item = hydrate(MyItem, {"Name": {"S": "Bobik"}, "Age": {"N": "10"}})
 
     # then
     assert item.name == "Bobik"

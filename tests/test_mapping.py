@@ -1,7 +1,7 @@
 import pytest
 
 from amano import Item, Mapping
-from amano.item import hydrate, extract
+from amano.item import extract, hydrate
 
 
 @pytest.mark.parametrize(
@@ -27,8 +27,7 @@ def test_pass_through_mapping_integration() -> None:
 
     # when
     instance = hydrate(
-        MyItem,
-        {"a": {"S": "a"}, "a_b_c": {"S": "b"}, "a_BC": {"S": "c"}}
+        MyItem, {"a": {"S": "a"}, "a_b_c": {"S": "b"}, "a_BC": {"S": "c"}}
     )
 
     # then
@@ -60,8 +59,7 @@ def test_pascal_case_mapping_integration() -> None:
 
     # when
     instance = hydrate(
-        MyItem,
-        {"A": {"S": "a"}, "ABC": {"S": "b"}, "ABcd": {"S": "c"}}
+        MyItem, {"A": {"S": "a"}, "ABC": {"S": "b"}, "ABcd": {"S": "c"}}
     )
 
     # then
@@ -99,8 +97,7 @@ def test_camel_case_mapping_integration() -> None:
 
     # when
     instance = hydrate(
-        MyItem,
-        {"a": {"S": "a"}, "aBC": {"S": "b"}, "aBcD": {"S": "c"}}
+        MyItem, {"a": {"S": "a"}, "aBC": {"S": "b"}, "aBcD": {"S": "c"}}
     )
 
     # then

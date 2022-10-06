@@ -494,9 +494,7 @@ def test_query_table_returns_consumed_capacity(
     assert result.consumed_capacity == 0.5
 
 
-def test_scan_table(
-    readonly_dynamodb_client, readonly_table
-) -> None:
+def test_scan_table(readonly_dynamodb_client, readonly_table) -> None:
     # given
     @dataclass
     class Track(Item):
