@@ -40,4 +40,3 @@ def test_can_put_item_with_condition(
 
     # then
     assert result
-
