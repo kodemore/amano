@@ -21,7 +21,7 @@ from .condition import (
 _T = TypeVar('_T')
 
 
-class Attribute(AbstractAttribute, Generic[_T]):
+class Attribute(AbstractAttribute):
     def __init__(
         self,
         name: str,
@@ -57,7 +57,7 @@ class Attribute(AbstractAttribute, Generic[_T]):
         return f"{self.name}"
 
     def __repr__(self) -> str:
-        return f'Attribute[{self.__attribute_type__.__name__}]("{self.name}")'
+        return f'Attribute[{self.__attribute_type__}]("{self.name}")'
 
     def __eq__(self, other) -> ComparisonCondition:  # type: ignore
         return ComparisonCondition(
@@ -115,8 +115,10 @@ class Attribute(AbstractAttribute, Generic[_T]):
 
     @classmethod
     def __class_getitem__(cls, item: Type[Any]) -> Type[Attribute]:
-        return type(  # type: ignore
-            f"{Attribute.__qualname__}[{item.__name__}]",
+        attribute_class = type(  # type: ignore
+            f"amano.Attribute[{item}]",
             tuple([Attribute]),
             {"__attribute_type__": item},
         )
+
+        return attribute_class

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from datetime import date, datetime, time
 from decimal import Decimal
 from inspect import isclass
@@ -201,8 +201,7 @@ class AttributeType(StringEnum):
         )
 
 
-@runtime_checkable
-class AbstractAttribute(Protocol):
+class AbstractAttribute(ABC):
     name: str
     type: AttributeType
     default_factory: Any
