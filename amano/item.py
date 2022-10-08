@@ -6,6 +6,7 @@ from inspect import isclass
 from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar, Union
 
 from amano.attribute import Attribute
+
 from .base_attribute import AttributeValue, deserialize_value, serialize_value
 from .mapping import Mapping, MappingStrategy
 from .undefined import UNDEFINED

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import Any, Generic, Type, TypeVar, Callable
+from typing import Any, Callable, Generic, Type, TypeVar
 
 from .base_attribute import (
     _SUPPORTED_BASE_TYPES,
@@ -29,7 +29,10 @@ class Attribute(AbstractAttribute, Generic[_T]):
         name: str,
         default_factory: Callable[[], Any] = None,
     ):
-        if not hasattr(self, "__attribute_type__") or not self.__attribute_type__:  # noqa: E501
+        if (
+            not hasattr(self, "__attribute_type__")
+            or not self.__attribute_type__
+        ):  # noqa: E501
             raise TypeError(
                 f"Cannot use non parametrized `{Attribute.__qualname__}` class as `{name}` field ."  # noqa: E501
             )

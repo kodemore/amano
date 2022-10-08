@@ -24,7 +24,7 @@ from typing import (
 
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from chili import HydrationStrategy, is_dataclass
-from chili.hydration import StrategyRegistry, SimpleStrategy
+from chili.hydration import SimpleStrategy, StrategyRegistry
 from chili.typing import get_origin_type, get_type_args
 
 from .constants import (

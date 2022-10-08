@@ -114,6 +114,7 @@ def test_can_attribute_use_typed_dict() -> None:
     class Point(TypedDict):
         x: int
         y: int
+
     attribute = Attribute[Point]("test")
 
     assert attribute.type == AttributeType.MAP
