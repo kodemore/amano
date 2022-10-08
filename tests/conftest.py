@@ -52,66 +52,74 @@ def default_table() -> str:
     return "default_table"
 
 
+_CLIENT_INITIALISED = False
+
+
 @pytest.fixture
 def readonly_dynamodb_client(
     dynamodb_client, readonly_table, tracks_with_artists_json
 ) -> Generator[DynamoDBClient, None, None]:
-    try:
-        table_info = dynamodb_client.describe_table(TableName=readonly_table)
-    except ClientError:
-        dynamodb_client.create_table(
-            TableName=readonly_table,
-            KeySchema=[
-                {"AttributeName": "artist_name", "KeyType": "HASH"},
-                {"AttributeName": "track_name", "KeyType": "RANGE"},
-            ],
-            AttributeDefinitions=[
-                {"AttributeName": "artist_name", "AttributeType": "S"},
-                {"AttributeName": "track_name", "AttributeType": "S"},
-                {"AttributeName": "album_name", "AttributeType": "S"},
-                {"AttributeName": "genre_name", "AttributeType": "S"},
-            ],
-            LocalSecondaryIndexes=[
-                {
-                    "IndexName": "LocalArtistAndAlbumNameIndex",
-                    "KeySchema": [
-                        {"AttributeName": "artist_name", "KeyType": "HASH"},
-                        {"AttributeName": "album_name", "KeyType": "RANGE"},
-                    ],
-                    "Projection": {
-                        "ProjectionType": "ALL",
-                    },
-                }
-            ],
-            GlobalSecondaryIndexes=[
-                {
-                    "IndexName": "GlobalAlbumAndTrackNameIndex",
-                    "KeySchema": [
-                        {"AttributeName": "album_name", "KeyType": "HASH"},
-                        {"AttributeName": "track_name", "KeyType": "RANGE"},
-                    ],
-                    "Projection": {
-                        "ProjectionType": "ALL",
-                    },
-                },
-                {
-                    "IndexName": "GlobalGenreAndAlbumNameIndex",
-                    "KeySchema": [
-                        {"AttributeName": "genre_name", "KeyType": "HASH"},
-                        {"AttributeName": "album_name", "KeyType": "RANGE"},
-                    ],
-                    "Projection": {
-                        "ProjectionType": "ALL",
-                    },
-                },
-            ],
-            BillingMode="PAY_PER_REQUEST",
-        )
-
-    if table_info:
+    global _CLIENT_INITIALISED
+    if _CLIENT_INITIALISED:
         yield dynamodb_client
 
         return
+
+    if not _CLIENT_INITIALISED:
+        try:
+            dynamodb_client.delete_table(TableName=readonly_table)
+        except:
+            pass  # ignore
+        _CLIENT_INITIALISED = True
+
+    dynamodb_client.create_table(
+        TableName=readonly_table,
+        KeySchema=[
+            {"AttributeName": "artist_name", "KeyType": "HASH"},
+            {"AttributeName": "track_name", "KeyType": "RANGE"},
+        ],
+        AttributeDefinitions=[
+            {"AttributeName": "artist_name", "AttributeType": "S"},
+            {"AttributeName": "track_name", "AttributeType": "S"},
+            {"AttributeName": "album_name", "AttributeType": "S"},
+            {"AttributeName": "genre_name", "AttributeType": "S"},
+        ],
+        LocalSecondaryIndexes=[
+            {
+                "IndexName": "LocalArtistAndAlbumNameIndex",
+                "KeySchema": [
+                    {"AttributeName": "artist_name", "KeyType": "HASH"},
+                    {"AttributeName": "album_name", "KeyType": "RANGE"},
+                ],
+                "Projection": {
+                    "ProjectionType": "ALL",
+                },
+            }
+        ],
+        GlobalSecondaryIndexes=[
+            {
+                "IndexName": "GlobalAlbumAndTrackNameIndex",
+                "KeySchema": [
+                    {"AttributeName": "album_name", "KeyType": "HASH"},
+                    {"AttributeName": "track_name", "KeyType": "RANGE"},
+                ],
+                "Projection": {
+                    "ProjectionType": "ALL",
+                },
+            },
+            {
+                "IndexName": "GlobalGenreAndAlbumNameIndex",
+                "KeySchema": [
+                    {"AttributeName": "genre_name", "KeyType": "HASH"},
+                    {"AttributeName": "album_name", "KeyType": "RANGE"},
+                ],
+                "Projection": {
+                    "ProjectionType": "ALL",
+                },
+            },
+        ],
+        BillingMode="PAY_PER_REQUEST",
+    )
 
     for item in tracks_with_artists_json:
         dynamodb_client.put_item(
