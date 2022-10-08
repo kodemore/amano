@@ -1,8 +1,6 @@
-from dataclasses import dataclass
-
 import pytest
 
-from amano import Attribute, Index, Item, Table
+from amano import Index, Item, Table
 from amano.errors import AmanoDBError, ItemNotFoundError
 
 
@@ -161,43 +159,3 @@ def test_fail_get_unexisting_item(
         "artist_name": "AC/DC",
         "track_name": "Let There Be No Rock",
     }
-
-
-def test_can_put_item(default_dynamodb_client, default_table) -> None:
-    # given
-    @dataclass
-    class Track(Item):
-        artist_name: str
-        track_name: str
-        album_name: str
-
-    my_table = Table[Track](default_dynamodb_client, default_table)
-
-    # when
-    item = Track("Tool", "Reflection", "Lateralus")
-    result = my_table.put(item)
-
-    # then
-    assert result
-
-
-def test_can_put_item_with_condition(
-    default_dynamodb_client, default_table
-) -> None:
-
-    # given
-    @dataclass
-    class Track(Item):
-        artist_name: Attribute[str]
-        track_name: Attribute[str]
-        album_name: Attribute[str]
-
-    my_table = Table[Track](default_dynamodb_client, default_table)
-
-    # when
-    item = Track("Tool", "Reflection", "Lateralus")
-    result = my_table.put(item, condition=Track.artist_name.not_exists())
-
-    # then
-    assert result
-
