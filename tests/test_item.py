@@ -1,7 +1,19 @@
 from dataclasses import dataclass, field
+from typing import List
 
+from amano import Mapping
 from amano.attribute import Attribute, AttributeType
-from amano.item import Item, _AttributeChange, _ChangeType, _ItemState
+from amano.item import (
+    AttributeChange,
+    Item,
+    ItemState,
+    as_dict,
+    commit,
+    extract,
+    from_dict,
+    get_item_state,
+    hydrate,
+)
 
 
 def test_can_instantiate() -> None:
@@ -26,11 +38,13 @@ def test_has_attribute() -> None:
         other_name: str
 
     # then
-    assert "name" in MyItem
-    assert "other_name" not in MyItem
+    assert "name" in MyItem.__schema__
+    assert isinstance(MyItem.name, Attribute)
+    assert "other_name" not in MyItem.__schema__
 
-    assert "other_name" in MyOtherItem
-    assert "name" not in MyOtherItem
+    assert "other_name" in MyOtherItem.__schema__
+    assert isinstance(MyOtherItem.other_name, Attribute)
+    assert "name" not in MyOtherItem.__schema__
 
 
 def test_can_get_attribute() -> None:
@@ -40,8 +54,8 @@ def test_can_get_attribute() -> None:
         age: int
 
     # then
-    assert "name" in MyItem
-    assert "age" in MyItem
+    assert "name" in MyItem.__schema__
+    assert "age" in MyItem.__schema__
     assert isinstance(MyItem.name, Attribute)
     assert isinstance(MyItem.age, Attribute)
 
@@ -54,18 +68,6 @@ def test_can_get_attribute() -> None:
     assert MyItem.age.type == AttributeType.NUMBER
 
 
-def test_can_get_attributes() -> None:
-    # given
-    class MyItem(Item):
-        name: str
-        age: int
-
-    assert [attribute.name for attribute in MyItem.attributes.values()] == [
-        "name",
-        "age",
-    ]
-
-
 def test_can_hydrate_item() -> None:
     # given
     class MyItem(Item):
@@ -73,7 +75,7 @@ def test_can_hydrate_item() -> None:
         age: int
 
     # when
-    item = MyItem.hydrate({"name": {"S": "Bobik"}, "age": {"N": "10"}})
+    item = hydrate(MyItem, {"name": {"S": "Bobik"}, "age": {"N": "10"}})
 
     # then
     assert item.name == "Bobik"
@@ -93,9 +95,23 @@ def test_can_hydrate_item_with_mapping() -> None:
         age: int
 
     # when
-    item = MyItem.hydrate(
-        {"mapped_name": {"S": "Bobik"}, "mapped_age": {"N": "10"}}
+    item = hydrate(
+        MyItem, {"mapped_name": {"S": "Bobik"}, "mapped_age": {"N": "10"}}
     )
+
+    # then
+    assert item.name == "Bobik"
+    assert item.age == 10
+
+
+def test_can_hydrate_item_with_mapping_strategy() -> None:
+    # given
+    class MyItem(Item, mapping=Mapping.PASCAL_CASE):
+        name: str
+        age: int
+
+    # when
+    item = hydrate(MyItem, {"Name": {"S": "Bobik"}, "Age": {"N": "10"}})
 
     # then
     assert item.name == "Bobik"
@@ -115,7 +131,7 @@ def test_can_extract_item() -> None:
     item = MyItem("Bobik", 10)
 
     # when
-    value = item.extract()
+    value = extract(item)
 
     # then
     assert value == {
@@ -143,12 +159,34 @@ def test_can_extract_item_with_mapping() -> None:
     item = MyItem("Bobik", 10)
 
     # when
-    value = item.extract()
+    value = extract(item)
 
     # then
     assert value == {
         "mapped_name": {"S": "Bobik"},
         "mapped_age": {"N": "10"},
+    }
+
+
+def test_can_extract_item_with_mapping_strategy() -> None:
+    # given
+    class MyItem(Item, mapping=Mapping.PASCAL_CASE):
+        name: str
+        age: int
+
+        def __init__(self, name: str, age: int):
+            self.name = name
+            self.age = age
+
+    item = MyItem("Bobik", 10)
+
+    # when
+    value = extract(item)
+
+    # then
+    assert value == {
+        "Name": {"S": "Bobik"},
+        "Age": {"N": "10"},
     }
 
 
@@ -160,7 +198,7 @@ def test_can_hydrate_item_as_dataclass() -> None:
         age: int
 
     # when
-    item = MyItem.hydrate({"name": {"S": "Bobik"}, "age": {"N": "10"}})
+    item = hydrate(MyItem, {"name": {"S": "Bobik"}, "age": {"N": "10"}})
 
     # then
     assert item.name == "Bobik"
@@ -177,7 +215,7 @@ def test_can_extract_item_as_dataclass() -> None:
     item = MyItem("Bobik", 10)
 
     # when
-    value = item.extract()
+    value = extract(item)
 
     # then
     assert value == {
@@ -218,12 +256,29 @@ def test_item_log() -> None:
     assert len(item.__log__) == 4
 
     for log in item.__log__:
-        assert isinstance(log, _AttributeChange)
+        assert isinstance(log, AttributeChange)
 
-    assert item.__log__[0].type == _ChangeType.SET
-    assert item.__log__[1].type == _ChangeType.SET
-    assert item.__log__[2].type == _ChangeType.CHANGE
-    assert item.__log__[3].type == _ChangeType.UNSET
+    assert item.__log__[0].type == AttributeChange.Type.SET
+    assert item.__log__[1].type == AttributeChange.Type.SET
+    assert item.__log__[2].type == AttributeChange.Type.CHANGE
+    assert item.__log__[3].type == AttributeChange.Type.UNSET
+
+
+def test_use_default_values() -> None:
+    # given
+    @dataclass()
+    class MyItem(Item):
+        name: str
+        age: int = 10
+        tags: List[str] = field(default_factory=list)
+
+    # when
+    item = MyItem("Bobik")
+
+    # then
+    assert item.name == "Bobik"
+    assert item.age == 10
+    assert item.tags == []
 
 
 def test_can_get_item_state() -> None:
@@ -232,22 +287,105 @@ def test_can_get_item_state() -> None:
         name: str
         age: int = 10
 
+        def __init__(self, name: str):
+            self.name = name
+
     # when
     item = MyItem("Bobik")
 
     # then
-    assert item._state() == _ItemState.NEW
+    assert get_item_state(item) == ItemState.NEW
     assert item.name == "Bobik"
     assert item.age == 10
 
     # when
-    item._commit()
+    commit(item)
 
     # then
-    assert item._state() == _ItemState.CLEAN
+    assert get_item_state(item) == ItemState.CLEAN
 
     # when
-    del item.age
+    del item.name
 
     # then
-    assert item._state() == _ItemState.DIRTY
+    assert get_item_state(item) == ItemState.DIRTY
+
+
+def test_can_init_item() -> None:
+    # given
+    class MyItem(Item, init=True):
+        name: str
+        age: int = 10
+
+    # when
+    item = MyItem(name="Bob")
+
+    # then
+    assert item.name == "Bob"
+    assert item.age == 10
+
+
+def test_can_override_init_item() -> None:
+    # given
+    class MyItem(Item, init=True):
+        name: str
+        age: int = 10
+
+        def __init__(self, *_, **__):
+            self.name = "Super " + self.name
+
+    # when
+    item = MyItem(name="Bob")
+
+    # then
+    assert item.name == "Super Bob"
+    assert item.age == 10
+
+
+def test_can_create_item_from_dict() -> None:
+    # given
+    @dataclass()
+    class MyItem(Item):
+        name: str
+        age: int = 10
+        tags: List[str] = field(default_factory=list)
+
+    # when
+    item = from_dict(MyItem, {"name": "Bob", "age": 21})
+
+    # then
+    assert isinstance(item, MyItem)
+    assert item.name == "Bob"
+    assert item.age == 21
+    assert item.tags == []
+
+
+def test_can_represent_item_as_dict() -> None:
+    # given
+    @dataclass()
+    class MyItem(Item):
+        name: str
+        age: int = 10
+        tags: List[str] = field(default_factory=list)
+
+    # when
+    item = as_dict(MyItem(name="Bob", age=21))
+
+    # then
+    assert item["name"] == "Bob"
+    assert item["age"] == 21
+    assert item["tags"] == []
+
+
+def test_can_use_attribute_in_item() -> None:
+    # given
+    class MyItem(Item, init=True):
+        name: Attribute[str]
+        age: Attribute[int] = 10
+
+    # when
+    item = MyItem(name="Bob")
+
+    # then
+    assert item.name == "Bob"
+    assert item.age == 10

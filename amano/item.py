@@ -1,115 +1,96 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import Field, dataclass
 from enum import Enum
-from functools import reduce
-from typing import Any, Dict, List, Type, TypeVar, Union
+from inspect import isclass
+from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar, Union
 
-from .attribute import Attribute
-from .base_attribute import AttributeValue
+from amano.attribute import Attribute
 
-
-class MappingStrategy(ABC):
-    @abstractmethod
-    def __getitem__(self, item: str) -> str:
-        ...
-
-    def __contains__(self, item: str) -> bool:
-        return True
-
-
-class PassThroughMapping(MappingStrategy):
-    def __getitem__(self, item: str) -> str:
-        return item
-
-    def __contains__(self, item) -> bool:
-        return False
-
-
-class HyphensMapping(MappingStrategy):
-    def __getitem__(self, item: str) -> str:
-        return item.replace("_", "-")
-
-
-class PascalCaseMapping(MappingStrategy):
-    def __getitem__(self, item: str) -> str:
-        def upper_first(val: str) -> str:
-            if len(val) > 1:
-                return val[0].upper() + val[1:]
-            return val.upper()
-
-        camel_case = reduce(lambda x, y: x + upper_first(y), item.split("_"))
-        if len(camel_case) > 1:
-            return camel_case[0].upper() + camel_case[1:]
-        return camel_case.upper()
-
-
-class CamelCaseMapping(MappingStrategy):
-    def __getitem__(self, item: str) -> str:
-        return reduce(lambda x, y: x + y.capitalize(), item.split("_"))
-
-
-class Mapping(Enum):
-    PASS_THROUGH = PassThroughMapping()
-    PASCAL_CASE = PascalCaseMapping()
-    CAMEL_CASE = CamelCaseMapping()
-    HYPHENS = HyphensMapping()
-
-    def __getitem__(self, item: str) -> str:
-        return self.value[item]
-
-    def __contains__(self, item) -> bool:
-        return item in self.value
-
-
-class _Undefined:
-    def __repr__(self):
-        return "UNDEFINED"
-
-
-UNDEFINED = _Undefined()
-
-
-class _ChangeType(Enum):
-    SET = "SET"
-    UNSET = "REMOVE"
-    CHANGE = "CHANGE"
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}("{self.value}")'
+from .base_attribute import AttributeValue, deserialize_value, serialize_value
+from .mapping import Mapping, MappingStrategy
+from .undefined import UNDEFINED
 
 
 @dataclass
-class _AttributeChange:
+class AttributeChange:
+    class Type(Enum):
+        SET = "SET"
+        UNSET = "REMOVE"
+        CHANGE = "CHANGE"
+
+        def __repr__(self) -> str:
+            return f'{self.__class__.__name__}("{self.value}")'
+
     attribute: Attribute
-    type: _ChangeType
+    type: AttributeChange.Type
     value: Any
 
 
-class _Commit:
-    changes: List[_AttributeChange]
-    data: Dict[str, Any]
+class Commit:
+    log: List[AttributeChange]
 
     def __init__(self):
-        self.changes = []
-        self.data = {}
+        self.log = []
 
-    def add_change(self, change: _AttributeChange) -> None:
-        self.changes.append(change)
-        if change.type in (_ChangeType.SET, _ChangeType.CHANGE):
-            self.data[str(change.attribute)] = change.value
-            return
+    def append(self, change: AttributeChange) -> None:
+        self.log.append(change)
 
-        del self.data[str(change.attribute)]
+    @property
+    def changes(self) -> Dict[str, AttributeChange]:
+        return {
+            attribute_change.attribute.name: attribute_change
+            for attribute_change in self.log
+        }
+
+
+ItemSchema = Dict[str, Attribute]
+Diff = Tuple[str, Dict[str, Any]]
+
+
+class ItemState(Enum):
+    NEW = "new"
+    CLEAN = "clean"
+    DIRTY = "dirty"
+
+
+def _create_init(base_init: Union[Callable, None]) -> Callable:
+    def _init_item(item: Item, *args, **kwargs) -> None:
+        item_data = {}
+        for attribute in item.__schema__.values():
+            item_data[attribute.name] = attribute.default_value
+
+        if args:
+            attribute_names = list(item.__schema__.keys())
+            for index, value in enumerate(args):
+                item_data[attribute_names[index]] = value
+        if kwargs:
+            item_data = {**item_data, **kwargs}
+
+        for name, value in item_data.items():
+            setattr(item, name, value)
+        if base_init:
+            base_init(item, *args, **kwargs)
+
+    return _init_item
 
 
 class ItemMeta(type):
-    __meta__: Dict[str, Attribute]
+    def __new__(cls, what, bases, body: dict, **meta) -> ItemMeta:
+        class_module = body.get("__module__")
 
-    def __new__(cls, what, bases, body, **meta) -> ItemMeta:
-        if body["__module__"] == __name__ and what == "Item":
+        # Skip the base item class
+        if class_module == __name__ and what == "Item":
             return type.__new__(cls, what, bases, body)
+
+        schema = ItemMeta._create_schema(
+            ItemMeta._read_annotations(bases, body),
+            ItemMeta._get_mapping(meta),
+            body,
+        )
+
+        if "init" in meta and meta["init"] is True:
+            body["__init__"] = _create_init(body.get("__init__"))
 
         new_class = type.__new__(
             cls,
@@ -118,122 +99,120 @@ class ItemMeta(type):
             {
                 **body,
                 **{
-                    "__meta__": {},
-                    "__attributes__": [],
+                    "__schema__": schema,
                     "__log__": [],
-                    "__snapshots__": [],
+                    "__commits__": [],
                 },
+                **schema,
             },
         )
-
-        if "__annotations__" in body:
-            if "mapping" in meta:
-                mapping = meta["mapping"]
-            else:
-                mapping = Mapping.PASS_THROUGH
-            for attribute_name, attribute_type in body[
-                "__annotations__"
-            ].items():
-                new_class.__meta__[attribute_name] = Attribute(  # type: ignore[abstract]
-                    attribute_name
-                    if attribute_name not in mapping
-                    else mapping[attribute_name],
-                    attribute_type,
-                    body[attribute_name]
-                    if attribute_name in body
-                    else UNDEFINED,
-                )
-
-                setattr(
-                    new_class,
-                    attribute_name,
-                    new_class.__meta__[attribute_name],
-                )
 
         return new_class
 
     @staticmethod
-    def _get_table_attribute(
-        attribute_name: str, item_class: Type[Item]
-    ) -> Attribute:
-        if attribute_name in item_class:
-            return item_class.__meta__[attribute_name]
+    def _create_schema(all_annotations, mapping, body):
+        schema = {}
+        for attr_name, attr_type in all_annotations.items():
+            if isclass(attr_type) and issubclass(attr_type, Attribute):
+                if not attr_type.__attribute_type__:
+                    raise TypeError(f"Cannot parse generic {Attribute} type.")
+                else:
+                    attr_type = attr_type.__attribute_type__
 
-        raise AttributeError(
-            f"{item_class.__module__}.{item_class.__qualname__} "
-            f"does not specify any attribute with `{attribute_name}` name."
-        )
+            schema[attr_name] = ItemMeta._create_attribute(
+                mapping[attr_name], attr_type, body.get(attr_name, UNDEFINED)
+            )
 
-    def __init__(cls, name, bases, dct, **extra):
+        return schema
+
+    @staticmethod
+    def _create_attribute(attr_name: str, attr_type: type, field: Any):
+        if isinstance(field, Field):
+            if field.default_factory:
+                return Attribute[attr_type](attr_name, field.default_factory)  # type: ignore
+
+            return Attribute[attr_type](attr_name, lambda: field.default)  # type: ignore
+
+        return Attribute[attr_type](attr_name, lambda: field)  # type: ignore
+
+    @staticmethod
+    def _get_mapping(meta):
+        mapping = Mapping.PASS_THROUGH
+        if "mapping" in meta:
+            if not isinstance(
+                meta["mapping"], MappingStrategy
+            ) and not isinstance(meta, dict):
+                raise TypeError(
+                    f"mapping must be type of {MappingStrategy.__qualname__} "
+                    f"or dict, {type(meta['mapping'])} passed instead."
+                )
+            mapping = meta["mapping"]
+
+        return mapping
+
+    @staticmethod
+    def _read_annotations(bases, body):
+        all_annotations = {}
+        for base in bases:
+            if base.__class__ == Item or base.__class__ == ItemMeta:
+                continue
+            if not hasattr(base, "__annotations__"):
+                continue
+            class_annotations = {
+                att_name: att_type
+                for att_name, att_type in getattr(
+                    base, "__annotations__"
+                ).items()
+                if not att_name.startswith("_")
+            }
+            all_annotations = {**all_annotations, **class_annotations}
+        if "__annotations__" in body:
+            all_annotations = {**all_annotations, **body["__annotations__"]}
+
+        return all_annotations
+
+    def __init__(cls, name, bases, dct, **_):
         super().__init__(name, bases, dct)
-
-    def __contains__(self, item) -> bool:
-        return item in self.__meta__
-
-
-class _ItemState(Enum):
-    NEW = "new"
-    CLEAN = "clean"
-    DIRTY = "dirty"
 
 
 class Item(metaclass=ItemMeta):
-    __meta__: Dict[str, Attribute]
-    __attributes__: List[str]
-    __log__: List[_AttributeChange]
-    __snapshots__: List[_Commit]
+    __log__: List[AttributeChange]
+    __schema__: ItemSchema
+    __commits__: List[Commit]
 
-    def __init__(self, *args, **kwargs) -> None:
-        item_data = {}
-        for attribute in self.__meta__.values():
-            item_data[attribute.name] = attribute.default_value
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        if args:
-            attribute_names = list(self.attributes.keys())
-            for index, value in enumerate(args):
-                item_data[attribute_names[index]] = value
-        if kwargs:
-            item_data = {**item_data, **kwargs}
-
-        for name, value in item_data.items():
-            setattr(self, name, value)
-
-    def __getattribute__(self, key: str) -> Union[Attribute, Any]:
-        if key in (
-            "__dict__",
-            "__attributes__",
-            "__log__",
-            "__snapshots__",
-            "__class__",
-            "__meta__",
-            "__module__",
-        ):
+    def __getattribute__(self, key: str) -> Any:
+        if key.startswith("_") or key.isupper():
             return super().__getattribute__(key)
 
-        if hasattr(self.__class__, key):
-            if not isinstance(getattr(self.__class__, key), Attribute):
-                return super().__getattribute__(key)
+        if key not in self.__schema__:
+            return super().__getattribute__(key)
 
-        if key not in self.__class__:
-            raise AttributeError(
-                f"Attribute {key} is not defined in {self.__class__} schema."
-            )
+        if key in self.__dict__:
+            return self.__dict__[key]
 
-        if key not in self.__dict__:
-            raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute '{key}'"
-            )
+        default_value = self.__schema__[key].default_value
 
-        return self.__dict__[key]
+        if default_value != UNDEFINED:
+            return default_value
+
+        raise AttributeError(
+            f"Instance of `{self.__class__}` has no attribute `{key}`"
+        )
 
     def __setattr__(self, key, value):
+        if key not in self.__schema__:
+            return super().__setattr__(key, value)
+
         if key in self.__dict__:
-            log_item = _AttributeChange(
-                self.__meta__[key], _ChangeType.CHANGE, value
+            log_item = AttributeChange(
+                self.__schema__[key], AttributeChange.Type.CHANGE, value
             )
         else:
-            log_item = _AttributeChange(
-                self.__meta__[key], _ChangeType.SET, value
+            log_item = AttributeChange(
+                self.__schema__[key], AttributeChange.Type.SET, value
             )
 
         self.__log__.append(log_item)
@@ -241,67 +220,100 @@ class Item(metaclass=ItemMeta):
         if isinstance(value, Attribute):
             value = value.default_value
 
-        super().__setattr__(key, value)
+        self.__dict__[key] = value
 
     def __delattr__(self, key: str) -> None:
-        log_item = _AttributeChange(self.__meta__[key], _ChangeType.UNSET, None)
+        if key not in self.__dict__:
+            return
+        log_item = AttributeChange(
+            self.__schema__[key], AttributeChange.Type.UNSET, None
+        )
         self.__log__.append(log_item)
         del self.__dict__[key]
 
-    @classmethod
-    def __class_getitem__(cls, item: str) -> Attribute:
-        return cls.__meta__[item]
-
-    @classmethod
-    @property
-    def attributes(cls) -> Dict[str, Attribute]:
-        return cls.__meta__
-
-    @classmethod
-    def hydrate(cls, value: Dict[str, AttributeValue]) -> Item:
-        instance = cls.__new__(cls)
-
-        for field, attribute in cls.__meta__.items():
-            if attribute.name not in value:
-                setattr(instance, field, None)
-                continue
-            setattr(
-                instance, field, attribute.hydrate(value.get(attribute.name))
-            )
-
-        instance._commit()
-        return instance
-
-    def extract(self) -> Dict[str, AttributeValue]:
-        result = {}
-        for field, attribute in self.__meta__.items():
-            result[attribute.name] = attribute.extract(getattr(self, field))
-
-        return result
-
-    def _commit(self) -> None:
-        commit = _Commit()
-        for item in self.__log__:
-            commit.add_change(item)
-
-        self.__log__.clear()
-        self.__snapshots__.append(commit)
-
-    def _state(self) -> _ItemState:
-        if not self.__log__ and len(self.__snapshots__) >= 1:
-            return _ItemState.CLEAN
-
-        if not self.__snapshots__:
-            return _ItemState.NEW
-
-        return _ItemState.DIRTY
-
-    def __str__(self) -> str:
-        return f"{self.__class__}()"
-
-
-class VersionedItem(Item):
-    ...
-
 
 I = TypeVar("I", bound=Item)
+
+
+def commit(item: Item) -> None:
+    changes = Commit()
+    for entry in item.__log__:
+        changes.append(entry)
+
+    item.__log__.clear()
+    item.__commits__.append(changes)
+
+
+def diff(item: Item) -> Diff:
+    set_fields = []
+    delete_fields = []
+    attribute_values = {}
+
+    for change in item.__log__:
+        if change.type in (
+            AttributeChange.Type.CHANGE,
+            AttributeChange.Type.SET,
+        ):
+            set_fields.append(change.attribute.name)
+            attribute_values[
+                ":" + change.attribute.name
+            ] = change.attribute.extract(change.value)
+            continue
+        if change.type is AttributeChange.Type.UNSET:
+            delete_fields.append(change.attribute.name)
+
+    update_expression = ""
+    if set_fields:
+        set_fields_expression = ','.join(
+            [field_name + ' = :' + field_name for field_name in set_fields]
+        )
+        update_expression = f"SET {set_fields_expression} "
+    if delete_fields:
+        update_expression += (
+            f"DELETE {','.join([field_name for field_name in set_fields])} "
+        )
+
+    return update_expression, attribute_values
+
+
+def hydrate(what: Type[I], value: Dict[str, Any]) -> I:
+    value = deserialize_value({"M": value})
+    return from_dict(what, value)
+
+
+def from_dict(what: Type[I], value: Dict[str, Any]) -> I:
+    if not issubclass(what, Item):
+        raise TypeError(
+            f"Could not hydrate class {what.__qualname__}. expected "
+            f"a subtype of {Item.__qualname__} class."
+        )
+    instance = what.__new__(what)
+    for field, attribute in what.__schema__.items():
+        if attribute.name not in value:
+            continue
+        setattr(instance, field, attribute.hydrate(value.get(attribute.name)))
+
+    commit(instance)
+    return instance
+
+
+def extract(value: Item) -> Dict[str, AttributeValue]:
+    return serialize_value(as_dict(value)).get("M")
+
+
+def as_dict(value: Item) -> Dict[str, Any]:
+    result = {}
+    for field, attribute in value.__schema__.items():
+        result[attribute.name] = attribute.extract(getattr(value, field))
+
+    return result
+
+
+def get_item_state(value: Item) -> ItemState:
+    if not value.__log__ and len(value.__commits__) >= 1:
+        return ItemState.CLEAN
+
+    if not value.__commits__:
+        return ItemState.NEW
+
+    return ItemState.DIRTY

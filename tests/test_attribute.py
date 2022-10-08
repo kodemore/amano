@@ -22,7 +22,7 @@ from amano.attribute import Attribute, AttributeType
 
 def test_can_instantiate() -> None:
     # given
-    instance = Attribute("name", str)
+    instance = Attribute[str]("name")
 
     # then
     assert isinstance(instance, Attribute)
@@ -32,6 +32,11 @@ def test_can_instantiate() -> None:
 
 @dataclass
 class ExampleDataClass:
+    field_a: str
+    field_b: str
+
+
+class ExampleTypedDict(TypedDict):
     field_a: str
     field_b: str
 
@@ -73,7 +78,7 @@ def test_unsupported_from_python_type(given_type: type) -> None:
         [dict, AttributeType.MAP],
         [Dict, AttributeType.MAP],
         [ExampleDataClass, AttributeType.MAP],
-        [TypedDict, AttributeType.MAP],
+        [ExampleTypedDict, AttributeType.MAP],
         [bool, AttributeType.BOOLEAN],
         [bytes, AttributeType.BINARY],
         [bytearray, AttributeType.BINARY],
@@ -98,19 +103,35 @@ def test_supported_from_python_type(
     # then
     assert resolved_attribute == expected_type
 
+    # given
+    attribute = Attribute[given_type]("test")
+
+    # then
+    assert isinstance(attribute, Attribute)
+
+
+def test_can_attribute_use_typed_dict() -> None:
+    class Point(TypedDict):
+        x: int
+        y: int
+
+    attribute = Attribute[Point]("test")
+
+    assert attribute.type == AttributeType.MAP
+
 
 def test_float_attribute() -> None:
     # given
-    attribute = Attribute("test", float)
+    attribute = Attribute[float]("test")
 
     # when
     extracted_value = attribute.extract(10.4213)
 
     # then
-    assert extracted_value == {"N": "10.4213"}
+    assert extracted_value == Decimal("10.4213")
 
     # when
-    hydrated_value = attribute.hydrate({"N": "10.4213"})
+    hydrated_value = attribute.hydrate("10.4213")
 
     # then
     assert isinstance(hydrated_value, float)

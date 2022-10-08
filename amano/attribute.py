@@ -1,14 +1,10 @@
 from __future__ import annotations
 
-import inspect
-from typing import Any, Generic, Type, TypeVar
+from typing import Any, Callable, Generic, Type, TypeVar
 
 from .base_attribute import (
-    _SUPPORTED_BASE_TYPES,
     AbstractAttribute,
     AttributeType,
-    deserialize_value,
-    serialize_value,
     serializer_registry,
 )
 from .condition import (
@@ -25,42 +21,43 @@ from .condition import (
 _T = TypeVar('_T')
 
 
-class Attribute(AbstractAttribute, Generic[_T]):
+class Attribute(AbstractAttribute):
     def __init__(
-        self, name: str, attribute_type: type, default_value: Any = None
+        self,
+        name: str,
+        default_factory: Callable[[], Any] = None,
     ):
+        if (
+            not hasattr(self, "__attribute_type__")
+            or not self.__attribute_type__
+        ):  # noqa: E501
+            raise TypeError(
+                f"Cannot use non parametrized `{Attribute.__qualname__}` class as `{name}` field ."  # noqa: E501
+            )
         self.name = name
-        if inspect.isclass(attribute_type) and issubclass(
-            attribute_type, Attribute
-        ):
-            if not attribute_type.__attribute_type__:
-                raise TypeError(
-                    f"Cannot use non parametrized Attribute `{name}` as a value"
-                )
-            attribute_type = attribute_type.__attribute_type__
-
-        self.type = AttributeType.from_python_type(attribute_type)
+        self.type = AttributeType.from_python_type(self.__attribute_type__)
         self._strategy = serializer_registry.get_for(
-            attribute_type, strict=True
+            self.__attribute_type__, strict=True
         )
-        self.default_value = default_value
+        self.default_factory = default_factory
 
-    def extract(self, value: Any, simple: bool = False) -> Any:
-        if simple:
-            return self._strategy.extract(value)
-        return serialize_value(self._strategy.extract(value))
+    @property
+    def default_value(self) -> Any:
+        if not self.default_factory:
+            return None
+        return self.default_factory()
 
-    def hydrate(self, value: Any, simple: bool = False) -> Any:
-        if simple:
-            return self._strategy.hydrate(value)
+    def extract(self, value: Any) -> Any:
+        return self._strategy.extract(value)
 
-        return self._strategy.hydrate(deserialize_value(value))
+    def hydrate(self, value: Any) -> Any:
+        return self._strategy.hydrate(value)
 
     def __str__(self) -> str:
         return f"{self.name}"
 
     def __repr__(self) -> str:
-        return f'Attribute[{self.type}]("{self.name}")'
+        return f'Attribute[{self.__attribute_type__}]("{self.name}")'
 
     def __eq__(self, other) -> ComparisonCondition:  # type: ignore
         return ComparisonCondition(
@@ -118,11 +115,10 @@ class Attribute(AbstractAttribute, Generic[_T]):
 
     @classmethod
     def __class_getitem__(cls, item: Type[Any]) -> Type[Attribute]:
-        if item not in _SUPPORTED_BASE_TYPES:
-            raise TypeError(f"Unsupported generic subtype {item}")
-
-        return type(  # type: ignore
-            f"Attribute[{item}]",
+        attribute_class = type(  # type: ignore
+            f"amano.Attribute[{item}]",
             tuple([Attribute]),
             {"__attribute_type__": item},
         )
+
+        return attribute_class

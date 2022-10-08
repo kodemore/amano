@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from datetime import date, datetime, time
 from decimal import Decimal
+from inspect import isclass
 from typing import (
     Any,
     AnyStr,
@@ -23,7 +24,7 @@ from typing import (
 
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from chili import HydrationStrategy, is_dataclass
-from chili.hydration import StrategyRegistry
+from chili.hydration import SimpleStrategy, StrategyRegistry
 from chili.typing import get_origin_type, get_type_args
 
 from .constants import (
@@ -56,8 +57,9 @@ class FloatStrategy(HydrationStrategy):
 
 serializer_registry = StrategyRegistry()
 
-# Add support for floats in dynamodb
+# Add support for floats and bytearray in dynamodb
 serializer_registry.add(float, FloatStrategy())
+serializer_registry.add(bytearray, SimpleStrategy(bytearray, bytearray))
 
 VALID_TYPE_VALUES: Dict[str, Tuple[Type, ...]] = {
     TYPE_STRING: (str, datetime, date, time),
@@ -152,6 +154,10 @@ class AttributeType(StringEnum):
         if is_dataclass(value_type):
             return AttributeType.MAP
 
+        # typed dict, mappings
+        if isclass(value_type) and issubclass(value_type, Mapping):
+            return AttributeType.MAP
+
         origin_type = get_origin_type(value_type)
 
         if origin_type not in _SUPPORTED_GENERIC_TYPES:
@@ -195,16 +201,15 @@ class AttributeType(StringEnum):
         )
 
 
-@runtime_checkable
-class AbstractAttribute(Protocol):
+class AbstractAttribute(ABC):
     name: str
     type: AttributeType
-    default_value: Any
+    default_factory: Any
     __attribute_type__: Type
 
     @abstractmethod
-    def extract(self, value: Any, simple: bool = False) -> AttributeValue:
+    def extract(self, value: Any) -> Any:
         ...
 
-    def hydrate(self, value: AttributeValue, simple: bool = False) -> Any:
+    def hydrate(self, value: Any) -> Any:
         ...
