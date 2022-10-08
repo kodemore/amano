@@ -375,3 +375,17 @@ def test_can_represent_item_as_dict() -> None:
     assert item["name"] == "Bob"
     assert item["age"] == 21
     assert item["tags"] == []
+
+
+def test_can_use_attribute_in_item() -> None:
+    # given
+    class MyItem(Item, init=True):
+        name: Attribute[str]
+        age: Attribute[int] = 10
+
+    # when
+    item = MyItem(name="Bob")
+
+    # then
+    assert item.name == "Bob"
+    assert item.age == 10

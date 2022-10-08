@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from dataclasses import Field, dataclass
 from enum import Enum
+from inspect import isclass
 from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar, Union
 
-from .attribute import Attribute
+from amano.attribute import Attribute
 from .base_attribute import AttributeValue, deserialize_value, serialize_value
 from .mapping import Mapping, MappingStrategy
 from .undefined import UNDEFINED
@@ -52,8 +53,8 @@ class ItemState(Enum):
     DIRTY = "dirty"
 
 
-def _create_init(base_init: Union[Callable, None]) -> callable:
-    def _init_item(item, *args, **kwargs) -> None:
+def _create_init(base_init: Union[Callable, None]) -> Callable:
+    def _init_item(item: Item, *args, **kwargs) -> None:
         item_data = {}
         for attribute in item.__schema__.values():
             item_data[attribute.name] = attribute.default_value
@@ -111,6 +112,12 @@ class ItemMeta(type):
     def _create_schema(all_annotations, mapping, body):
         schema = {}
         for attr_name, attr_type in all_annotations.items():
+            if isclass(attr_type) and issubclass(attr_type, Attribute):
+                if not attr_type.__attribute_type__:
+                    raise TypeError(f"Cannot parse generic {Attribute} type.")
+                else:
+                    attr_type = attr_type.__attribute_type__
+
             schema[attr_name] = ItemMeta._create_attribute(
                 mapping[attr_name], attr_type, body.get(attr_name, UNDEFINED)
             )
@@ -121,11 +128,11 @@ class ItemMeta(type):
     def _create_attribute(attr_name: str, attr_type: type, field: Any):
         if isinstance(field, Field):
             if field.default_factory:
-                return Attribute(attr_name, attr_type, field.default_factory)
+                return Attribute[attr_type](attr_name, field.default_factory)
 
-            return Attribute(attr_name, attr_type, lambda: field.default)
+            return Attribute[attr_type](attr_name, lambda: field.default)
 
-        return Attribute(attr_name, attr_type, lambda: field)
+        return Attribute[attr_type](attr_name, lambda: field)
 
     @staticmethod
     def _get_mapping(meta):

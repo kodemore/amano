@@ -10,7 +10,7 @@ from amano.condition import ComparisonCondition
 @pytest.mark.usefixtures("generic_field_identifier")
 def test_comparison_condition_with_const_value() -> None:
     # given
-    field = Attribute("field", int)
+    field = Attribute[int]("field")
 
     # when
     condition = field == 12
@@ -24,8 +24,8 @@ def test_comparison_condition_with_const_value() -> None:
 
 def test_comparison_condition_with_two_attributes() -> None:
     # given
-    field = Attribute("field", int)
-    other_field = Attribute("other_field", int)
+    field = Attribute[int]("field")
+    other_field = Attribute[int]("other_field")
 
     # when
     condition = field == other_field
@@ -39,7 +39,7 @@ def test_comparison_condition_with_two_attributes() -> None:
 @pytest.mark.usefixtures("generic_field_identifier")
 def test_comparison_with_and_expression() -> None:
     # given
-    field = Attribute("field", int)
+    field = Attribute[int]("field")
 
     # when
     condition = (field > 12) & (field < 20)
@@ -53,7 +53,7 @@ def test_comparison_with_and_expression() -> None:
 @pytest.mark.usefixtures("generic_field_identifier")
 def test_comparison_with_or_expression() -> None:
     # given
-    field = Attribute("field", int)
+    field = Attribute[int]("field")
 
     # when
     condition = (field > 12) | (field < 20)
@@ -67,7 +67,7 @@ def test_comparison_with_or_expression() -> None:
 @pytest.mark.usefixtures("generic_field_identifier")
 def test_comparison_with_complex_expression() -> None:
     # given
-    field = Attribute("field", int)
+    field = Attribute[int]("field")
 
     # when
     condition = ((field > 12) & (field < 20)) | ((field == 12) | (field == 13))
@@ -81,7 +81,7 @@ def test_comparison_with_complex_expression() -> None:
 
 def test_attribute_exists_function() -> None:
     # given
-    field = Attribute("field", int)
+    field = Attribute[int]("field")
 
     # when
     condition = field.exists()
@@ -92,7 +92,7 @@ def test_attribute_exists_function() -> None:
 
 def test_attribute_not_exists_function() -> None:
     # given
-    field = Attribute("field", int)
+    field = Attribute[int]("field")
 
     # when
     condition = field.not_exists()
@@ -104,7 +104,7 @@ def test_attribute_not_exists_function() -> None:
 @pytest.mark.usefixtures("generic_field_identifier")
 def test_attribute_type_function() -> None:
     # given
-    field = Attribute("field", int)
+    field = Attribute[int]("field")
 
     # when
     condition = field.is_type(AttributeType.STRING)
@@ -117,7 +117,7 @@ def test_attribute_type_function() -> None:
 @pytest.mark.usefixtures("generic_field_identifier")
 def test_begins_with_function() -> None:
     # given
-    field = Attribute("field", int)
+    field = Attribute[int]("field")
 
     # when
     condition = field.begins_with("test")
@@ -130,7 +130,7 @@ def test_begins_with_function() -> None:
 @pytest.mark.usefixtures("generic_field_identifier")
 def test_contains_function() -> None:
     # given
-    field = Attribute("field", Set[int])
+    field = Attribute[Set[int]]("field")
 
     # when
     condition = field.contains(12)
@@ -143,7 +143,7 @@ def test_contains_function() -> None:
 @pytest.mark.usefixtures("generic_field_identifier")
 def test_size_function_with_comparison() -> None:
     # given
-    field = Attribute("field", Set[int])
+    field = Attribute[Set[int]]("field")
 
     # when
     condition = field.size() > 11
@@ -155,7 +155,7 @@ def test_size_function_with_comparison() -> None:
 
 def test_size_function() -> None:
     # given
-    field = Attribute("field", Set[int])
+    field = Attribute[Set[int]]("field")
 
     # when
     condition = field.size()
@@ -167,7 +167,7 @@ def test_size_function() -> None:
 @pytest.mark.usefixtures("generic_field_identifier")
 def test_between_function() -> None:
     # given
-    field = Attribute("field", str)
+    field = Attribute[str]("field")
 
     # when
     condition = field.between("a", "z")
