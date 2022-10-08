@@ -129,11 +129,11 @@ class ItemMeta(type):
     def _create_attribute(attr_name: str, attr_type: type, field: Any):
         if isinstance(field, Field):
             if field.default_factory:
-                return Attribute[attr_type](attr_name, field.default_factory)
+                return Attribute[attr_type](attr_name, field.default_factory)  # type: ignore
 
-            return Attribute[attr_type](attr_name, lambda: field.default)
+            return Attribute[attr_type](attr_name, lambda: field.default)  # type: ignore
 
-        return Attribute[attr_type](attr_name, lambda: field)
+        return Attribute[attr_type](attr_name, lambda: field)  # type: ignore
 
     @staticmethod
     def _get_mapping(meta):
@@ -233,8 +233,6 @@ class Item(metaclass=ItemMeta):
 
 
 I = TypeVar("I", bound=Item)
-
-_ITEM_CLASS_REGISTRY: Dict[Type, I] = {}
 
 
 def commit(item: Item) -> None:
