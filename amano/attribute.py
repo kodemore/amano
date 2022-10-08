@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import inspect
 from typing import Any, Callable, Generic, Type, TypeVar
 
 from .base_attribute import (
-    _SUPPORTED_BASE_TYPES,
     AbstractAttribute,
     AttributeType,
     serializer_registry,
