@@ -11,7 +11,6 @@ from typing import (
     FrozenSet,
     List,
     Mapping,
-    Protocol,
     Sequence,
     Set,
     Tuple,
@@ -19,7 +18,6 @@ from typing import (
     TypedDict,
     Union,
     overload,
-    runtime_checkable,
 )
 
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer

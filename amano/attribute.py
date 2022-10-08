@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Generic, Type, TypeVar
+from typing import Any, Callable, Type, TypeVar
 
 from .base_attribute import (
     AbstractAttribute,
