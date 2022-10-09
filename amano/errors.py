@@ -59,3 +59,12 @@ class UpdateItemError(WriteError):
     @classmethod
     def for_new_item(cls, item: Item) -> UpdateItemError:
         return cls(f"Could not update new item {item}.")
+
+
+class DeleteItemError(WriteError):
+    @classmethod
+    def for_validation_error(cls, item: Item, message: str) -> DeleteItemError:
+        return cls(
+            f"Could not validate item {item}. "
+            f"Validation failed with message: {message}"
+        )

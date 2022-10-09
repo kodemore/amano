@@ -28,7 +28,9 @@ def test_can_delete_item(default_dynamodb_client, default_table) -> None:
         my_table.get("Tool", "Reflection")
 
 
-def test_can_delete_unexisting_item(default_dynamodb_client, default_table) -> None:
+def test_can_delete_unexisting_item(
+    default_dynamodb_client, default_table
+) -> None:
     # given
     @dataclass
     class Track(Item):
@@ -44,7 +46,9 @@ def test_can_delete_unexisting_item(default_dynamodb_client, default_table) -> N
     assert my_table.delete(item)
 
 
-def test_can_delete_item_with_passing_condition(default_dynamodb_client, default_table) -> None:
+def test_can_delete_item_with_passing_condition(
+    default_dynamodb_client, default_table
+) -> None:
     # given
     @dataclass
     class Track(Item):
@@ -66,7 +70,9 @@ def test_can_delete_item_with_passing_condition(default_dynamodb_client, default
         my_table.get("Tool", "Reflection")
 
 
-def test_can_delete_item_with_failing_condition(default_dynamodb_client, default_table) -> None:
+def test_can_delete_item_with_failing_condition(
+    default_dynamodb_client, default_table
+) -> None:
     # given
     @dataclass
     class Track(Item):
@@ -81,7 +87,7 @@ def test_can_delete_item_with_failing_condition(default_dynamodb_client, default
     assert my_table.get("Tool", "Reflection")
 
     # when
-    assert my_table.delete(item, Track.album_name != "Lateralus")
+    assert not my_table.delete(item, Track.album_name != "Lateralus")
 
     # then
     assert my_table.get("Tool", "Reflection")

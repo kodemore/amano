@@ -17,6 +17,7 @@ from .constants import (
 )
 from .cursor import Cursor
 from .errors import (
+    DeleteItemError,
     ItemNotFoundError,
     PutItemError,
     QueryError,
@@ -154,12 +155,18 @@ class Table(Generic[I]):
                 "Key": self._get_key_expression(item),
             }
 
+            if condition:
+                query["ConditionExpression"] = str(condition)
+                query["ExpressionAttributeValues"] = condition.values
+
             result = self._db_client.delete_item(**query)  # type: ignore
         except ClientError as e:
             error = e.response.get("Error", {})
-            raise PutItemError.for_client_error(error["Message"]) from e
+            if error.get("Code") == "ConditionalCheckFailedException":
+                return False
+            raise DeleteItemError.for_client_error(error["Message"]) from e
         except ParamValidationError as e:
-            raise PutItemError.for_validation_error(item, str(e)) from e
+            raise DeleteItemError.for_validation_error(item, str(e)) from e
 
         success = result["ResponseMetadata"]["HTTPStatusCode"] == 200
 
