@@ -25,7 +25,7 @@ bandit:
 test:
 	poetry run pytest tests
 
-lint: isort black flake mypy toml_sort
+lint: isort black flake mypy
 
 audit: audit_dependencies bandit
 

@@ -146,7 +146,7 @@ class Table(Generic[I]):
 
         if item_state == ItemState.DIRTY:
             return self.update(item, condition)
-        
+
         return False
 
     def delete(self, item: I, condition: Condition = None) -> bool:
