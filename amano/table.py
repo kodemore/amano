@@ -140,6 +140,13 @@ class Table(Generic[I]):
         return Cursor(self._item_class, scan_params, self._db_client.scan)
 
     def save(self, item: I, condition: Condition = None) -> bool:
+        item_state = get_item_state(item)
+        if item_state == ItemState.NEW:
+            return self.put(item, condition)
+
+        if item_state == ItemState.DIRTY:
+            return self.update(item, condition)
+        
         return False
 
     def delete(self, item: I, condition: Condition = None) -> bool:
