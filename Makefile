@@ -13,9 +13,6 @@ black:
 flake:
 	poetry run flake8 amano
 
-pylint:
-	poetry run pylint amano
-
 mypy:
 	poetry run mypy --install-types --show-error-codes --non-interactive .
 
