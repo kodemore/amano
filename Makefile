@@ -13,24 +13,18 @@ black:
 flake:
 	poetry run flake8 amano
 
-pylint:
-	poetry run pylint amano
-
 mypy:
 	poetry run mypy --install-types --show-error-codes --non-interactive .
 
-audit_dependencies:
-	poetry export --without-hashes -f requirements.txt | poetry run safety check --full-report --stdin
-
 bandit:
-	poetry run bandit -r . -x ./tests,./test
+	poetry run bandit -r . -x ./tests,./test,./.venv
 
 test:
 	poetry run pytest tests
 
-lint: isort black flake mypy toml_sort
+lint: isort black flake mypy
 
-audit: audit_dependencies bandit
+audit: bandit
 
 tests: test
 

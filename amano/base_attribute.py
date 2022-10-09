@@ -193,7 +193,7 @@ class AttributeType(StringEnum):
         if isinstance(other, AttributeType):
             return self.value == other.value
 
-        raise NotImplemented(
+        raise NotImplementedError(
             f"Comparison between {self.__class__} "
             f"and {type(other)} is not supported."
         )

@@ -32,7 +32,9 @@ def _param_suffix() -> str:
     global _COUNTER
     _COUNTER += 1
     return (
-        "_" + "".join(random.choices(string.ascii_letters, k=4)) + str(_COUNTER)
+        "_"
+        + "".join(random.choices(string.ascii_letters, k=4))  # nosec
+        + str(_COUNTER)
     )
 
 

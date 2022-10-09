@@ -139,9 +139,15 @@ class Table(Generic[I]):
 
         return Cursor(self._item_class, scan_params, self._db_client.scan)
 
-    def save(self, item: I) -> None:
-        # @todo: save or update item depending on its state
-        raise NotImplemented
+    def save(self, item: I, condition: Condition = None) -> bool:
+        item_state = get_item_state(item)
+        if item_state == ItemState.NEW:
+            return self.put(item, condition)
+
+        if item_state == ItemState.DIRTY:
+            return self.update(item, condition)
+
+        return False
 
     def delete(self, item: I, condition: Condition = None) -> bool:
         if not isinstance(item, self._item_class):
@@ -279,7 +285,7 @@ class Table(Generic[I]):
         key_attributes = list(key_condition.attributes)
         if len(key_attributes) > 2:
             raise QueryError.for_invalid_key_condition(
-                key_condition, f"Too many attributes in key_condition."
+                key_condition, "Too many attributes in key_condition."
             )
 
         if any(
