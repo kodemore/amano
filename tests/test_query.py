@@ -159,13 +159,13 @@ def test_query_table_with_limit(
     # then
     assert isinstance(result, Iterable)
 
-    assert result.count() == 10
+    assert result.count() == 18
     all_items = []
     for item in result:
         all_items.append(item)
         assert isinstance(item, Track)
 
-    assert len(all_items) == 10
+    assert len(all_items) == 18
 
 
 def test_query_table_returns_consumed_capacity(

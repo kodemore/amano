@@ -79,13 +79,35 @@ def test_scan_table_with_limit(
     # then
     assert isinstance(result, Iterable)
 
-    assert result.count() == 30
+    assert result.count() == 200
     all_items = []
     for item in result:
         all_items.append(item)
         assert isinstance(item, Track)
 
-    assert len(all_items) == 30
+    assert len(all_items) == 200
+
+
+def test_scan_table_with_fetch(
+    readonly_dynamodb_client, readonly_table
+) -> None:
+    # given
+    @dataclass
+    class Track(Item):
+        artist_name: Attribute[str]
+        track_name: Attribute[str]
+        album_name: Attribute[str]
+        genre_name: Attribute[str]
+
+    my_table = Table[Track](readonly_dynamodb_client, readonly_table)
+
+    # when
+    result = my_table.scan(Track.track_name.startswith("S"), limit=30)
+
+    # then
+    assert isinstance(result, Iterable)
+    assert len(result.fetch(10)) == 10
+    assert result.count() == 25
 
 
 def test_scan_table_with_index(

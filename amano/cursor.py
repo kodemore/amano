@@ -20,7 +20,10 @@ class Cursor(Generic[I]):
         self._consumed_capacity: float = 0
 
     def __iter__(self) -> Iterator[Union[I, Dict[str, Any]]]:
-        self._fetch()
+        self._current_index = 0
+        if not self._fetched_records:
+            self._fetch()
+
         items_count = len(self._fetched_records)
         while self._current_index < items_count:
             item_data = self._fetched_records[self._current_index]
@@ -31,30 +34,27 @@ class Cursor(Generic[I]):
 
             self._current_index += 1
 
-            if (
-                self._query.get("Limit")
-                and self._current_index == self._query["Limit"]
-            ):
-                break
-
             if self._current_index >= items_count and not self._exhausted:
                 self._fetch()
                 items_count = len(self._fetched_records)
 
-    def fetch(self, limit=0) -> List[Union[Dict[str, Any], I]]:
+    def fetch(self, items=0) -> List[Union[Dict[str, Any], I]]:
         self._current_index = 0
         fetched_items = []
         fetched_length = 0
         for item in self:
             fetched_items.append(item)
             fetched_length += 1
-            if limit and fetched_length >= limit:
+            if items and fetched_length >= items:
                 break
 
         self._current_index = 0
         return fetched_items
 
     def _fetch(self) -> None:
+        if self._exhausted:
+            return
+
         try:
             result = self._executor(**self._query)
             self._consumed_capacity = result["ConsumedCapacity"]["Table"][
@@ -73,14 +73,10 @@ class Cursor(Generic[I]):
         self._fetched_records = self._fetched_records + result["Items"]
 
     def count(self) -> int:
-        count = len([item for item in self])
-        self._current_index = 0
-        self._fetched_records = []
-        self._last_evaluated_key = {}
-        self._exhausted = False
-        if "ExclusiveStartKey" in self._query:
-            del self._query["ExclusiveStartKey"]
-        return count
+        while not self._exhausted:
+            self._fetch()
+
+        return len(self._fetched_records)
 
     @property
     def consumed_capacity(self) -> float:
