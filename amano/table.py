@@ -139,9 +139,8 @@ class Table(Generic[I]):
 
         return Cursor(self._item_class, scan_params, self._db_client.scan)
 
-    def save(self, item: I) -> None:
-        # @todo: save or update item depending on its state
-        raise NotImplemented
+    def save(self, item: I, condition: Condition = None) -> bool:
+        return False
 
     def delete(self, item: I, condition: Condition = None) -> bool:
         if not isinstance(item, self._item_class):
