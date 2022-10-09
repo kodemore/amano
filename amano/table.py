@@ -17,6 +17,7 @@ from .constants import (
 )
 from .cursor import Cursor
 from .errors import (
+    DeleteItemError,
     ItemNotFoundError,
     PutItemError,
     QueryError,
@@ -141,6 +142,38 @@ class Table(Generic[I]):
     def save(self, item: I) -> None:
         # @todo: save or update item depending on its state
         raise NotImplemented
+
+    def delete(self, item: I, condition: Condition = None) -> bool:
+        if not isinstance(item, self._item_class):
+            ValueError(
+                f"Could not delete and item of type `{type(item)}`, "
+                f"expected instance of `{self._item_class}` instead."
+            )
+        try:
+            query = {
+                "TableName": self._table_name,
+                "Key": self._get_key_expression(item),
+            }
+
+            if condition:
+                query["ConditionExpression"] = str(condition)
+                query["ExpressionAttributeValues"] = condition.values
+
+            result = self._db_client.delete_item(**query)  # type: ignore
+        except ClientError as e:
+            error = e.response.get("Error", {})
+            if error.get("Code") == "ConditionalCheckFailedException":
+                return False
+            raise DeleteItemError.for_client_error(error["Message"]) from e
+        except ParamValidationError as e:
+            raise DeleteItemError.for_validation_error(item, str(e)) from e
+
+        success = result["ResponseMetadata"]["HTTPStatusCode"] == 200
+
+        if success:
+            commit(item)
+
+        return success
 
     def put(self, item: I, condition: Condition = None) -> bool:
         """

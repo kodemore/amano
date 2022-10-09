@@ -93,9 +93,34 @@ amano_forum.Category = "Other Category"
 assert forum_table.update(amano_forum)
 ```
 
+### Deleting item from a table
+
+
+```python
+import boto3
+from amano import Table, Item
+
+client = boto3.client("dynamodb")
+
+class Forum(Item):
+    ForumName: str
+    Category: str
+    Threads: int = 0
+    Messages: int = 0
+    Views: int = 0
+
+forum_table = Table[Forum](client, table_name="Forum")
+
+# get an item
+item = forum_table.get("Amano Forum", "Amazon DynamoDB")
+
+# delete it
+forum_table.delete(item)
+```
+
 ### Conditional writes
 
-`Put`, `update` and `save` can perform conditional expressions (update Item only if given attribute exists, or when it asserts against given value). Amano provides abstraction which is built on the top of python's comparison operators (`==`, `=!`, `>`, `>=` `<`, `<=`) and bitwise operators (`&` - and, `|` - or).
+`Put`, `update`, `save` and `delete` can perform conditional expressions (update Item only if given attribute exists, or when it asserts against given value). Amano provides abstraction which is built on the top of python's comparison operators (`==`, `=!`, `>`, `>=` `<`, `<=`) and bitwise operators (`&` - and, `|` - or).
 
 ```python
 import boto3
