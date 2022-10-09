@@ -54,6 +54,6 @@ pytest-cov = "^3.0.0"
 toml-sort = "^0.20.0"
 
 [[tool.poetry.source]]
+default = true
 name = 'default'
 url = 'https://pypi.python.org/simple'
-default = true

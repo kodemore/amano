@@ -34,9 +34,7 @@ jobs:
 
       - name: Linting
         run: |
-          make isort
-          make black
-          make mypy
+          make lint
   tests:
     runs-on: ubuntu-latest
     steps:

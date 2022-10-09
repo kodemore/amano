@@ -278,7 +278,7 @@ class Table(Generic[I]):
         key_attributes = list(key_condition.attributes)
         if len(key_attributes) > 2:
             raise QueryError.for_invalid_key_condition(
-                key_condition, f"Too many attributes in key_condition."
+                key_condition, "Too many attributes in key_condition."
             )
 
         if any(
