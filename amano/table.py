@@ -120,9 +120,10 @@ class Table(Generic[I]):
 
         if condition:
             scan_params["FilterExpression"] = str(condition)
-            scan_params["ExpressionAttributeValues"] = {
-                **condition.values,  # type: ignore
-            }
+            if condition.parameters:
+                scan_params["ExpressionAttributeValues"] = serialize_value(
+                    condition.parameters
+                ).get("M")
 
         if use_index:
             if isinstance(use_index, str):
@@ -163,7 +164,9 @@ class Table(Generic[I]):
 
             if condition:
                 query["ConditionExpression"] = str(condition)
-                query["ExpressionAttributeValues"] = condition.values
+                query["ExpressionAttributeValues"] = serialize_value(
+                    condition.parameters
+                ).get("M")
 
             result = self._db_client.delete_item(**query)  # type: ignore
         except ClientError as e:
@@ -204,8 +207,10 @@ class Table(Generic[I]):
             }
             if condition:
                 put_query["ConditionExpression"] = str(condition)
-                if condition.values:
-                    put_query["ExpressionAttributeValues"] = condition.values
+                if condition.parameters:
+                    put_query["ExpressionAttributeValues"] = serialize_value(
+                        condition.parameters
+                    ).get("M")
 
             result = self._db_client.put_item(**put_query)  # type: ignore
         except ClientError as e:
@@ -253,10 +258,10 @@ class Table(Generic[I]):
 
         if condition:
             query["ConditionExpression"] = str(condition)
-            if condition.values:
+            if condition.parameters:
                 query["ExpressionAttributeValues"] = {
                     **query["ExpressionAttributeValues"],
-                    **condition.values,
+                    **serialize_value(condition.parameters).get("M"),
                 }
         try:
             result = self._db_client.update_item(**query)  # type: ignore[arg-type]
@@ -282,7 +287,7 @@ class Table(Generic[I]):
         consistent_read: bool = False,
     ) -> Cursor[I]:
         key_condition_expression = str(key_condition)
-        key_attributes = list(key_condition.attributes)
+        key_attributes = list(key_condition.hint)
         if len(key_attributes) > 2:
             raise QueryError.for_invalid_key_condition(
                 key_condition, "Too many attributes in key_condition."
@@ -295,7 +300,9 @@ class Table(Generic[I]):
             raise QueryError.for_invalid_key_condition(
                 key_condition, "Detected unsupported operator."
             )
-        key_condition_values = key_condition.values
+        key_condition_values = serialize_value(key_condition.parameters).get(
+            "M"
+        )
         projection = ", ".join(self.attributes)
 
         if use_index:
@@ -325,7 +332,7 @@ class Table(Generic[I]):
             query["FilterExpression"] = str(filter_condition)
             query["ExpressionAttributeValues"] = {
                 **query["ExpressionAttributeValues"],  # type: ignore
-                **filter_condition.values,  # type: ignore
+                **serialize_value(filter_condition.parameters).get("M"),  # type: ignore
             }
 
         if limit:

@@ -2,17 +2,13 @@ from __future__ import annotations
 
 import random
 import string
-from abc import ABC, abstractmethod
-from typing import Any, Dict, Set, Union
-
-from astroid.decorators import cachedproperty
+from abc import ABC
+from typing import Any, Dict, List, Set, Union
 
 from .base_attribute import (
     VALID_TYPE_VALUES,
     AbstractAttribute,
     AttributeType,
-    AttributeValue,
-    serialize_value,
     serializer_registry,
 )
 from .constants import (
@@ -38,21 +34,14 @@ def _param_suffix() -> str:
     )
 
 
-class Condition(ABC):
-    values: Dict[str, AttributeValue] = {}
-    attributes: Set[str]
-
-    def __init__(self, **kwargs):
-        self.attributes = set()
-        self.format_params = dict(kwargs)
-
-    @property
-    @abstractmethod
-    def format(self) -> str:
-        ...
+class Condition:
+    def __init__(self, condition: str, parameters: Dict[str, Any] = None):
+        self.condition = condition
+        self.parameters = parameters or {}
+        self.hint: Set[str] = set()  # hint for the index auto-resolving
 
     def __str__(self) -> str:
-        return self.format.format(**self.format_params)
+        return self.condition
 
     def __and__(self, other) -> AndCondition:
         return AndCondition(self, other)
@@ -62,40 +51,69 @@ class Condition(ABC):
 
 
 class AttributeExists(Condition):
-    def __init__(self, attribute: AbstractAttribute):
-        super().__init__(attribute=str(attribute))
-        self.attributes.add(attribute.name)
+    CONDITION = "attribute_exists({attribute})"
 
-    @property
-    def format(self) -> str:
-        return "attribute_exists({attribute})"
+    def __init__(self, attribute: AbstractAttribute):
+        super().__init__(
+            self.CONDITION.format(attribute=attribute.name),
+        )
+        self.hint.add(attribute.name)
 
 
 class AttributeNotExists(Condition):
-    def __init__(self, attribute: AbstractAttribute):
-        super().__init__(attribute=str(attribute))
-        self.attributes.add(attribute.name)
+    CONDITION = "attribute_not_exists({attribute})"
 
-    @property
-    def format(self) -> str:
-        return "attribute_not_exists({attribute})"
+    def __init__(self, attribute: AbstractAttribute):
+        super().__init__(
+            self.CONDITION.format(attribute=attribute.name),
+        )
+        self.hint.add(attribute.name)
 
 
 class BeginsWithCondition(Condition):
+    CONDITION = "begins_with({attribute}, {value})"
+
     def __init__(self, attribute: AbstractAttribute, value: str):
         param_name = f":{attribute}{_param_suffix()}"
-        super().__init__(attribute=str(attribute), value=param_name)
-        self.values = {param_name: {"S": str(value)}}
-        self.attributes.add(attribute.name)
-
-    @property
-    def format(self) -> str:
-        return "begins_with({attribute}, {value})"
+        super().__init__(
+            self.CONDITION.format(attribute=attribute.name, value=param_name),
+            {param_name: value},
+        )
+        self.hint.add(attribute.name)
 
 
 class ContainsCondition(Condition):
+    CONDITION = "contains({attribute}, {value})"
+
     def __init__(self, attribute: AbstractAttribute, value: Any):
         param_name = f":{attribute}{_param_suffix()}"
+        self._validate_attribute(attribute)
+        self._validate_value(attribute, value)
+
+        serializer = serializer_registry.get_for(type(value))
+
+        super().__init__(
+            self.CONDITION.format(attribute=attribute.name, value=param_name),
+            {
+                param_name: serializer.extract(value),  # type: ignore[dict-item]
+            },
+        )
+        self.hint.add(attribute.name)
+
+    def _validate_value(self, attribute, value) -> None:
+        if attribute.type is AttributeType.NUMBER_SET:
+            value_type = AttributeType.NUMBER
+        elif attribute.type is AttributeType.BINARY_SET:
+            value_type = AttributeType.BINARY
+        else:
+            value_type = AttributeType.STRING
+        if not isinstance(value, VALID_TYPE_VALUES[str(value_type)]):
+            raise ValueError(
+                f"Passed value of type `{type(value)}` cannot be used with "
+                f"contains function and `{attribute.name}` attribute's type."
+            )
+
+    def _validate_attribute(self, attribute) -> None:
         if attribute.type not in (
             AttributeType.STRING,
             AttributeType.STRING_SET,
@@ -106,96 +124,72 @@ class ContainsCondition(Condition):
                 f"Attribute `{attribute}` does not support `contains` function."
             )
 
-        if attribute.type is AttributeType.NUMBER_SET:
-            value_type = AttributeType.NUMBER
-        elif attribute.type is AttributeType.BINARY_SET:
-            value_type = AttributeType.BINARY
-        else:
-            value_type = AttributeType.STRING
-
-        if not isinstance(value, VALID_TYPE_VALUES[str(value_type)]):
-            raise ValueError(
-                f"Passed value of type `{type(value)}` cannot be used with "
-                f"contains function and `{attribute.name}` attribute's type."
-            )
-
-        super().__init__(attribute=str(attribute), value=param_name)
-        serializer = serializer_registry.get_for(type(value))
-        self.values = {
-            param_name: serialize_value(serializer.extract(value)),  # type: ignore[dict-item]
-        }
-        self.attributes.add(attribute.name)
-
-    @property
-    def format(self) -> str:
-        return "contains({attribute}, {value})"
-
 
 class AttributeIsType(Condition):
+    CONDITION = "attribute_type({attribute}, {expected_type})"
+
     def __init__(
         self, attribute: AbstractAttribute, expected_type: AttributeType
     ):
         param_name = f":{attribute}{_param_suffix()}"
-        super().__init__(attribute=str(attribute), expected_type=param_name)
-        self.values = {param_name: {"S": str(expected_type)}}
-        self.attributes.add(attribute.name)
+        super().__init__(
+            self.CONDITION.format(
+                attribute=attribute.name, expected_type=param_name
+            ),
+            {param_name: str(expected_type)},
+        )
 
-    @property
-    def format(self) -> str:
-        return "attribute_type({attribute}, {expected_type})"
+        self.hint.add(attribute.name)
 
 
 class LogicalCondition(Condition, ABC):
+    CONDITION = ""
+
     def __init__(
         self,
         left_condition: Union[Condition, str],
         right_condition: Union[Condition, str],
     ):
         super().__init__(
-            left_condition=left_condition, right_condition=right_condition
+            self.CONDITION.format(
+                left_condition=left_condition, right_condition=right_condition
+            ),
         )
         self.left_condition = left_condition
         self.right_condition = right_condition
-        self.attributes = set()
+
         if isinstance(self.left_condition, Condition):
-            self.attributes = self.left_condition.attributes
+            self.parameters = {
+                **self.parameters,
+                **self.left_condition.parameters,
+            }
+            self.hint = self.left_condition.hint
         if isinstance(self.right_condition, Condition):
-            self.attributes = self.attributes | self.right_condition.attributes
-
-    @cachedproperty
-    def values(self) -> Dict[str, AttributeValue]:
-        values: Dict[str, AttributeValue] = {}
-        if isinstance(self.left_condition, Condition):
-            values = self.left_condition.values
-
-        if isinstance(self.right_condition, Condition):
-            values = {**values, **self.right_condition.values}
-
-        return values
+            self.parameters = {
+                **self.parameters,
+                **self.right_condition.parameters,
+            }
+            self.hint = self.hint | self.right_condition.hint
 
 
 class AndCondition(LogicalCondition):
-    @property
-    def format(self) -> str:
-        return "({left_condition} AND {right_condition})"
+    CONDITION = "({left_condition} AND {right_condition})"
 
 
 class OrCondition(LogicalCondition):
-    @property
-    def format(self) -> str:
-        return "({left_condition} OR {right_condition})"
+    CONDITION = "({left_condition} OR {right_condition})"
 
 
 class NotCondition(Condition):
-    def __init__(self, condition: Union[Condition, str]):
-        super().__init__(condition=condition)
+    CONDITION = "(NOT {condition})"
 
-    @property
-    def format(self) -> str:
-        return "(NOT {condition})"
+    def __init__(self, condition: Union[Condition, str]):
+        super().__init__(self.CONDITION.format(condition=condition))
 
 
 class ComparisonCondition(Condition):
+    CONDITION = "{left_operand} {operator} {right_operand}"
+
     class ComparisonOperator(StringEnum):
         EQ = CONDITION_COMPARATOR_EQ
         NEQ = CONDITION_COMPARATOR_NEQ
@@ -210,53 +204,47 @@ class ComparisonCondition(Condition):
         left_operand: AbstractAttribute,
         right_operand: Any,
     ):
-        self.values = {}
-        if isinstance(right_operand, AbstractAttribute):
-            super().__init__(
-                operator=operator,
-                left_operand=left_operand,
-                right_operand=right_operand,
-            )
-            self.attributes.add(left_operand.name)
-            self.attributes.add(right_operand.name)
-            return
-
         if isinstance(right_operand, Condition):
             raise ValueError(
                 f"Could not compare `{left_operand}` "
                 f"with a condition expression."
             )
 
+        if isinstance(right_operand, AbstractAttribute):
+            super().__init__(
+                self.CONDITION.format(
+                    left_operand=left_operand.name,
+                    right_operand=right_operand.name,
+                    operator=operator,
+                )
+            )
+            self.hint.add(left_operand.name)
+            self.hint.add(right_operand.name)
+            return
+
         # validate value type
         AttributeType.from_python_type(type(right_operand))
+
         param_name = f":{left_operand}{_param_suffix()}"
         super().__init__(
-            operator=operator,
-            left_operand=left_operand,
-            right_operand=param_name,
+            self.CONDITION.format(
+                left_operand=left_operand.name,
+                right_operand=param_name,
+                operator=operator,
+            ),
+            {
+                param_name: left_operand.extract(right_operand),
+            },
         )
-        self.values = {
-            param_name: serialize_value(left_operand.extract(right_operand))
-        }
-        self.attributes.add(left_operand.name)
-
-    @property
-    def format(self) -> str:
-        return "{left_operand} {operator} {right_operand}"
+        self.hint.add(left_operand.name)
 
 
 class SizeCondition(Condition):
+    CONDITION = "size({attribute})"
+
     def __init__(self, attribute: AbstractAttribute):
-        super().__init__(attribute=attribute.name)
-        self.values = {}
-        self.attributes.add(attribute.name)
-
-    @property
-    def format(self) -> str:
-        if "operator" not in self.format_params:
-            return "size({attribute})"
-
-        return "size({attribute}) {operator} {value}"
+        super().__init__(self.CONDITION.format(attribute=attribute.name))
+        self.attribute = attribute
 
     def __eq__(self, value: int) -> SizeCondition:  # type: ignore
         return self._compare_size(CONDITION_COMPARATOR_EQ, value)
@@ -274,40 +262,69 @@ class SizeCondition(Condition):
         return self._compare_size(CONDITION_COMPARATOR_LTE, value)
 
     def _compare_size(self, operator: str, value: int) -> SizeCondition:
-        param_name = f":{self.format_params['attribute']}_size{_param_suffix()}"
-        self.format_params["operator"] = operator
-        self.format_params["value"] = param_name
-        self.values[param_name] = {
-            "N": str(value),
-        }
+        param_name = f":{self.attribute.name}_size{_param_suffix()}"
+        self.condition = f"{self.condition} {operator} {param_name}"
+
+        self.parameters[param_name] = value
+
         return self
 
 
 class BetweenCondition(Condition):
+    CONDITION = "{attribute} BETWEEN {a} AND {b}"
+
     def __init__(
         self,
         attribute: AbstractAttribute,
-        a: Union[AbstractAttribute, str],
-        b: Union[AbstractAttribute, str],
+        a: Union[AbstractAttribute, Any],
+        b: Union[AbstractAttribute, Any],
     ):
-        params: Dict[str, str] = {}
-        values: Dict[str, AttributeValue] = {}
+        params: Dict[str, Any] = {}
         if not isinstance(a, AbstractAttribute):
-            params["a"] = f":{attribute}_a{_param_suffix()}"
-            values[params["a"]] = attribute.extract(a)
+            a_name = f":{attribute}_a{_param_suffix()}"
+            params[a_name] = attribute.extract(a)
         else:
-            params["a"] = str(a)
+            a_name = a.name
 
         if not isinstance(b, AbstractAttribute):
-            params["b"] = f":{attribute}_b{_param_suffix()}"
-            values[params["b"]] = attribute.extract(b)
+            b_name = f":{attribute}_b{_param_suffix()}"
+            params[b_name] = attribute.extract(b)
         else:
-            params["b"] = str(b)
+            b_name = b.name
 
-        super().__init__(attribute=str(attribute), a=params["a"], b=params["b"])
-        self.values = serialize_value(values).get("M")
-        self.attributes.add(attribute.name)
+        super().__init__(
+            self.CONDITION.format(attribute=attribute.name, a=a_name, b=b_name),
+            params,
+        )
 
-    @property
-    def format(self) -> str:
-        return "{attribute} BETWEEN {a} AND {b}"
+        self.hint.add(attribute.name)
+
+
+class InCondition(Condition):
+    CONDITION = "{attribute} IN ({values})"
+
+    def __init__(
+        self,
+        attribute: AbstractAttribute,
+        in_values: List[Union[AbstractAttribute, Any]],
+    ):
+        parameters: Dict[str, Any] = {}
+        values: List[str] = []
+
+        i = 0
+        for value in in_values:
+            if isinstance(value, AbstractAttribute):
+                values.append(value.name)
+                continue
+
+            name = f":{attribute}_{i}{_param_suffix()}"
+            values.append(name)
+            parameters[name] = attribute.extract(value)
+            i += 1
+
+        super().__init__(
+            self.CONDITION.format(
+                attribute=attribute.name, values=", ".join(values)
+            ),
+            parameters,
+        )

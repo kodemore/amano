@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 from datetime import date, datetime, time
 from decimal import Decimal
@@ -136,3 +137,25 @@ def test_float_attribute() -> None:
     # then
     assert isinstance(hydrated_value, float)
     assert hydrated_value == 10.4213
+
+
+def test_attribute_path() -> None:
+    # given
+    test = Attribute[float]("test")
+
+    # then
+    assert test.key("sub.field").name == "test.sub.field"
+
+
+def test_can_extract_any_attribute_path() -> None:
+    # given
+    test = Attribute[float]("test")
+
+    # then
+    assert re.match(
+        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}",
+        test.key("sub.field").extract(datetime.now()),
+    )
+
+    assert test.key("sub.field").extract(10) == 10
+    assert test.key("sub.field").extract(10.4) == Decimal("10.4")
