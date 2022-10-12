@@ -4,7 +4,7 @@ import pytest
 
 from amano.attribute import Attribute
 from amano.base_attribute import AttributeType
-from amano.condition import ComparisonCondition
+from amano.condition import ComparisonCondition, Condition
 
 
 @pytest.mark.usefixtures("generic_field_identifier")
@@ -18,8 +18,8 @@ def test_comparison_condition_with_const_value() -> None:
     # then
     assert isinstance(condition, ComparisonCondition)
     assert str(condition) == "field = :field"
-    assert condition.values[":field"] == {"N": "12"}
-    assert condition.attributes == {"field"}
+    assert condition.parameters[":field"] == 12
+    assert condition.hint == {"field"}
 
 
 def test_comparison_condition_with_two_attributes() -> None:
@@ -32,8 +32,8 @@ def test_comparison_condition_with_two_attributes() -> None:
 
     # then
     assert str(condition) == "field = other_field"
-    assert not condition.values
-    assert condition.attributes == {"field", "other_field"}
+    assert not condition.parameters
+    assert condition.hint == {"field", "other_field"}
 
 
 @pytest.mark.usefixtures("generic_field_identifier")
@@ -46,8 +46,8 @@ def test_comparison_with_and_expression() -> None:
 
     # then
     assert str(condition) == "(field > :field AND field < :field)"
-    assert condition.left_condition.values == {":field": {"N": "12"}}
-    assert condition.right_condition.values == {":field": {"N": "20"}}
+    assert condition.left_condition.parameters == {":field": 12}
+    assert condition.right_condition.parameters == {":field": 20}
 
 
 @pytest.mark.usefixtures("generic_field_identifier")
@@ -60,8 +60,8 @@ def test_comparison_with_or_expression() -> None:
 
     # then
     assert str(condition) == "(field > :field OR field < :field)"
-    assert condition.left_condition.values == {":field": {"N": "12"}}
-    assert condition.right_condition.values == {":field": {"N": "20"}}
+    assert condition.left_condition.parameters == {":field": 12}
+    assert condition.right_condition.parameters == {":field": 20}
 
 
 @pytest.mark.usefixtures("generic_field_identifier")
@@ -111,7 +111,7 @@ def test_attribute_type_function() -> None:
 
     # then
     assert str(condition) == "attribute_type(field, :field)"
-    assert condition.values[":field"] == {"S": "S"}
+    assert condition.parameters[":field"] == "S"
 
 
 @pytest.mark.usefixtures("generic_field_identifier")
@@ -124,7 +124,7 @@ def test_begins_with_function() -> None:
 
     # then
     assert str(condition) == "begins_with(field, :field)"
-    assert condition.values[":field"] == {"S": "test"}
+    assert condition.parameters[":field"] == "test"
 
 
 @pytest.mark.usefixtures("generic_field_identifier")
@@ -137,7 +137,7 @@ def test_contains_function() -> None:
 
     # then
     assert str(condition) == "contains(field, :field)"
-    assert condition.values[":field"] == {"N": "12"}
+    assert condition.parameters[":field"] == 12
 
 
 @pytest.mark.usefixtures("generic_field_identifier")
@@ -150,7 +150,7 @@ def test_size_function_with_comparison() -> None:
 
     # then
     assert str(condition) == "size(field) > :field_size"
-    assert condition.values[":field_size"] == {"N": "11"}
+    assert condition.parameters[":field_size"] == 11
 
 
 def test_size_function() -> None:
@@ -174,5 +174,31 @@ def test_between_function() -> None:
 
     # then
     assert str(condition) == "field BETWEEN :field_a AND :field_b"
-    assert condition.values[":field_a"] == {"S": "a"}
-    assert condition.values[":field_b"] == {"S": "z"}
+    assert condition.parameters[":field_a"] == "a"
+    assert condition.parameters[":field_b"] == "z"
+
+
+@pytest.mark.usefixtures("generic_field_identifier")
+def test_in_condition() -> None:
+    # given
+    field = Attribute[str]("field")
+
+    # when
+    condition = field.is_in(["a", "z", Attribute[str]("other_field")])
+
+    # then
+    assert str(condition) == "field IN (:field_0, :field_1, other_field)"
+    assert condition.parameters[":field_0"] == "a"
+    assert condition.parameters[":field_1"] == "z"
+
+
+def test_custom_condition() -> None:
+    # given
+    condition = Condition(
+        "field.attribute.value == :value",
+        parameters={":value": "a"}
+    )
+
+    # then
+    assert str(condition) == "field.attribute.value == :value"
+    assert condition.parameters == {":value": "a"}

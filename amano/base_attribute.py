@@ -36,6 +36,7 @@ from .constants import (
     TYPE_NUMBER_SET,
     TYPE_STRING,
     TYPE_STRING_SET,
+    TYPE_ANY
 )
 from .utils import StringEnum
 
@@ -53,11 +54,23 @@ class FloatStrategy(HydrationStrategy):
         return Decimal(str(value))
 
 
+class AnyStrategy(HydrationStrategy):
+    def __init__(self, registry: StrategyRegistry):
+        self._registry = registry
+
+    def hydrate(self, value: Any) -> Any:
+        return value
+
+    def extract(self, value: Any) -> Any:
+        return self._registry.get_for(type(value), True).extract(value)
+
+
 serializer_registry = StrategyRegistry()
 
 # Add support for floats and bytearray in dynamodb
 serializer_registry.add(float, FloatStrategy())
 serializer_registry.add(bytearray, SimpleStrategy(bytearray, bytearray))
+serializer_registry.add(Any, AnyStrategy(serializer_registry))
 
 VALID_TYPE_VALUES: Dict[str, Tuple[Type, ...]] = {
     TYPE_STRING: (str, datetime, date, time),
@@ -143,6 +156,7 @@ class AttributeType(StringEnum):
     NUMBER_SET = TYPE_NUMBER_SET
     STRING_SET = TYPE_STRING_SET
     BINARY_SET = TYPE_BINARY_SET
+    ANY = TYPE_ANY
 
     @classmethod
     def from_python_type(cls, value_type: type) -> AttributeType:

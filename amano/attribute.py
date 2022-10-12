@@ -15,7 +15,7 @@ from .condition import (
     BetweenCondition,
     ComparisonCondition,
     ContainsCondition,
-    SizeCondition,
+    SizeCondition, InCondition,
 )
 
 _T = TypeVar('_T')
@@ -35,11 +35,18 @@ class Attribute(AbstractAttribute):
                 f"Cannot use non parametrized `{Attribute.__qualname__}` class as `{name}` field ."  # noqa: E501
             )
         self.name = name
-        self.type = AttributeType.from_python_type(self.__attribute_type__)
+        if self.__attribute_type__ == Any:
+            self.type = AttributeType.ANY
+        else:
+            self.type = AttributeType.from_python_type(self.__attribute_type__)
+
         self._strategy = serializer_registry.get_for(
             self.__attribute_type__, strict=True
         )
         self.default_factory = default_factory
+
+    def key(self, path: str) -> Attribute:
+        return Attribute[Any](f"{self.name}.{path}")
 
     @property
     def default_value(self) -> Any:
@@ -106,6 +113,9 @@ class Attribute(AbstractAttribute):
 
     def contains(self, value: Any) -> ContainsCondition:
         return ContainsCondition(self, value)
+
+    def is_in(self, value: Any) -> InCondition:
+        return InCondition(self, value)
 
     def between(self, a: Any, b: Any) -> BetweenCondition:
         return BetweenCondition(self, a, b)
