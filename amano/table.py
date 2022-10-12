@@ -122,7 +122,8 @@ class Table(Generic[I]):
             scan_params["FilterExpression"] = str(condition)
             if condition.parameters:
                 scan_params["ExpressionAttributeValues"] = serialize_value(
-                    condition.parameters).get("M")
+                    condition.parameters
+                ).get("M")
 
         if use_index:
             if isinstance(use_index, str):
@@ -299,8 +300,9 @@ class Table(Generic[I]):
             raise QueryError.for_invalid_key_condition(
                 key_condition, "Detected unsupported operator."
             )
-        key_condition_values = serialize_value(
-            key_condition.parameters).get("M")
+        key_condition_values = serialize_value(key_condition.parameters).get(
+            "M"
+        )
         projection = ", ".join(self.attributes)
 
         if use_index:

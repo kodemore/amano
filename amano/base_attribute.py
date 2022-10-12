@@ -26,6 +26,7 @@ from chili.hydration import SimpleStrategy, StrategyRegistry
 from chili.typing import get_origin_type, get_type_args
 
 from .constants import (
+    TYPE_ANY,
     TYPE_BINARY,
     TYPE_BINARY_SET,
     TYPE_BOOLEAN,
@@ -36,7 +37,6 @@ from .constants import (
     TYPE_NUMBER_SET,
     TYPE_STRING,
     TYPE_STRING_SET,
-    TYPE_ANY
 )
 from .utils import StringEnum
 

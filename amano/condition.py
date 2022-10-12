@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 import string
 from abc import ABC
-from typing import Any, Dict, Union, List
+from typing import Any, Dict, List, Union
 
 from .base_attribute import (
     VALID_TYPE_VALUES,
@@ -77,7 +77,7 @@ class BeginsWithCondition(Condition):
         param_name = f":{attribute}{_param_suffix()}"
         super().__init__(
             self.CONDITION.format(attribute=attribute.name, value=param_name),
-            {param_name: value}
+            {param_name: value},
         )
         self.hint.add(attribute.name)
 
@@ -96,7 +96,7 @@ class ContainsCondition(Condition):
             self.CONDITION.format(attribute=attribute.name, value=param_name),
             {
                 param_name: serializer.extract(value),  # type: ignore[dict-item]
-            }
+            },
         )
         self.hint.add(attribute.name)
 
@@ -115,10 +115,10 @@ class ContainsCondition(Condition):
 
     def _validate_attribute(self, attribute) -> None:
         if attribute.type not in (
-                AttributeType.STRING,
-                AttributeType.STRING_SET,
-                AttributeType.NUMBER_SET,
-                AttributeType.BINARY_SET,
+            AttributeType.STRING,
+            AttributeType.STRING_SET,
+            AttributeType.NUMBER_SET,
+            AttributeType.BINARY_SET,
         ):
             raise ValueError(
                 f"Attribute `{attribute}` does not support `contains` function."
@@ -134,10 +134,9 @@ class AttributeIsType(Condition):
         param_name = f":{attribute}{_param_suffix()}"
         super().__init__(
             self.CONDITION.format(
-                attribute=attribute.name,
-                expected_type=param_name
+                attribute=attribute.name, expected_type=param_name
             ),
-            {param_name: str(expected_type)}
+            {param_name: str(expected_type)},
         )
 
         self.hint.add(attribute.name)
@@ -153,13 +152,12 @@ class LogicalCondition(Condition, ABC):
     ):
         super().__init__(
             self.CONDITION.format(
-                left_condition=left_condition,
-                right_condition=right_condition
+                left_condition=left_condition, right_condition=right_condition
             ),
             parameters={
                 **left_condition.parameters,
-                **right_condition.parameters
-            }
+                **right_condition.parameters,
+            },
         )
         self.left_condition = left_condition
         self.right_condition = right_condition
@@ -182,9 +180,7 @@ class NotCondition(Condition):
     CONDITION = "(NOT {condition})"
 
     def __init__(self, condition: Union[Condition, str]):
-        super().__init__(
-            self.CONDITION.format(condition=condition)
-        )
+        super().__init__(self.CONDITION.format(condition=condition))
 
 
 class ComparisonCondition(Condition):
@@ -215,7 +211,7 @@ class ComparisonCondition(Condition):
                 self.CONDITION.format(
                     left_operand=left_operand.name,
                     right_operand=right_operand.name,
-                    operator=operator
+                    operator=operator,
                 )
             )
             self.hint.add(left_operand.name)
@@ -230,11 +226,11 @@ class ComparisonCondition(Condition):
             self.CONDITION.format(
                 left_operand=left_operand.name,
                 right_operand=param_name,
-                operator=operator
+                operator=operator,
             ),
             {
                 param_name: left_operand.extract(right_operand),
-            }
+            },
         )
         self.hint.add(left_operand.name)
 
@@ -243,9 +239,7 @@ class SizeCondition(Condition):
     CONDITION = "size({attribute})"
 
     def __init__(self, attribute: AbstractAttribute):
-        super().__init__(
-            self.CONDITION.format(attribute=attribute.name)
-        )
+        super().__init__(self.CONDITION.format(attribute=attribute.name))
         self.attribute = attribute
 
     def __eq__(self, value: int) -> SizeCondition:  # type: ignore
@@ -296,7 +290,7 @@ class BetweenCondition(Condition):
 
         super().__init__(
             self.CONDITION.format(attribute=attribute.name, a=a_name, b=b_name),
-            params
+            params,
         )
 
         self.hint.add(attribute.name)
@@ -308,7 +302,7 @@ class InCondition(Condition):
     def __init__(
         self,
         attribute: AbstractAttribute,
-        in_values: List[Union[AbstractAttribute, Any]]
+        in_values: List[Union[AbstractAttribute, Any]],
     ):
         parameters: Dict[str, Any] = {}
         values: List[str] = []
@@ -326,8 +320,7 @@ class InCondition(Condition):
 
         super().__init__(
             self.CONDITION.format(
-                attribute=attribute.name,
-                values=", ".join(values)
+                attribute=attribute.name, values=", ".join(values)
             ),
-            parameters
+            parameters,
         )

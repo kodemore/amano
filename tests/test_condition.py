@@ -195,8 +195,7 @@ def test_in_condition() -> None:
 def test_custom_condition() -> None:
     # given
     condition = Condition(
-        "field.attribute.value == :value",
-        parameters={":value": "a"}
+        "field.attribute.value == :value", parameters={":value": "a"}
     )
 
     # then

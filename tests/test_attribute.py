@@ -154,7 +154,7 @@ def test_can_extract_any_attribute_path() -> None:
     # then
     assert re.match(
         r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}",
-        test.key("sub.field").extract(datetime.now())
+        test.key("sub.field").extract(datetime.now()),
     )
 
     assert test.key("sub.field").extract(10) == 10

@@ -15,7 +15,8 @@ from .condition import (
     BetweenCondition,
     ComparisonCondition,
     ContainsCondition,
-    SizeCondition, InCondition,
+    InCondition,
+    SizeCondition,
 )
 
 _T = TypeVar('_T')
