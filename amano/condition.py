@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 import string
 from abc import ABC
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Set, Union
 
 from .base_attribute import (
     VALID_TYPE_VALUES,
@@ -38,7 +38,7 @@ class Condition:
     def __init__(self, condition: str, parameters: Dict[str, Any] = None):
         self.condition = condition
         self.parameters = parameters or {}
-        self.hint = set()  # hint for the index auto-resolving
+        self.hint: Set[str] = set()  # hint for the index auto-resolving
 
     def __str__(self) -> str:
         return self.condition
@@ -154,17 +154,21 @@ class LogicalCondition(Condition, ABC):
             self.CONDITION.format(
                 left_condition=left_condition, right_condition=right_condition
             ),
-            parameters={
-                **left_condition.parameters,
-                **right_condition.parameters,
-            },
         )
         self.left_condition = left_condition
         self.right_condition = right_condition
 
         if isinstance(self.left_condition, Condition):
+            self.parameters = {
+                **self.parameters,
+                **self.left_condition.parameters,
+            }
             self.hint = self.left_condition.hint
         if isinstance(self.right_condition, Condition):
+            self.parameters = {
+                **self.parameters,
+                **self.right_condition.parameters,
+            }
             self.hint = self.hint | self.right_condition.hint
 
 

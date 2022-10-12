@@ -47,7 +47,7 @@ class Attribute(AbstractAttribute):
         self.default_factory = default_factory
 
     def key(self, path: str) -> Attribute:
-        return Attribute[Any](f"{self.name}.{path}")
+        return Attribute[Any](f"{self.name}.{path}")  # type: ignore
 
     @property
     def default_value(self) -> Any:

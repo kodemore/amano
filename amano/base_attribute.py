@@ -70,7 +70,7 @@ serializer_registry = StrategyRegistry()
 # Add support for floats and bytearray in dynamodb
 serializer_registry.add(float, FloatStrategy())
 serializer_registry.add(bytearray, SimpleStrategy(bytearray, bytearray))
-serializer_registry.add(Any, AnyStrategy(serializer_registry))
+serializer_registry.add(Any, AnyStrategy(serializer_registry))  # type: ignore
 
 VALID_TYPE_VALUES: Dict[str, Tuple[Type, ...]] = {
     TYPE_STRING: (str, datetime, date, time),
