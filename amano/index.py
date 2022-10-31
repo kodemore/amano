@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from abc import ABC
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Union
 
+from .attribute import Attribute
 from .constants import (
     ATTRIBUTE_NAME,
     GLOBAL_SECONDARY_INDEXES,
@@ -9,9 +12,73 @@ from .constants import (
     KEY_TYPE_HASH,
     KEY_TYPE_RANGE,
     LOCAL_SECONDARY_INDEXES,
-    PRIMARY_KEY_NAME,
+    PRIMARY_KEY_NAME, INDEX_NAME, KEY_TYPE, PROJECTION,
+    PROJECTION_TYPE_KEYS_ONLY, PROJECTION_TYPE_INCLUDE, PROJECTION_TYPE_ALL,
+    PROJECTION_TYPE, NON_KEY_ATTRIBUTES, PROVISIONED_THROUGHPUT,
+    WRITE_CAPACITY_UNITS, READ_CAPACITY_UNITS
 )
 from .utils import StringEnum
+
+StringAttribute = Union[str, Attribute]
+
+
+class ProjectionType(StringEnum):
+    KEYS_ONLY = PROJECTION_TYPE_KEYS_ONLY
+    INCLUDE = PROJECTION_TYPE_INCLUDE
+    ALL = PROJECTION_TYPE_ALL
+
+
+@dataclass
+class ProvisionedThroughput:
+    read_capacity_units: int
+    write_capacity_units: int
+
+    @classmethod
+    def empty(cls) -> ProvisionedThroughput:
+        return cls(0, 0)
+
+    def __bool__(self):
+        if self.read_capacity_units == 0 or self.write_capacity_units == 0:
+            return False
+        return True
+
+    def as_dict(self) -> Dict[str]:
+        return {
+            WRITE_CAPACITY_UNITS: self.write_capacity_units,
+            READ_CAPACITY_UNITS: self.read_capacity_units,
+        }
+
+
+@dataclass
+class Projection:
+    type: ProjectionType
+    non_key_attributes: List[str] = field(default_factory=list)
+
+    @classmethod
+    def all(cls) -> Projection:
+        return Projection(ProjectionType.ALL)
+
+    @classmethod
+    def keys_only(cls) -> Projection:
+        return Projection(ProjectionType.KEYS_ONLY)
+
+    @classmethod
+    def include(cls, *attribute: Attribute) -> Projection:
+        items = []
+        for item in attribute:
+            items.append(item if isinstance(item, str) else item.name)
+
+        return Projection(ProjectionType.INCLUDE, items)
+
+    def as_dict(self) -> Dict[str, Any]:
+        result = {
+            PROJECTION_TYPE: str(self.type),
+        }
+
+        if self.type == ProjectionType.INCLUDE:
+            result[NON_KEY_ATTRIBUTES] = self.non_key_attributes
+
+        return result
 
 
 class KeyType(StringEnum):
@@ -19,27 +86,78 @@ class KeyType(StringEnum):
     SORT_KEY = KEY_TYPE_RANGE
 
 
-class IndexType(StringEnum):
-    LOCAL_INDEX = "local_index"
-    GLOBAL_INDEX = "global_index"
-    PRIMARY_KEY = "primary_key"
+class Index(ABC):
+    partition_key: Attribute
+    sort_key: Attribute
 
-
-class Index:
     def __init__(
         self,
-        index_type: IndexType,
-        name: str,
-        partition_key: str,
-        sort_key: str = "",
+        partition_key: Attribute,
+        sort_key: Attribute = None
     ):
-        self.index_type = index_type
-        self.name = name
         self.partition_key = partition_key
         self.sort_key = sort_key
+        self.projection = Projection.all()
 
-    def __str__(self) -> str:
-        return self.name
+    def as_dict(self) -> Dict[str, Any]:
+        key_schema = [{
+            ATTRIBUTE_NAME: self.partition_key.name,
+            KEY_TYPE: KEY_TYPE_HASH
+        }]
+
+        if self.sort_key:
+            key_schema.append({
+                ATTRIBUTE_NAME: self.sort_key.name,
+                KEY_TYPE: KEY_TYPE_RANGE,
+            })
+
+        return {
+            KEY_SCHEMA: key_schema,
+            PROJECTION: self.projection.as_dict(),
+        }
+
+
+class PrimaryKey(Index):
+    pass
+
+
+class NamedIndex(Index, ABC):
+    def __init__(
+        self,
+        index_name: str,
+        partition_key: Attribute,
+        sort_key: Attribute = None
+    ):
+        self.index_name = index_name
+        super().__init__(partition_key, sort_key)
+
+    def as_dict(self) -> Dict[str, Any]:
+        result = super().as_dict()
+        result[INDEX_NAME] = self.index_name
+
+        return result
+
+
+class GlobalSecondaryIndex(NamedIndex):
+    def __init__(
+        self,
+        index_name: str,
+        partition_key: Attribute,
+        sort_key: Attribute = None
+    ):
+        super().__init__(index_name, partition_key, sort_key)
+        self.provisioned_throughput = ProvisionedThroughput.empty()
+
+    def as_dict(self) -> Dict[str, Any]:
+        result = super().as_dict()
+        if self.provisioned_throughput:
+            result[PROVISIONED_THROUGHPUT] = self.provisioned_throughput.as_dict()
+
+        return result
+
+
+class LocalSecondaryIndex(NamedIndex):
+    pass
 
 
 def _extract_index(

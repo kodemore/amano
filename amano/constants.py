@@ -46,9 +46,7 @@ CONDITION_FUNCTION_CONTAINS = "contains"
 CONDITION_FUNCTION_SIZE = "size"
 
 # DynamoDB Indexes
-GLOBAL_SECONDARY_INDEXES = "GlobalSecondaryIndexes"
 GLOBAL_SECONDARY_INDEX = "GlobalSecondaryIndex"
-LOCAL_SECONDARY_INDEXES = "LocalSecondaryIndexes"
 LOCAL_SECONDARY_INDEX = "LocalSecondaryIndex"
 
 TABLE_NAME = "TableName"
@@ -69,6 +67,7 @@ KEY_TYPE_HASH = "HASH"
 KEY_TYPE_RANGE = "RANGE"
 INDEX_NAME = "IndexName"
 ATTRIBUTE_NAME = "AttributeName"
+ATTRIBUTE_TYPE = "AttributeType"
 PRIMARY_KEY_NAME = "#"
 
 # Projection constants
@@ -82,6 +81,8 @@ PROJECTION_TYPES = (
     PROJECTION_TYPE_ALL,
     PROJECTION_TYPE_INCLUDE,
 )
+NON_KEY_ATTRIBUTES = "NonKeyAttributes"
+PROVISIONED_THROUGHPUT = "ProvisionedThroughput"
 
 # Select Types
 SELECT_ALL_ATTRIBUTES = "ALL_ATTRIBUTES"
@@ -94,3 +95,14 @@ SELECT_TYPES = (
     SELECT_COUNT,
     SELECT_SPECIFIC_ATTRIBUTES,
 )
+
+# Table Fields
+BILLING_MODE = "BillingMode"
+ATTRIBUTE_DEFINITIONS = "AttributeDefinitions"
+GLOBAL_SECONDARY_INDEXES = "GlobalSecondaryIndexes"
+LOCAL_SECONDARY_INDEXES = "LocalSecondaryIndexes"
+POINT_IN_TIME_RECOVERY_SPECIFICATION = "PointInTimeRecoverySpecification"
+POINT_IN_TIME_RECOVERY_ENABLED = "PointInTimeRecoveryEnabled"
+READ_CAPACITY_UNITS = "ReadCapacityUnits"
+WRITE_CAPACITY_UNITS = "WriteCapacityUnits"
+TTL_SPECIFICATION = "TimeToLiveSpecification"

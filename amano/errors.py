@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
+from . import Attribute
 from .condition import Condition
+from .index import LocalSecondaryIndex
 from .item import Item
 
 
@@ -10,6 +12,33 @@ class AmanoDBError(Exception):
     @classmethod
     def for_client_error(cls, message: str) -> AmanoDBError:
         return cls(f"Dynamodb client has failed with message: {message}.")
+
+
+class SchemaError(AmanoDBError, ValueError):
+    @classmethod
+    def for_invalid_ttl_attribute(cls, attribute: Attribute) -> SchemaError:
+        return cls(
+            f"Invalid TTL attribute `{attribute}`, "
+            f"expected a numerical attribute."
+        )
+
+    @classmethod
+    def for_invalid_partition_key(
+        cls,
+        index: LocalSecondaryIndex
+    ) -> SchemaError:
+        return cls(
+            f"Invalid partition key in the index `{index.index_name}`."
+            f"Local secondary indexes must define partition key equal to its "
+            f"table's key schema, `{index.partition_key}` given instead."
+        )
+
+    @classmethod
+    def for_missing_throughput_specification(cls) -> SchemaError:
+        return cls(
+            "Invalid or none provisioned throughput given. "
+            "Use `TableSchema.use_provisioning()` method to set the throughput."
+        )
 
 
 class QueryError(AmanoDBError):
