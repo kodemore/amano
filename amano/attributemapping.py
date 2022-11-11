@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from functools import reduce
+from typing import final
 
 
 class AttributeMappingStrategy(ABC):
@@ -44,6 +45,7 @@ class CamelCaseAttributeMapping(AttributeMappingStrategy):
         return reduce(lambda x, y: x + y.capitalize(), item.split("_"))
 
 
+@final
 class AttributeMapping:
     PASS_THROUGH = PassThroughAttributeMapping()
     PASCAL_CASE = PascalCaseAttributeMapping()
