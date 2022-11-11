@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from enum import Enum
 from functools import reduce
 
 
@@ -45,14 +44,8 @@ class CamelCaseAttributeMapping(AttributeMappingStrategy):
         return reduce(lambda x, y: x + y.capitalize(), item.split("_"))
 
 
-class AttributeMapping(AttributeMappingStrategy, Enum):
+class AttributeMapping:
     PASS_THROUGH = PassThroughAttributeMapping()
     PASCAL_CASE = PascalCaseAttributeMapping()
     CAMEL_CASE = CamelCaseAttributeMapping()
     HYPHENS = HyphensAttributeMapping()
-
-    def __getitem__(self, item: str) -> str:
-        return self.value[item]
-
-    def __contains__(self, item) -> bool:
-        return item in self.value
