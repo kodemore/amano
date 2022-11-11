@@ -1,19 +1,35 @@
 from __future__ import annotations
 
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
 from mypy_boto3_dynamodb import DynamoDBClient
 
 from .attribute import Attribute
 from .base_attribute import AttributeType
-from .constants import TABLE_NAME, POINT_IN_TIME_RECOVERY_SPECIFICATION, \
-    POINT_IN_TIME_RECOVERY_ENABLED, PRIMARY_KEY_NAME, KEY_SCHEMA, \
-    GLOBAL_SECONDARY_INDEXES, LOCAL_SECONDARY_INDEXES, ATTRIBUTE_DEFINITIONS, \
-    ATTRIBUTE_NAME, ATTRIBUTE_TYPE, BILLING_MODE, PROVISIONED_THROUGHPUT, \
-    TTL_SPECIFICATION
+from .constants import (
+    ATTRIBUTE_DEFINITIONS,
+    ATTRIBUTE_NAME,
+    ATTRIBUTE_TYPE,
+    BILLING_MODE,
+    GLOBAL_SECONDARY_INDEXES,
+    KEY_SCHEMA,
+    LOCAL_SECONDARY_INDEXES,
+    POINT_IN_TIME_RECOVERY_ENABLED,
+    POINT_IN_TIME_RECOVERY_SPECIFICATION,
+    PRIMARY_KEY_NAME,
+    PROVISIONED_THROUGHPUT,
+    TABLE_NAME,
+    TTL_SPECIFICATION,
+)
 from .errors import SchemaError
-from .index import Index, ProvisionedThroughput, PrimaryKey, NamedIndex, \
-    GlobalSecondaryIndex, LocalSecondaryIndex
+from .index import (
+    GlobalSecondaryIndex,
+    Index,
+    LocalSecondaryIndex,
+    NamedIndex,
+    PrimaryKey,
+    ProvisionedThroughput,
+)
 from .utils import StringEnum
 
 
@@ -34,9 +50,7 @@ class TableSchema:
         self._ttl_attribute: Optional[Attribute] = None
 
     def use_provisioning(
-        self,
-        read_capacity_units: int,
-        write_capacity_units: int
+        self, read_capacity_units: int, write_capacity_units: int
     ) -> None:
         self._billing_mode = BillingMode.PROVISIONED
         self.provisioned_throughput = ProvisionedThroughput(
@@ -102,10 +116,12 @@ class TableSchema:
     def _attributes_as_dict(self, result):
         result[ATTRIBUTE_DEFINITIONS] = []
         for attribute in self.attributes:
-            result[ATTRIBUTE_DEFINITIONS].append({
-                ATTRIBUTE_NAME: attribute.name,
-                ATTRIBUTE_TYPE: str(attribute.type),
-            })
+            result[ATTRIBUTE_DEFINITIONS].append(
+                {
+                    ATTRIBUTE_NAME: attribute.name,
+                    ATTRIBUTE_TYPE: str(attribute.type),
+                }
+            )
 
     def _recovery_as_dict(self, result):
         if self.point_in_time_recovery:
@@ -119,7 +135,8 @@ class TableSchema:
             if not self.provisioned_throughput:
                 raise SchemaError.for_missing_throughput_specification()
             result[
-                PROVISIONED_THROUGHPUT] = self.provisioned_throughput.as_dict()  # noqa
+                PROVISIONED_THROUGHPUT
+            ] = self.provisioned_throughput.as_dict()  # noqa
 
     def _indexes_as_dict(self, result: Dict[str, Any]) -> None:
         global_secondary_indexes = []

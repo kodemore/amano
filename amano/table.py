@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import cached_property
-from typing import Any, Dict, Generic, List, Type, Union, Optional, TypeVar
+from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 from botocore.exceptions import ClientError, ParamValidationError
 from mypy_boto3_dynamodb.client import DynamoDBClient
@@ -11,11 +11,18 @@ from .attribute import Attribute
 from .base_attribute import serialize_value
 from .condition import Condition
 from .constants import (
+    ATTRIBUTE_NAME,
     CONDITION_FUNCTION_CONTAINS,
     CONDITION_LOGICAL_OR,
-    SELECT_SPECIFIC_ATTRIBUTES, KEY_SCHEMA, KEY_TYPE, ATTRIBUTE_NAME,
-    KEY_TYPE_HASH, GLOBAL_SECONDARY_INDEXES, LOCAL_SECONDARY_INDEXES,
-    INDEX_NAME, PROJECTION, PROVISIONED_THROUGHPUT,
+    GLOBAL_SECONDARY_INDEXES,
+    INDEX_NAME,
+    KEY_SCHEMA,
+    KEY_TYPE,
+    KEY_TYPE_HASH,
+    LOCAL_SECONDARY_INDEXES,
+    PROJECTION,
+    PROVISIONED_THROUGHPUT,
+    SELECT_SPECIFIC_ATTRIBUTES,
 )
 from .cursor import Cursor
 from .errors import (
@@ -26,9 +33,15 @@ from .errors import (
     ReadError,
     UpdateItemError,
 )
-from .index import Index, PrimaryKey, \
-    GlobalSecondaryIndex, LocalSecondaryIndex, Projection, \
-    ProvisionedThroughput, NamedIndex
+from .index import (
+    GlobalSecondaryIndex,
+    Index,
+    LocalSecondaryIndex,
+    NamedIndex,
+    PrimaryKey,
+    Projection,
+    ProvisionedThroughput,
+)
 from .item import (
     Item,
     ItemState,
@@ -95,8 +108,11 @@ class Table(Generic[I]):
             attribute = item_schema.find_by_name(
                 attribute_definition[ATTRIBUTE_NAME]
             )
-            key_type = "partition_key" if \
-                attribute_definition[KEY_TYPE] == KEY_TYPE_HASH else "sort_key"
+            key_type = (
+                "partition_key"
+                if attribute_definition[KEY_TYPE] == KEY_TYPE_HASH
+                else "sort_key"
+            )
             index_attributes[key_type] = attribute
 
         return index_attributes
@@ -112,8 +128,7 @@ class Table(Generic[I]):
                 continue
 
             gsi_index = GlobalSecondaryIndex(
-                index_schema[INDEX_NAME],
-                **key_attributes
+                index_schema[INDEX_NAME], **key_attributes
             )
             gsi_index.projection = Projection.from_dict(
                 index_schema[PROJECTION]
@@ -133,8 +148,7 @@ class Table(Generic[I]):
             except KeyError:
                 continue
             lsi_index = LocalSecondaryIndex(
-                index_schema[INDEX_NAME],
-                **key_attributes
+                index_schema[INDEX_NAME], **key_attributes
             )
             lsi_index.projection = Projection.from_dict(
                 index_schema[PROJECTION]
@@ -393,7 +407,7 @@ class Table(Generic[I]):
 
     def get(self, *keys: str, consistent_read: bool = False) -> I:
         key_query = {self.partition_key.name: keys[0]}
-        if len(keys) > 1:
+        if len(keys) > 1 and self.sort_key:
             key_query[self.sort_key.name] = keys[1]
 
         key_expression = serialize_value(key_query)["M"]
@@ -478,9 +492,8 @@ class Table(Generic[I]):
         matched_indexes = []
 
         for index in self.indexes.values():
-            if (
-                index.partition_key.name not in attributes
-                or index.sort_key.name not in attributes
+            if index.partition_key.name not in attributes or (
+                index.sort_key and index.sort_key.name not in attributes
             ):
                 continue
 

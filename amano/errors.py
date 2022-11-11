@@ -24,8 +24,7 @@ class SchemaError(AmanoDBError, ValueError):
 
     @classmethod
     def for_invalid_partition_key(
-        cls,
-        index: LocalSecondaryIndex
+        cls, index: LocalSecondaryIndex
     ) -> SchemaError:
         return cls(
             f"Invalid partition key in the index `{index.index_name}`."

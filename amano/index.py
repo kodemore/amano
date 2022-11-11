@@ -2,18 +2,25 @@ from __future__ import annotations
 
 from abc import ABC
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from .attribute import Attribute
 from .constants import (
     ATTRIBUTE_NAME,
+    INDEX_NAME,
     KEY_SCHEMA,
+    KEY_TYPE,
     KEY_TYPE_HASH,
     KEY_TYPE_RANGE,
-    INDEX_NAME, KEY_TYPE, PROJECTION,
-    PROJECTION_TYPE_KEYS_ONLY, PROJECTION_TYPE_INCLUDE, PROJECTION_TYPE_ALL,
-    PROJECTION_TYPE, NON_KEY_ATTRIBUTES, PROVISIONED_THROUGHPUT,
-    WRITE_CAPACITY_UNITS, READ_CAPACITY_UNITS
+    NON_KEY_ATTRIBUTES,
+    PROJECTION,
+    PROJECTION_TYPE,
+    PROJECTION_TYPE_ALL,
+    PROJECTION_TYPE_INCLUDE,
+    PROJECTION_TYPE_KEYS_ONLY,
+    PROVISIONED_THROUGHPUT,
+    READ_CAPACITY_UNITS,
+    WRITE_CAPACITY_UNITS,
 )
 from .utils import StringEnum
 
@@ -40,7 +47,7 @@ class ProvisionedThroughput:
             return False
         return True
 
-    def as_dict(self) -> Dict[str]:
+    def as_dict(self) -> Dict[str, Any]:
         return {
             READ_CAPACITY_UNITS: self.read_capacity_units,
             WRITE_CAPACITY_UNITS: self.write_capacity_units,
@@ -73,7 +80,7 @@ class Projection:
         return Projection(ProjectionType.INCLUDE, items)
 
     def as_dict(self) -> Dict[str, Any]:
-        result = {
+        result: Dict[str, Any] = {
             PROJECTION_TYPE: str(self.type),
         }
 
@@ -93,6 +100,8 @@ class Projection:
         if value["ProjectionType"] == PROJECTION_TYPE_INCLUDE:
             return Projection.include(*value[NON_KEY_ATTRIBUTES])
 
+        return Projection.all()
+
 
 class KeyType(StringEnum):
     PARTITION_KEY = KEY_TYPE_HASH
@@ -101,28 +110,25 @@ class KeyType(StringEnum):
 
 class Index(ABC):
     partition_key: Attribute
-    sort_key: Attribute
+    sort_key: Optional[Attribute]
 
-    def __init__(
-        self,
-        partition_key: Attribute,
-        sort_key: Attribute = None
-    ):
+    def __init__(self, partition_key: Attribute, sort_key: Attribute = None):
         self.partition_key = partition_key
         self.sort_key = sort_key
         self.projection = Projection.all()
 
     def as_dict(self) -> Dict[str, Any]:
-        key_schema = [{
-            ATTRIBUTE_NAME: self.partition_key.name,
-            KEY_TYPE: KEY_TYPE_HASH
-        }]
+        key_schema = [
+            {ATTRIBUTE_NAME: self.partition_key.name, KEY_TYPE: KEY_TYPE_HASH}
+        ]
 
         if self.sort_key:
-            key_schema.append({
-                ATTRIBUTE_NAME: self.sort_key.name,
-                KEY_TYPE: KEY_TYPE_RANGE,
-            })
+            key_schema.append(
+                {
+                    ATTRIBUTE_NAME: self.sort_key.name,
+                    KEY_TYPE: KEY_TYPE_RANGE,
+                }
+            )
 
         return {
             KEY_SCHEMA: key_schema,
@@ -146,7 +152,7 @@ class NamedIndex(Index, ABC):
         self,
         index_name: str,
         partition_key: Attribute,
-        sort_key: Attribute = None
+        sort_key: Attribute = None,
     ):
         self.index_name = index_name
         super().__init__(partition_key, sort_key)
@@ -166,15 +172,13 @@ class GlobalSecondaryIndex(NamedIndex):
         self,
         index_name: str,
         partition_key: Attribute,
-        sort_key: Attribute = None
+        sort_key: Attribute = None,
     ):
         super().__init__(index_name, partition_key, sort_key)
         self.provisioned_throughput = ProvisionedThroughput.empty()
 
     def use_provisioning(
-        self,
-        read_capacity_units: int,
-        write_capacity_units: int
+        self, read_capacity_units: int, write_capacity_units: int
     ) -> None:
         self.provisioned_throughput = ProvisionedThroughput(
             read_capacity_units, write_capacity_units
@@ -183,7 +187,9 @@ class GlobalSecondaryIndex(NamedIndex):
     def as_dict(self) -> Dict[str, Any]:
         result = super().as_dict()
         if self.provisioned_throughput:
-            result[PROVISIONED_THROUGHPUT] = self.provisioned_throughput.as_dict()
+            result[
+                PROVISIONED_THROUGHPUT
+            ] = self.provisioned_throughput.as_dict()
 
         return result
 

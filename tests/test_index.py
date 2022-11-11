@@ -1,5 +1,11 @@
-from amano import PrimaryKey, Attribute, Index, LocalSecondaryIndex, \
-    GlobalSecondaryIndex, NamedIndex
+from amano import (
+    Attribute,
+    GlobalSecondaryIndex,
+    Index,
+    LocalSecondaryIndex,
+    NamedIndex,
+    PrimaryKey,
+)
 from amano.index import Projection
 
 
@@ -91,9 +97,7 @@ def test_can_cast_index_to_dict() -> None:
             {"AttributeName": "partition_key", "KeyType": "HASH"},
             {"AttributeName": "sort_key", "KeyType": "RANGE"},
         ],
-        "Projection": {
-            "ProjectionType": "ALL"
-        }
+        "Projection": {"ProjectionType": "ALL"},
     }
 
 
@@ -115,11 +119,9 @@ def test_can_cast_index_with_all_details_to_dict() -> None:
             {"AttributeName": "partition_key", "KeyType": "HASH"},
             {"AttributeName": "sort_key", "KeyType": "RANGE"},
         ],
-        "Projection": {
-            "ProjectionType": "KEYS_ONLY"
-        },
+        "Projection": {"ProjectionType": "KEYS_ONLY"},
         "ProvisionedThroughput": {
             "ReadCapacityUnits": 10,
-            "WriteCapacityUnits": 5
+            "WriteCapacityUnits": 5,
         },
     }

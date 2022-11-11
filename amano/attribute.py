@@ -61,9 +61,6 @@ class Attribute(AbstractAttribute):
     def hydrate(self, value: Any) -> Any:
         return self._strategy.hydrate(value)
 
-    def __hash__(self) -> str:
-        return self.name
-
     def __str__(self) -> str:
         return self.name
 

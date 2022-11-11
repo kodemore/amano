@@ -2,15 +2,24 @@ from __future__ import annotations
 
 from dataclasses import Field, dataclass
 from enum import Enum
-from functools import lru_cache
 from inspect import isclass
-from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar, Union, \
-    Mapping, Iterator
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Mapping,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from amano.attribute import Attribute
 
-from .base_attribute import AttributeValue, deserialize_value, serialize_value
 from .attributemapping import AttributeMapping, AttributeMappingStrategy
+from .base_attribute import AttributeValue, deserialize_value, serialize_value
 from .undefined import UNDEFINED
 
 

@@ -45,7 +45,7 @@ class CamelCaseAttributeMapping(AttributeMappingStrategy):
         return reduce(lambda x, y: x + y.capitalize(), item.split("_"))
 
 
-class AttributeMapping(Enum):
+class AttributeMapping(AttributeMappingStrategy, Enum):
     PASS_THROUGH = PassThroughAttributeMapping()
     PASCAL_CASE = PascalCaseAttributeMapping()
     CAMEL_CASE = CamelCaseAttributeMapping()

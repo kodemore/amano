@@ -1,6 +1,6 @@
 import pytest
 
-from amano import Item, AttributeMapping
+from amano import AttributeMapping, Item
 from amano.item import extract, hydrate
 
 

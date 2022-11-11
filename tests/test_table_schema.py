@@ -1,8 +1,8 @@
 import pytest
 
-from amano import TableSchema, Attribute
+from amano import Attribute, TableSchema
 from amano.errors import SchemaError
-from amano.index import PrimaryKey, GlobalSecondaryIndex, LocalSecondaryIndex
+from amano.index import GlobalSecondaryIndex, LocalSecondaryIndex, PrimaryKey
 
 
 def test_can_instantiate() -> None:
@@ -33,7 +33,7 @@ def test_can_add_global_secondary_index() -> None:
         "KeySchema": [{"AttributeName": "artist_name", "KeyType": "HASH"}],
         "AttributeDefinitions": [
             {"AttributeName": "artist_name", "AttributeType": "S"},
-            {"AttributeName": "album_name", "AttributeType": "S"}
+            {"AttributeName": "album_name", "AttributeType": "S"},
         ],
         "BillingMode": "PAY_PER_REQUEST",
         "GlobalSecondaryIndexes": [
@@ -41,11 +41,11 @@ def test_can_add_global_secondary_index() -> None:
                 "IndexName": "GSI1",
                 "KeySchema": [
                     {"AttributeName": "album_name", "KeyType": "HASH"},
-                    {"AttributeName": "artist_name", "KeyType": "RANGE"}
+                    {"AttributeName": "artist_name", "KeyType": "RANGE"},
                 ],
                 "Projection": {"ProjectionType": "ALL"},
             }
-        ]
+        ],
     }
 
 
@@ -73,11 +73,11 @@ def test_can_add_local_secondary_index() -> None:
                 "IndexName": "LSI1",
                 "KeySchema": [
                     {"AttributeName": "artist_name", "KeyType": "HASH"},
-                    {"AttributeName": "album_name", "KeyType": "RANGE"}
+                    {"AttributeName": "album_name", "KeyType": "RANGE"},
                 ],
                 "Projection": {"ProjectionType": "ALL"},
             }
-        ]
+        ],
     }
 
 
@@ -109,7 +109,7 @@ def test_can_use_provisioned_billing_mode() -> None:
         "TableName": "table_name",
         "KeySchema": [
             {"AttributeName": "artist_name", "KeyType": "HASH"},
-            {"AttributeName": "album_name", "KeyType": "RANGE"}
+            {"AttributeName": "album_name", "KeyType": "RANGE"},
         ],
         "AttributeDefinitions": [
             {"AttributeName": "artist_name", "AttributeType": "S"},
@@ -119,7 +119,7 @@ def test_can_use_provisioned_billing_mode() -> None:
         "ProvisionedThroughput": {
             "ReadCapacityUnits": 1,
             "WriteCapacityUnits": 2,
-        }
+        },
     }
 
 
@@ -145,7 +145,7 @@ def test_can_enable_ttl() -> None:
         "TimeToLiveSpecification": {
             "Enabled": True,
             "AttributeName": "ttl",
-        }
+        },
     }
 
 

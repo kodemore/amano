@@ -4,9 +4,7 @@ from amano import Item, Table
 from amano.errors import AmanoDBError, ItemNotFoundError
 
 
-def test_get_item(
-    readonly_dynamodb_client, readonly_table
-) -> None:
+def test_get_item(readonly_dynamodb_client, readonly_table) -> None:
 
     # given
     class Track(Item):
