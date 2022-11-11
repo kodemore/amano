@@ -1,14 +1,16 @@
 import pytest
 
 from amano import Index, Item, Table
-from amano.errors import AmanoDBError, ItemNotFoundError
+from amano.index import PrimaryKey
 
 
 def test_can_instantiate(readonly_dynamodb_client, readonly_table) -> None:
     # given
     class Track(Item):
         artist_name: str
+        album_name: str
         track_name: str
+        genre_name: str
 
     # when
     my_table = Table[Track](readonly_dynamodb_client, table_name=readonly_table)
@@ -102,6 +104,8 @@ def test_can_retrieve_indexes(readonly_dynamodb_client, readonly_table) -> None:
     class Track(Item):
         artist_name: str
         track_name: str
+        album_name: str
+        genre_name: str
 
     # when
     table = Table[Track](readonly_dynamodb_client, readonly_table)
@@ -128,34 +132,10 @@ def test_can_retrieve_available_indexes(
 
     # when
     table = Table[Track](readonly_dynamodb_client, readonly_table)
-    available_indexes = table.available_indexes
+    available_indexes = table.indexes
 
     # then
     assert len(available_indexes) == 3
-    assert Table._PRIMARY_KEY_NAME in available_indexes
+    assert PrimaryKey.NAME in available_indexes
     assert "GlobalAlbumAndTrackNameIndex" in available_indexes
     assert "LocalArtistAndAlbumNameIndex" in available_indexes
-
-
-def test_fail_get_unexisting_item(
-    readonly_dynamodb_client, readonly_table
-) -> None:
-
-    # given
-    class Track(Item):
-        artist_name: str
-        track_name: str
-        album_name: str
-
-    my_table = Table[Track](readonly_dynamodb_client, readonly_table)
-
-    # when
-    with pytest.raises(AmanoDBError) as e:
-        item = my_table.get("AC/DC", "Let There Be No Rock")
-
-    # then
-    assert isinstance(e.value, ItemNotFoundError)
-    assert e.value.query == {
-        "artist_name": "AC/DC",
-        "track_name": "Let There Be No Rock",
-    }

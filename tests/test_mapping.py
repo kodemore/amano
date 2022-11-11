@@ -1,6 +1,6 @@
 import pytest
 
-from amano import Item, Mapping
+from amano import Item, AttributeMapping
 from amano.item import extract, hydrate
 
 
@@ -14,13 +14,13 @@ from amano.item import extract, hydrate
     ],
 )
 def test_pass_through_mapping(given, expected) -> None:
-    mapping = Mapping.PASS_THROUGH
+    mapping = AttributeMapping.PASS_THROUGH
     assert mapping[given] == expected
 
 
 def test_pass_through_mapping_integration() -> None:
     # given
-    class MyItem(Item, mapping=Mapping.PASS_THROUGH):
+    class MyItem(Item, mapping=AttributeMapping.PASS_THROUGH):
         a: str
         a_b_c: str
         a_BC: str
@@ -46,13 +46,13 @@ def test_pass_through_mapping_integration() -> None:
     ],
 )
 def test_pascal_case_mapping(given, expected) -> None:
-    mapping = Mapping.PASCAL_CASE
+    mapping = AttributeMapping.PASCAL_CASE
     assert mapping[given] == expected, f"Failed for {given}"
 
 
 def test_pascal_case_mapping_integration() -> None:
     # given
-    class MyItem(Item, mapping=Mapping.PASCAL_CASE):
+    class MyItem(Item, mapping=AttributeMapping.PASCAL_CASE):
         a: str
         a_b_c: str
         a_bcd: str
@@ -84,13 +84,13 @@ def test_pascal_case_mapping_integration() -> None:
     ],
 )
 def test_camel_case_mapping(given, expected) -> None:
-    mapping = Mapping.CAMEL_CASE
+    mapping = AttributeMapping.CAMEL_CASE
     assert mapping[given] == expected, f"Failed for {given}"
 
 
 def test_camel_case_mapping_integration() -> None:
     # given
-    class MyItem(Item, mapping=Mapping.CAMEL_CASE):
+    class MyItem(Item, mapping=AttributeMapping.CAMEL_CASE):
         a: str
         a_b_c: str
         a_bc_d: str

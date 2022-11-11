@@ -7,12 +7,10 @@ from typing import Any, Dict, List, Union
 from .attribute import Attribute
 from .constants import (
     ATTRIBUTE_NAME,
-    GLOBAL_SECONDARY_INDEXES,
     KEY_SCHEMA,
     KEY_TYPE_HASH,
     KEY_TYPE_RANGE,
-    LOCAL_SECONDARY_INDEXES,
-    PRIMARY_KEY_NAME, INDEX_NAME, KEY_TYPE, PROJECTION,
+    INDEX_NAME, KEY_TYPE, PROJECTION,
     PROJECTION_TYPE_KEYS_ONLY, PROJECTION_TYPE_INCLUDE, PROJECTION_TYPE_ALL,
     PROJECTION_TYPE, NON_KEY_ATTRIBUTES, PROVISIONED_THROUGHPUT,
     WRITE_CAPACITY_UNITS, READ_CAPACITY_UNITS
@@ -44,9 +42,13 @@ class ProvisionedThroughput:
 
     def as_dict(self) -> Dict[str]:
         return {
-            WRITE_CAPACITY_UNITS: self.write_capacity_units,
             READ_CAPACITY_UNITS: self.read_capacity_units,
+            WRITE_CAPACITY_UNITS: self.write_capacity_units,
         }
+
+    @classmethod
+    def from_dict(cls, value: dict) -> ProvisionedThroughput:
+        return cls(value[READ_CAPACITY_UNITS], value[WRITE_CAPACITY_UNITS])
 
 
 @dataclass
@@ -63,7 +65,7 @@ class Projection:
         return Projection(ProjectionType.KEYS_ONLY)
 
     @classmethod
-    def include(cls, *attribute: Attribute) -> Projection:
+    def include(cls, *attribute: Union[str, Attribute]) -> Projection:
         items = []
         for item in attribute:
             items.append(item if isinstance(item, str) else item.name)
@@ -79,6 +81,17 @@ class Projection:
             result[NON_KEY_ATTRIBUTES] = self.non_key_attributes
 
         return result
+
+    @classmethod
+    def from_dict(cls, value: dict) -> Projection:
+        if value["ProjectionType"] == PROJECTION_TYPE_ALL:
+            return Projection.all()
+
+        if value["ProjectionType"] == PROJECTION_TYPE_KEYS_ONLY:
+            return Projection.keys_only()
+
+        if value["ProjectionType"] == PROJECTION_TYPE_INCLUDE:
+            return Projection.include(*value[NON_KEY_ATTRIBUTES])
 
 
 class KeyType(StringEnum):
@@ -118,7 +131,14 @@ class Index(ABC):
 
 
 class PrimaryKey(Index):
-    pass
+    NAME = "#"
+
+    def __str__(self) -> str:
+        result = f"{self.NAME}<{self.partition_key}"
+        if self.sort_key:
+            result += f";{self.sort_key}"
+
+        return result + ">"
 
 
 class NamedIndex(Index, ABC):
@@ -137,6 +157,9 @@ class NamedIndex(Index, ABC):
 
         return result
 
+    def __str__(self) -> str:
+        return self.index_name
+
 
 class GlobalSecondaryIndex(NamedIndex):
     def __init__(
@@ -148,6 +171,15 @@ class GlobalSecondaryIndex(NamedIndex):
         super().__init__(index_name, partition_key, sort_key)
         self.provisioned_throughput = ProvisionedThroughput.empty()
 
+    def use_provisioning(
+        self,
+        read_capacity_units: int,
+        write_capacity_units: int
+    ) -> None:
+        self.provisioned_throughput = ProvisionedThroughput(
+            read_capacity_units, write_capacity_units
+        )
+
     def as_dict(self) -> Dict[str, Any]:
         result = super().as_dict()
         if self.provisioned_throughput:
@@ -158,71 +190,3 @@ class GlobalSecondaryIndex(NamedIndex):
 
 class LocalSecondaryIndex(NamedIndex):
     pass
-
-
-def _extract_index(
-    key_schema: List[Dict[str, Any]], index_name: str, index_type: IndexType
-) -> Index:
-    if len(key_schema) > 1:
-        if key_schema[0]["KeyType"] == KeyType.PARTITION_KEY:
-            return Index(
-                index_type,
-                index_name,
-                key_schema[0][ATTRIBUTE_NAME],
-                key_schema[1][ATTRIBUTE_NAME],
-            )
-
-        return Index(
-            index_type,
-            index_name,
-            key_schema[1][ATTRIBUTE_NAME],
-            key_schema[0][ATTRIBUTE_NAME],
-        )
-
-    return Index(
-        index_type,
-        index_name,
-        key_schema[0][ATTRIBUTE_NAME],
-    )
-
-
-def _extract_index_list(
-    index_list: List[Dict[str, Any]], index_type: IndexType
-) -> Dict[str, Index]:
-    indexes = {}
-    for index_data in index_list:
-        if (
-            "IndexStatus" in index_data
-            and index_data["IndexStatus"] != "ACTIVE"
-        ):
-            continue
-
-        key_schema = index_data[KEY_SCHEMA]
-        index = _extract_index(key_schema, index_data["IndexName"], index_type)
-        indexes[index.name] = index
-
-    return indexes
-
-
-def create_indexes_from_schema(table_schema: Dict[str, List[Dict[str, Any]]]):
-    primary_key = _extract_index(
-        table_schema[KEY_SCHEMA], PRIMARY_KEY_NAME, IndexType.PRIMARY_KEY
-    )
-    indexes = {primary_key.name: primary_key}
-    if GLOBAL_SECONDARY_INDEXES in table_schema:
-        indexes = {
-            **indexes,
-            **_extract_index_list(
-                table_schema[GLOBAL_SECONDARY_INDEXES],
-                IndexType.GLOBAL_INDEX,
-            ),
-        }
-    if LOCAL_SECONDARY_INDEXES in table_schema:
-        indexes = {
-            **indexes,
-            **_extract_index_list(
-                table_schema[LOCAL_SECONDARY_INDEXES],
-                IndexType.LOCAL_INDEX,
-            ),
-        }
-    return indexes

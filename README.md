@@ -343,16 +343,18 @@ Amano provides a powerful mapping mechanism to cover this scenario. Mapping is a
 
 ```python
 import boto3
-from amano import Table, Item, Mapping
+from amano import Table, Item, AttributeMapping
 
 client = boto3.client("dynamodb")
 
-class Forum(Item, mapping=Mapping.PASCAL_CASE):
+
+class Forum(Item, mapping=AttributeMapping.PASCAL_CASE):
     forum_name: str
     category: str
     threads: int = 0
     messages: int = 0
     views: int = 0
+
 
 forum_table = Table[Forum](client, table_name="Forum")
 ```

@@ -1,19 +1,21 @@
 from __future__ import annotations
 
-import typing
 from functools import cached_property
-from typing import Any, Dict, Generic, List, Type, Union
+from typing import Any, Dict, Generic, List, Type, Union, Optional, TypeVar
 
 from botocore.exceptions import ClientError, ParamValidationError
 from mypy_boto3_dynamodb.client import DynamoDBClient
 from mypy_boto3_dynamodb.type_defs import AttributeValueTypeDef
 
+from .attribute import Attribute
 from .base_attribute import serialize_value
 from .condition import Condition
 from .constants import (
     CONDITION_FUNCTION_CONTAINS,
     CONDITION_LOGICAL_OR,
-    SELECT_SPECIFIC_ATTRIBUTES,
+    SELECT_SPECIFIC_ATTRIBUTES, KEY_SCHEMA, KEY_TYPE, ATTRIBUTE_NAME,
+    KEY_TYPE_HASH, GLOBAL_SECONDARY_INDEXES, LOCAL_SECONDARY_INDEXES,
+    INDEX_NAME, PROJECTION, PROVISIONED_THROUGHPUT,
 )
 from .cursor import Cursor
 from .errors import (
@@ -24,7 +26,9 @@ from .errors import (
     ReadError,
     UpdateItemError,
 )
-from .index import Index, create_indexes_from_schema
+from .index import Index, PrimaryKey, \
+    GlobalSecondaryIndex, LocalSecondaryIndex, Projection, \
+    ProvisionedThroughput, NamedIndex
 from .item import (
     Item,
     ItemState,
@@ -37,11 +41,10 @@ from .item import (
 
 KeyExpression = Dict[str, AttributeValueTypeDef]
 
-I = typing.TypeVar("I", bound=Item)
+I = TypeVar("I", bound=Item)
 
 
 class Table(Generic[I]):
-    _PRIMARY_KEY_NAME = "#"
     __item_class__: Type[I]
 
     def __init__(self, db_client: DynamoDBClient, table_name: str):
@@ -54,56 +57,104 @@ class Table(Generic[I]):
         self._db_client = db_client
         self._table_name = table_name
         self._table_meta: Dict[str, Any] = {}
-        self._fetch_table_meta(table_name)
-        self._indexes = create_indexes_from_schema(self._table_meta)
-        self._validate_table_primary_key()
+        self._indexes: Dict[str, Index] = {}
 
-    def _fetch_table_meta(self, table_name):
+        self._fetch_table_meta()
+        self._build_indexes()
+
+    def _build_indexes(self) -> None:
+        self._build_primary_key()
+        self._build_gsis()
+        self._build_lsis()
+
+    @property
+    def partition_key(self) -> Attribute:
+        return self._indexes[PrimaryKey.NAME].partition_key
+
+    @property
+    def sort_key(self) -> Optional[Attribute]:
+        return self._indexes[PrimaryKey.NAME].sort_key
+
+    def _build_primary_key(self) -> None:
+        try:
+            index_attributes = self._get_key_attributes(
+                self._table_meta[KEY_SCHEMA]
+            )
+        except KeyError as error:
+            raise AttributeError(
+                f"Table `{self.table_name}` defines table key "
+                f"`{error}`, which was not found in the item class "
+                f"`{self._item_class}`"
+            ) from error
+        self._indexes[PrimaryKey.NAME] = PrimaryKey(**index_attributes)
+
+    def _get_key_attributes(self, key_schema) -> Dict[str, Attribute]:
+        item_schema = self._item_class.__schema__
+        index_attributes = {}
+        for attribute_definition in key_schema:
+            attribute = item_schema.find_by_name(
+                attribute_definition[ATTRIBUTE_NAME]
+            )
+            key_type = "partition_key" if \
+                attribute_definition[KEY_TYPE] == KEY_TYPE_HASH else "sort_key"
+            index_attributes[key_type] = attribute
+
+        return index_attributes
+
+    def _build_gsis(self) -> None:
+        if GLOBAL_SECONDARY_INDEXES not in self._table_meta:
+            return
+        for index_schema in self._table_meta[GLOBAL_SECONDARY_INDEXES]:
+            key_schema = index_schema[KEY_SCHEMA]
+            try:
+                key_attributes = self._get_key_attributes(key_schema)
+            except KeyError:
+                continue
+
+            gsi_index = GlobalSecondaryIndex(
+                index_schema[INDEX_NAME],
+                **key_attributes
+            )
+            gsi_index.projection = Projection.from_dict(
+                index_schema[PROJECTION]
+            )
+            gsi_index.provisioned_throughput = ProvisionedThroughput.from_dict(
+                index_schema[PROVISIONED_THROUGHPUT]
+            )
+            self._indexes[index_schema[INDEX_NAME]] = gsi_index
+
+    def _build_lsis(self) -> None:
+        if LOCAL_SECONDARY_INDEXES not in self._table_meta:
+            return
+        for index_schema in self._table_meta[LOCAL_SECONDARY_INDEXES]:
+            key_schema = index_schema[KEY_SCHEMA]
+            try:
+                key_attributes = self._get_key_attributes(key_schema)
+            except KeyError:
+                continue
+            lsi_index = LocalSecondaryIndex(
+                index_schema[INDEX_NAME],
+                **key_attributes
+            )
+            lsi_index.projection = Projection.from_dict(
+                index_schema[PROJECTION]
+            )
+            self._indexes[index_schema[INDEX_NAME]] = lsi_index
+
+    def _fetch_table_meta(self):
         try:
             self._table_meta = self._db_client.describe_table(
                 TableName=self._table_name
             )["Table"]
         except ClientError as error:
             raise ValueError(
-                f"Table with name {table_name} was not found"
+                f"Table with name {self._table_name} was not found"
             ) from error
         except KeyError as error:
             raise ValueError(
                 f"There was an error while retrieving "
-                f"`{table_name}` information."
+                f"`{self._table_name}` information."
             ) from error
-
-    def _get_indexes_for_field_list(
-        self, fields: List[str]
-    ) -> Dict[str, Index]:
-        available_indexes = {}
-        for index in self.indexes.values():
-            if index.partition_key not in fields:
-                continue
-
-            if not index.sort_key:
-                available_indexes[index.name] = index
-                continue
-
-            if index.sort_key not in fields:
-                continue
-
-            available_indexes[index.name] = index
-
-        return available_indexes
-
-    def _validate_table_primary_key(self) -> None:
-        if self.partition_key not in self._item_class.__schema__:
-            raise AttributeError(
-                f"Table `{self.table_name}` defines partition key "
-                f"{self.partition_key}, which was not found in the item class "
-                f"`{self._item_class}`"
-            )
-        if self.sort_key and self.sort_key not in self._item_class.__schema__:
-            raise AttributeError(
-                f"Table `{self.table_name}` defines sort key {self.sort_key}, "
-                f"which was not found in the item class `{self._item_class}`"
-            )
 
     def scan(
         self,
@@ -325,8 +376,8 @@ class Table(Generic[I]):
             "ConsistentRead": consistent_read,
         }
 
-        if hint_index.name != self._PRIMARY_KEY_NAME:
-            query["IndexName"] = hint_index.name
+        if isinstance(hint_index, NamedIndex):
+            query["IndexName"] = hint_index.index_name
 
         if filter_condition:
             query["FilterExpression"] = str(filter_condition)
@@ -341,9 +392,9 @@ class Table(Generic[I]):
         return Cursor(self._item_class, query, self._db_client.query)
 
     def get(self, *keys: str, consistent_read: bool = False) -> I:
-        key_query = {self.partition_key: keys[0]}
+        key_query = {self.partition_key.name: keys[0]}
         if len(keys) > 1:
-            key_query[self.sort_key] = keys[1]
+            key_query[self.sort_key.name] = keys[1]
 
         key_expression = serialize_value(key_query)["M"]
         projection = ", ".join(self.attributes)
@@ -370,11 +421,13 @@ class Table(Generic[I]):
 
     def _get_key_expression(self, item: I) -> KeyExpression:
         key_expression = {
-            self.partition_key: getattr(item, self.partition_key),
+            self.partition_key.name: getattr(item, str(self.partition_key)),
         }
 
         if self.sort_key:
-            key_expression[self.sort_key] = getattr(item, self.sort_key)
+            key_expression[self.sort_key.name] = getattr(
+                item, str(self.sort_key)
+            )
 
         return serialize_value(key_expression).get("M")  # type: ignore[return-value]
 
@@ -385,12 +438,6 @@ class Table(Generic[I]):
     @property
     def table_name(self) -> str:
         return self._table_name
-
-    @cached_property
-    def available_indexes(self) -> Dict[str, Index]:
-        return self._get_indexes_for_field_list(
-            list(self._item_class.__schema__.keys())
-        )
 
     @classmethod
     def __class_getitem__(
@@ -405,18 +452,6 @@ class Table(Generic[I]):
             tuple([Table]),
             {"__item_class__": item},
         )
-
-    @cached_property
-    def primary_key(self) -> Index:
-        return self.indexes[self._PRIMARY_KEY_NAME]
-
-    @cached_property
-    def partition_key(self) -> str:
-        return self.primary_key.partition_key
-
-    @cached_property
-    def sort_key(self):
-        return self.primary_key.sort_key
 
     @cached_property
     def _item_class(self) -> Type[I]:
@@ -434,7 +469,7 @@ class Table(Generic[I]):
     def _hint_index_for_attributes(self, attributes: List[str]) -> Index:
         if len(attributes) == 1:
             for index in self.indexes.values():
-                if index.partition_key == attributes[0]:
+                if index.partition_key.name == attributes[0]:
                     return index
             raise QueryError(
                 f"No GSI index defined for `{attributes[0]}` attribute."
@@ -444,14 +479,14 @@ class Table(Generic[I]):
 
         for index in self.indexes.values():
             if (
-                index.partition_key not in attributes
-                or index.sort_key not in attributes
+                index.partition_key.name not in attributes
+                or index.sort_key.name not in attributes
             ):
                 continue
 
             # partition key was on a first place in condition,
             # so we assume the best index here
-            if attributes[0] == index.partition_key:
+            if attributes[0] == index.partition_key.name:
                 return index
 
             matched_indexes.append(index)

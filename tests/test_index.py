@@ -1,66 +1,85 @@
-from amano import Index, Attribute
+from amano import PrimaryKey, Attribute, Index, LocalSecondaryIndex, \
+    GlobalSecondaryIndex, NamedIndex
+from amano.index import Projection
 
 
-def test_can_instantiate() -> None:
+def test_can_instantiate_primary_key() -> None:
     # given
-    index = Index(Index.LOCAL_INDEX, "IndexName", "partition_key")
+    attribute = Attribute[str]("partition_key")
+    index = PrimaryKey(attribute)
 
     # then
     assert isinstance(index, Index)
-    assert str(index) == "LSI@IndexName(partition_key)"
+    assert str(index) == "#<partition_key>"
 
 
-def test_can_instantiate_with_attribute() -> None:
+def test_can_instantiate_composed_primary_key() -> None:
+    # given
+    pk = Attribute[str]("partition_key")
+    sk = Attribute[str]("sort_key")
+    index = PrimaryKey(pk, sk)
+
+    # then
+    assert isinstance(index, Index)
+    assert str(index) == "#<partition_key;sort_key>"
+
+
+def test_can_instantiate_local_secondary_index() -> None:
     # given
     attribute = Attribute[str]("partition_key")
 
-    index = Index.lsi("IndexName", attribute)
+    index = LocalSecondaryIndex("IndexName", attribute)
 
     # then
     assert isinstance(index, Index)
-    assert str(index) == "LSI@IndexName(partition_key)"
+    assert str(index) == "IndexName"
 
 
-def test_can_create_pk() -> None:
+def test_can_instantiate_composed_local_secondary_index() -> None:
     # given
-    index = Index.pk("partition_key")
+    pk = Attribute[str]("partition_key")
+    sk = Attribute[str]("sort_key")
+
+    index = LocalSecondaryIndex("IndexName", pk, sk)
 
     # then
     assert isinstance(index, Index)
-    assert index.name == "#"
-    assert index.index_type == Index.PRIMARY_KEY
-    assert index.partition_key == "partition_key"
-    assert str(index) == "#PK(partition_key)"
+    assert isinstance(index, LocalSecondaryIndex)
+    assert str(index) == "IndexName"
 
 
-def test_can_create_gsi() -> None:
+def test_can_instantiate_global_secondary_index() -> None:
     # given
-    index = Index.gsi("GSIIndex", "partition_key")
+    pk = Attribute[str]("partition_key")
+
+    # when
+    index = GlobalSecondaryIndex("IndexName", pk)
 
     # then
     assert isinstance(index, Index)
-    assert index.name == "GSIIndex"
-    assert index.index_type == Index.GLOBAL_INDEX
-    assert index.partition_key == "partition_key"
-    assert str(index) == "GSI@GSIIndex(partition_key)"
+    assert isinstance(index, NamedIndex)
+    assert str(index) == "IndexName"
 
 
-def test_can_create_lsi() -> None:
+def test_can_create_composed_global_secondary_index() -> None:
     # given
-    index = Index.lsi("IndexName", "partition_key", "sort_key")
+    pk = Attribute[str]("partition_key")
+    sk = Attribute[str]("sort_key")
+
+    # when
+    index = GlobalSecondaryIndex("IndexName", pk, sk)
 
     # then
     assert isinstance(index, Index)
-    assert index.name == "IndexName"
-    assert index.index_type == Index.LOCAL_INDEX
-    assert index.partition_key == "partition_key"
-    assert index.sort_key == "sort_key"
-    assert str(index) == "LSI@IndexName(partition_key, sort_key)"
+    assert isinstance(index, NamedIndex)
+    assert str(index) == "IndexName"
 
 
-def test_can_cast_to_dict() -> None:
+def test_can_cast_index_to_dict() -> None:
     # given
-    index = Index.lsi("IndexName", "partition_key", "sort_key")
+    pk = Attribute[str]("partition_key")
+    sk = Attribute[str]("sort_key")
+    index = GlobalSecondaryIndex("IndexName", pk, sk)
 
     # when
     result = index.as_dict()
@@ -75,4 +94,32 @@ def test_can_cast_to_dict() -> None:
         "Projection": {
             "ProjectionType": "ALL"
         }
+    }
+
+
+def test_can_cast_index_with_all_details_to_dict() -> None:
+    # given
+    pk = Attribute[str]("partition_key")
+    sk = Attribute[str]("sort_key")
+    index = GlobalSecondaryIndex("IndexName", pk, sk)
+    index.projection = Projection.keys_only()
+    index.use_provisioning(10, 5)
+
+    # when
+    result = index.as_dict()
+
+    # then
+    assert result == {
+        "IndexName": "IndexName",
+        "KeySchema": [
+            {"AttributeName": "partition_key", "KeyType": "HASH"},
+            {"AttributeName": "sort_key", "KeyType": "RANGE"},
+        ],
+        "Projection": {
+            "ProjectionType": "KEYS_ONLY"
+        },
+        "ProvisionedThroughput": {
+            "ReadCapacityUnits": 10,
+            "WriteCapacityUnits": 5
+        },
     }
