@@ -9,4 +9,4 @@ class StringEnum(Enum):
         if isinstance(other, str):
             return self.value == other
 
-        return other == self
+        return self.value == other.value

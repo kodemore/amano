@@ -3,12 +3,23 @@ from __future__ import annotations
 from dataclasses import Field, dataclass
 from enum import Enum
 from inspect import isclass
-from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Mapping,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from amano.attribute import Attribute
 
+from .attributemapping import AttributeMapping, AttributeMappingStrategy
 from .base_attribute import AttributeValue, deserialize_value, serialize_value
-from .mapping import Mapping, MappingStrategy
 from .undefined import UNDEFINED
 
 
@@ -44,7 +55,26 @@ class Commit:
         }
 
 
-ItemSchema = Dict[str, Attribute]
+class ItemSchema(Mapping):
+    def __init__(self, attributes: Dict[str, Attribute]):
+        self._data = attributes
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def find_by_name(self, name: str) -> Attribute:
+        for item in self._data.values():
+            if item.name == name:
+                return item
+        raise KeyError(name)
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._data)
+
+    def __len__(self) -> int:
+        return len(self._data)
+
+
 Diff = Tuple[str, Dict[str, Any]]
 
 
@@ -110,7 +140,7 @@ class ItemMeta(type):
         return new_class
 
     @staticmethod
-    def _create_schema(all_annotations, mapping, body):
+    def _create_schema(all_annotations, mapping, body) -> ItemSchema:
         schema = {}
         for attr_name, attr_type in all_annotations.items():
             if isclass(attr_type) and issubclass(attr_type, Attribute):
@@ -123,7 +153,7 @@ class ItemMeta(type):
                 mapping[attr_name], attr_type, body.get(attr_name, UNDEFINED)
             )
 
-        return schema
+        return ItemSchema(schema)
 
     @staticmethod
     def _create_attribute(attr_name: str, attr_type: type, field: Any):
@@ -136,14 +166,14 @@ class ItemMeta(type):
         return Attribute[attr_type](attr_name, lambda: field)  # type: ignore
 
     @staticmethod
-    def _get_mapping(meta):
-        mapping = Mapping.PASS_THROUGH
+    def _get_mapping(meta) -> AttributeMappingStrategy:
+        mapping = AttributeMapping.PASS_THROUGH
         if "mapping" in meta:
             if not isinstance(
-                meta["mapping"], MappingStrategy
+                meta["mapping"], AttributeMappingStrategy
             ) and not isinstance(meta, dict):
                 raise TypeError(
-                    f"mapping must be type of {MappingStrategy.__qualname__} "
+                    f"mapping must be type of {AttributeMappingStrategy.__qualname__} "
                     f"or dict, {type(meta['mapping'])} passed instead."
                 )
             mapping = meta["mapping"]

@@ -62,7 +62,7 @@ class Attribute(AbstractAttribute):
         return self._strategy.hydrate(value)
 
     def __str__(self) -> str:
-        return f"{self.name}"
+        return self.name
 
     def __repr__(self) -> str:
         return f'Attribute[{self.__attribute_type__}]("{self.name}")'

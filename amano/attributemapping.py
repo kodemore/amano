@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from enum import Enum
 from functools import reduce
+from typing import final
 
 
-class MappingStrategy(ABC):
+class AttributeMappingStrategy(ABC):
     @abstractmethod
     def __getitem__(self, item: str) -> str:
         ...
@@ -14,7 +14,7 @@ class MappingStrategy(ABC):
         return True
 
 
-class PassThroughMapping(MappingStrategy):
+class PassThroughAttributeMapping(AttributeMappingStrategy):
     def __getitem__(self, item: str) -> str:
         return item
 
@@ -22,12 +22,12 @@ class PassThroughMapping(MappingStrategy):
         return False
 
 
-class HyphensMapping(MappingStrategy):
+class HyphensAttributeMapping(AttributeMappingStrategy):
     def __getitem__(self, item: str) -> str:
         return item.replace("_", "-")
 
 
-class PascalCaseMapping(MappingStrategy):
+class PascalCaseAttributeMapping(AttributeMappingStrategy):
     def __getitem__(self, item: str) -> str:
         def upper_first(val: str) -> str:
             if len(val) > 1:
@@ -40,19 +40,14 @@ class PascalCaseMapping(MappingStrategy):
         return camel_case.upper()
 
 
-class CamelCaseMapping(MappingStrategy):
+class CamelCaseAttributeMapping(AttributeMappingStrategy):
     def __getitem__(self, item: str) -> str:
         return reduce(lambda x, y: x + y.capitalize(), item.split("_"))
 
 
-class Mapping(Enum):
-    PASS_THROUGH = PassThroughMapping()
-    PASCAL_CASE = PascalCaseMapping()
-    CAMEL_CASE = CamelCaseMapping()
-    HYPHENS = HyphensMapping()
-
-    def __getitem__(self, item: str) -> str:
-        return self.value[item]
-
-    def __contains__(self, item) -> bool:
-        return item in self.value
+@final
+class AttributeMapping:
+    PASS_THROUGH = PassThroughAttributeMapping()
+    PASCAL_CASE = PascalCaseAttributeMapping()
+    CAMEL_CASE = CamelCaseAttributeMapping()
+    HYPHENS = HyphensAttributeMapping()

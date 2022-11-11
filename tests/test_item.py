@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from amano import Mapping
+import pytest
+
+from amano import AttributeMapping
 from amano.attribute import Attribute, AttributeType
 from amano.item import (
     AttributeChange,
@@ -68,6 +70,31 @@ def test_can_get_attribute() -> None:
     assert MyItem.age.type == AttributeType.NUMBER
 
 
+def test_can_find_attribute() -> None:
+    # given
+    class MyItem(Item):
+        name: str
+        age: int
+
+    # then
+    assert MyItem.__schema__.find_by_name("name")
+    assert MyItem.__schema__.find_by_name("age")
+
+
+def test_fail_find_attribute() -> None:
+    # given
+    class MyItem(Item):
+        name: str
+        age: int
+
+    # when
+    with pytest.raises(KeyError) as e:
+        MyItem.__schema__.find_by_name("unknown")
+
+    # then
+    assert e.value.args[0] == "unknown"
+
+
 def test_can_hydrate_item() -> None:
     # given
     class MyItem(Item):
@@ -106,7 +133,7 @@ def test_can_hydrate_item_with_mapping() -> None:
 
 def test_can_hydrate_item_with_mapping_strategy() -> None:
     # given
-    class MyItem(Item, mapping=Mapping.PASCAL_CASE):
+    class MyItem(Item, mapping=AttributeMapping.PASCAL_CASE):
         name: str
         age: int
 
@@ -170,7 +197,7 @@ def test_can_extract_item_with_mapping() -> None:
 
 def test_can_extract_item_with_mapping_strategy() -> None:
     # given
-    class MyItem(Item, mapping=Mapping.PASCAL_CASE):
+    class MyItem(Item, mapping=AttributeMapping.PASCAL_CASE):
         name: str
         age: int
 
