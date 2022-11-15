@@ -311,9 +311,21 @@ Matches all items in a table where `field_str` field's value starts with a `{val
 
 ### Working with `amano.Cursor`
 
-The result of a query is always an instance of `amano.Cursor`. Cursor can be used to fetch all the records simply by iterating through it or by calling the `fetch` method.
+The result of a query or scan is always an instance of `amano.Cursor`. Cursors can be used to fetch all the records simply by iterating through them or by calling provided `fetch` method:
 
 ```python
+from amano import Item, AttributeMapping
+import boto3
+
+client = boto3.client("dynamodb")
+
+
+class Forum(Item, mapping=AttributeMapping.PASCAL_CASE):
+    forum_name: str
+    category: str
+    threads: int = 0
+    messages: int = 0
+    views: int = 0
 
 ```
 
@@ -395,18 +407,30 @@ forum_table = Table[Forum](client, table_name="Forum")
 
 # Item class internals
 
-By default, a subclass of `amano.Item` behaves a bit like a dataclass, which means that the class's initialiser can set class' properties.
+`amano.Item` changes the default class behaviour for an object's attributes. It does it to catch all changes inside any instance of `amano.Item` class. Each change creates a changelog for a given instance, which is later used to generate an update expression. 
+The changelog is stored in the `__log__` attribute. 
 
-Consider the following example:
+Additionally, `amano` inspects class attributes to generate a schema that later on is used to perform various queries and auto-index selection. Generated schema is stored in the `__schema__` attribute. 
 
-```python
-dynamodb_forum = Forum(
-    name="Amazon DynamoDB",
-    category="Amazon Web Services"
-)
+To utilise potential the above behaviours, the library provides following interface:
 
-assert dynamodb_forum.name == "Amazon DynamoDB"
-assert dynamodb_forum.threads == 0
-```
+- `amano.item.commit(item: Item)`
+- `amano.item.hydrate(what: Type[I], value: dict)`
+- `amano.item.extract(item: Item)`
+- `amano.item.from_dict(what: Type[I], value:dict)`
+- `amano.item.as_dict(value: Item)`
 
-`amano.Item` also provides an API that helps to serialise and deserialise data. An `extract` method can be used to store in-memory item representation to a table representation. A `hydrate` method can be used to deserialise data coming from a table into an item representation.
+## `amano.item.commit`
+Creates new commit from changes kept in `__log__` attribute. 
+
+## `amano.item.hydrate`
+Create new instance of the `Item` class from DynamoDB item representation.
+
+## `amano.item.extract`
+Creates a DynamoDB item representation from an instance of Item.
+
+## `amano.item.from_dict`
+Creates new instance of the `Item` class from a dict representation.
+
+## `amano.item.as_dict`
+Creates a dict representation of an `Item` object.

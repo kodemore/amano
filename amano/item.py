@@ -210,9 +210,6 @@ class Item(metaclass=ItemMeta):
     __schema__: ItemSchema
     __commits__: List[Commit]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def __getattribute__(self, key: str) -> Any:
         if key.startswith("_") or key.isupper():
             return super().__getattribute__(key)

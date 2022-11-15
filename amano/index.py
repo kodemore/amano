@@ -112,7 +112,11 @@ class Index(ABC):
     partition_key: Attribute
     sort_key: Optional[Attribute]
 
-    def __init__(self, partition_key: Attribute, sort_key: Attribute = None):
+    def __init__(self, partition_key, sort_key=None):
+        if not isinstance(partition_key, Attribute):
+            raise ValueError(
+                f"`partition_key` must be a valid instance of `{Attribute}`"
+            )
         self.partition_key = partition_key
         self.sort_key = sort_key
         self.projection = Projection.all()
@@ -151,8 +155,8 @@ class NamedIndex(Index, ABC):
     def __init__(
         self,
         index_name: str,
-        partition_key: Attribute,
-        sort_key: Attribute = None,
+        partition_key,
+        sort_key=None,
     ):
         self.index_name = index_name
         super().__init__(partition_key, sort_key)
@@ -171,8 +175,8 @@ class GlobalSecondaryIndex(NamedIndex):
     def __init__(
         self,
         index_name: str,
-        partition_key: Attribute,
-        sort_key: Attribute = None,
+        partition_key,
+        sort_key=None,
     ):
         super().__init__(index_name, partition_key, sort_key)
         self.provisioned_throughput = ProvisionedThroughput.empty()

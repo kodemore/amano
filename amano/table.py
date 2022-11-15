@@ -172,7 +172,7 @@ class Table(Generic[I]):
 
     def scan(
         self,
-        condition: Condition = None,
+        condition=None,
         limit: int = 0,
         use_index: Union[Index, str] = None,
         consistent_read: bool = False,
@@ -184,6 +184,8 @@ class Table(Generic[I]):
         }
 
         if condition:
+            if not isinstance(condition, Condition):
+                raise ValueError("`condition` is not a valid condition.")
             scan_params["FilterExpression"] = str(condition)
             if condition.parameters:
                 scan_params["ExpressionAttributeValues"] = serialize_value(
@@ -345,12 +347,17 @@ class Table(Generic[I]):
 
     def query(
         self,
-        key_condition: Condition,
-        filter_condition: Condition = None,
+        key_condition,
+        filter_condition=None,
         limit: int = 0,
         use_index: Union[Index, str] = None,
         consistent_read: bool = False,
     ) -> Cursor[I]:
+        if not isinstance(key_condition, Condition):
+            raise ValueError("`key_condition` is not a valid condition.")
+        if filter_condition and not isinstance(filter_condition, Condition):
+            raise ValueError("`filter_condition` is not a valid condition.")
+
         key_condition_expression = str(key_condition)
         key_attributes = list(key_condition.hint)
         if len(key_attributes) > 2:

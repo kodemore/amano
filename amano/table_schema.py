@@ -152,5 +152,16 @@ class TableSchema:
         if local_secondary_indexes:
             result[LOCAL_SECONDARY_INDEXES] = local_secondary_indexes
 
-    def publish(self, db_client: DynamoDBClient) -> None:
-        db_client.create_table(**self.as_dict())
+    def publish(self, db_client: DynamoDBClient) -> bool:
+        try:
+            db_client.create_table(**self.as_dict())
+            return True
+        except Exception:
+            return False
+
+    def destroy(self, db_client: DynamoDBClient) -> bool:
+        try:
+            db_client.delete_table(TableName=self.table_name)
+            return True
+        except Exception:
+            return False

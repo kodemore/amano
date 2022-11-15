@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Type, TypeVar
+from typing import Any, Callable, Generic, Type, TypeVar
 
 from .base_attribute import (
     AbstractAttribute,
@@ -22,7 +22,7 @@ from .condition import (
 _T = TypeVar('_T')
 
 
-class Attribute(AbstractAttribute):
+class Attribute(AbstractAttribute, Generic[_T]):
     def __init__(
         self,
         name: str,

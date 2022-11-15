@@ -32,7 +32,7 @@ authors = ["Dawid Kraczkowski <dawid.kraczkowski@kaizenreporting.com>"]
 description = "Abstraction Layer for Amazon DynamoDB"
 license = "MIT"
 name = "amano"
-version = "0.1.0"
+version = "0.2.0"
 
 [tool.poetry.dependencies]
 boto = "^2.49.0"
