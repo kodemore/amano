@@ -11,7 +11,7 @@ AWS DynamoDB Abstraction Layer built on Table Data Gateway Pattern.
 
 ## What is Amano?
 
-As mentioned above, Amano is a Table Data Gateway Patter implementation, which relies on a table's already existing schema. It can understand existing schema to simplify daily tasks like; storing, retrieving and querying data.
+As mentioned above, Amano is a Table Data Gateway Pattern implementation, which relies on a table's already existing schema. It can understand existing schema to simplify daily tasks like; storing, retrieving and querying data.
 
 Amano has a built-in index auto-use mechanism when performing a query. If there is an index, it will automatically pick the best matching index for the query.
 
@@ -25,11 +25,14 @@ The example below defines a `Forum` class, which represents a record in a Dynamo
 > Please note that property names in the following example do not follow the PEP standards. The reason is that those names correspond to field names present in Dynamodb's Item. To fix this issue, please look into a [mapping section](#mapping-items-fields).
 
 ```python
+from dataclasses import dataclass
+
 import boto3
 from amano import Table, Item
 
 client = boto3.client("dynamodb")
 
+@dataclass
 class Forum(Item):
     ForumName: str
     Category: str
@@ -53,11 +56,14 @@ On the other hand, the `Put` method always executes `PutItem` expression. Which 
 > Both `put` and `save` methods allow using conditional expressions.
 
 ```python
+from dataclasses import dataclass
+
 import boto3
 from amano import Table, Item
 
 client = boto3.client("dynamodb")
 
+@dataclass
 class Forum(Item):
     ForumName: str
     Category: str
@@ -74,11 +80,14 @@ forum_table.put(Forum(ForumName="Amano Forum", Category="Amazon DynamoDB"))
 `Table.update` edits an existing item's attributes. The difference between `put` and `update` is that update calculates Item's changes and performs a query only for the attributes that were changed. To update an Item, it must be retrieved first.
 
 ```python
+from dataclasses import dataclass
+
 import boto3
 from amano import Table, Item
 
 client = boto3.client("dynamodb")
 
+@dataclass
 class Forum(Item):
     ForumName: str
     Category: str
@@ -97,11 +106,14 @@ assert forum_table.update(amano_forum)
 
 
 ```python
+from dataclasses import dataclass
+
 import boto3
 from amano import Table, Item
 
 client = boto3.client("dynamodb")
 
+@dataclass
 class Forum(Item):
     ForumName: str
     Category: str
@@ -123,11 +135,14 @@ forum_table.delete(item)
 `Put`, `update`, `save` and `delete` can perform conditional expressions (update Item only if given attribute exists, or when it asserts against given value). Amano provides abstraction which is built on the top of python's comparison operators (`==`, `=!`, `>`, `>=` `<`, `<=`) and bitwise operators (`&` - and, `|` - or).
 
 ```python
+from dataclasses import dataclass
+
 import boto3
 from amano import Table, Item
 
 client = boto3.client("dynamodb")
 
+@dataclass
 class Forum(Item):
     ForumName: str
     Category: str
@@ -156,11 +171,14 @@ This means there might be items in a table with the same partition key, but they
 
 #### Retrieving by a partition key
 ```python
+from dataclasses import dataclass
+
 import boto3
 from amano import Table, Item
 
 client = boto3.client("dynamodb")
 
+@dataclass
 class Forum(Item):
     ForumName: str
     Category: str
@@ -176,11 +194,14 @@ forum_table.get("Amazon DynamoDB")
 #### Retrieving data by a composite key
 
 ```python
+from dataclasses import dataclass
+
 import boto3
 from amano import Table, Item
 
 client = boto3.client("dynamodb")
 
+@dataclass
 class Thread(Item):
     ForumName: str
     Subject: str
@@ -199,11 +220,14 @@ forum_table.get("Amazon DynamoDB", "Tagging tables")
 Both `query` and `get` methods of the `Table` class are supporting strongly consistent reads. To use strongly consistent reads, set `consistent_read` parameter to `True`:
 
 ```python
+from dataclasses import dataclass
+
 import boto3
 from amano import Table, Item
 
 client = boto3.client("dynamodb")
 
+@dataclass
 class Thread(Item):
     ForumName: str
     Subject: str
@@ -227,11 +251,14 @@ Use the `key_condition` attribute to specify search criteria. A key condition is
 
 
 ```python
+from dataclasses import dataclass
+
 import boto3
 from amano import Table, Item
 
 client = boto3.client("dynamodb")
 
+@dataclass
 class Thread(Item):
     ForumName: str
     Subject: str
@@ -337,8 +364,11 @@ to use `amano.Attribute` class when defining Item's attributes.
 Consider the following example which is redefining the `Thread` class:
 
 ```python
+from dataclasses import dataclass
+
 from amano import Item, Attribute
 
+@dataclass
 class Thread(Item):
     ForumName: Attribute[str]
     Subject: Attribute[str]
@@ -354,12 +384,15 @@ Usually, schema of persisted data is different from its memory representation.
 Amano provides a powerful mapping mechanism to cover this scenario. Mapping is an operation which associates each element from one set of data (in-memory representation) to one or more elements of another set of data (Dynamodb table).
 
 ```python
+from dataclasses import dataclass
+
 import boto3
 from amano import Table, Item, AttributeMapping
 
 client = boto3.client("dynamodb")
 
 
+@dataclass
 class Forum(Item, mapping=AttributeMapping.PASCAL_CASE):
     forum_name: str
     category: str
@@ -384,11 +417,14 @@ The dict keys should correspond to class attributes and its values
 to table's field names. Please see the example below:
 
 ```python
+from dataclasses import dataclass
+
 import boto3
 from amano import Table, Item
 
 client = boto3.client("dynamodb")
 
+@dataclass
 class Forum(Item, mapping={
     "forum_name": "ForumName",
     "category": "Category",
