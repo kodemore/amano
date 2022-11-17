@@ -7,6 +7,9 @@ exclude = ".venv"
 line-length = 80
 target-version = ["py39"]
 
+[tool.bandit]
+skips = ["B106", "B101", "B110"]
+
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",

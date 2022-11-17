@@ -7,7 +7,7 @@ from amano import Table
 from items import ReplyItem
 from schemas import reply_schema
 
-# bootstrap local dynamodb client
+# Bootstrap local dynamodb client
 session = boto3.Session(
     aws_access_key_id="example",
     aws_secret_access_key="example",
@@ -16,16 +16,30 @@ session = boto3.Session(
 client: DynamoDBClient = session.client(
     "dynamodb", endpoint_url="http://localhost:8000"
 )
+
+# Create Reply table
 reply_schema.publish(client)
 
+# Instantiate table data gateway
 table = Table[ReplyItem](client, reply_schema.table_name)
 
-table.put(ReplyItem(
+reply_time = datetime.utcnow()
+# Instantiate ReplyItem class
+item = ReplyItem(
     id="example_reply",
-    reply_date_time=datetime.utcnow(),
+    reply_date_time=reply_time,
     message="Example message",
     posted_by="John Doe",
-))
+)
 
-# clean up
+# Store it in database using put method
+table.put(item)
+
+stored_item = table.get(
+    "example_reply", ReplyItem.reply_date_time.extract(reply_time)
+)
+
+print(stored_item)
+
+# Clean up
 reply_schema.destroy(client)

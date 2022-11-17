@@ -4,7 +4,7 @@ from mypy_boto3_dynamodb import DynamoDBClient
 from amano import TableSchema, PrimaryKey, Attribute, GlobalSecondaryIndex, LocalSecondaryIndex
 from items import ForumItem
 
-# bootstrap local dynamodb client
+# Bootstrap local dynamodb client
 session = boto3.Session(
     aws_access_key_id="example",
     aws_secret_access_key="example",

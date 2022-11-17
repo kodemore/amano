@@ -67,7 +67,7 @@ class Table(Generic[I]):
                 f"subtype of {Item.__module__}.{Item.__qualname__}"
             )
 
-        self._db_client = db_client
+        self._client = db_client
         self._table_name = table_name
         self._table_meta: Dict[str, Any] = {}
         self._indexes: Dict[str, Index] = {}
@@ -87,6 +87,10 @@ class Table(Generic[I]):
     @property
     def sort_key(self) -> Optional[Attribute]:
         return self._indexes[PrimaryKey.NAME].sort_key
+
+    @property
+    def client(self) -> DynamoDBClient:
+        return self._client
 
     def _build_primary_key(self) -> None:
         try:
@@ -157,7 +161,7 @@ class Table(Generic[I]):
 
     def _fetch_table_meta(self):
         try:
-            self._table_meta = self._db_client.describe_table(
+            self._table_meta = self._client.describe_table(
                 TableName=self._table_name
             )["Table"]
         except ClientError as error:
@@ -205,7 +209,7 @@ class Table(Generic[I]):
         if limit:
             scan_params["Limit"] = limit
 
-        return Cursor(self._item_class, scan_params, self._db_client.scan)
+        return Cursor(self._item_class, scan_params, self._client.scan)
 
     def save(self, item: I, condition: Condition = None) -> bool:
         item_state = get_item_state(item)
@@ -235,7 +239,7 @@ class Table(Generic[I]):
                     condition.parameters
                 ).get("M")
 
-            result = self._db_client.delete_item(**query)  # type: ignore
+            result = self._client.delete_item(**query)  # type: ignore
         except ClientError as e:
             error = e.response.get("Error", {})
             if error.get("Code") == "ConditionalCheckFailedException":
@@ -279,7 +283,7 @@ class Table(Generic[I]):
                         condition.parameters
                     ).get("M")
 
-            result = self._db_client.put_item(**put_query)  # type: ignore
+            result = self._client.put_item(**put_query)  # type: ignore
         except ClientError as e:
             error = e.response.get("Error", {})
             if error.get("Code") == "ConditionalCheckFailedException":
@@ -331,7 +335,7 @@ class Table(Generic[I]):
                     **serialize_value(condition.parameters).get("M"),
                 }
         try:
-            result = self._db_client.update_item(**query)  # type: ignore[arg-type]
+            result = self._client.update_item(**query)  # type: ignore[arg-type]
         except ClientError as e:
             error = e.response.get("Error", {})
             if error.get("Code") == "ConditionalCheckFailedException":
@@ -410,7 +414,7 @@ class Table(Generic[I]):
         if limit:
             query["Limit"] = limit
 
-        return Cursor(self._item_class, query, self._db_client.query)
+        return Cursor(self._item_class, query, self._client.query)
 
     def get(self, *keys: str, consistent_read: bool = False) -> I:
         key_query = {self.partition_key.name: keys[0]}
@@ -420,7 +424,7 @@ class Table(Generic[I]):
         key_expression = serialize_value(key_query)["M"]
         projection = ", ".join(self.attributes)
         try:
-            result = self._db_client.get_item(
+            result = self._client.get_item(
                 TableName=self.table_name,
                 ProjectionExpression=projection,
                 Key=key_expression,
