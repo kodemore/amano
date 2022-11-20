@@ -1,10 +1,7 @@
-from os import path
-
 import boto3
 from mypy_boto3_dynamodb.client import DynamoDBClient
 
 from amano import Table
-from cookbook import BASE_DIR
 from items import ThreadItem
 from schemas import thread_schema, load_table_data
 
