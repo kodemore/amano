@@ -1,7 +1,10 @@
+from os import path
+
 import boto3
 from mypy_boto3_dynamodb.client import DynamoDBClient
 
 from amano import Table
+from cookbook import BASE_DIR
 from items import ThreadItem
 from schemas import thread_schema, load_table_data
 
@@ -19,7 +22,7 @@ client: DynamoDBClient = session.client(
 thread_schema.publish(client)
 
 # Load data from json file
-load_table_data(client, "examples/data/thread.json")
+load_table_data(client, "data/thread.json")
 
 # Instantiate table
 table = Table[ThreadItem](client, "Thread")

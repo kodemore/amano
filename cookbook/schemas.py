@@ -18,7 +18,7 @@ thread_schema = TableSchema(
 
 # Reply table
 reply_schema = TableSchema(
-    "Reply", PrimaryKey(ReplyItem.id, ReplyItem.reply_date_time)
+    "Reply", PrimaryKey(ReplyItem.id)
 )
 
 
@@ -32,7 +32,7 @@ def publish_table_schema(client: DynamoDBClient, schema: TableSchema) -> None:
 
 
 def load_table_data(client: DynamoDBClient, filename: str) -> None:
-    base_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
+    base_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
     file_path = os.path.join(base_dir, filename)
     data = json.load(open(file_path))
 

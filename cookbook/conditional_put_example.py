@@ -17,7 +17,8 @@ client: DynamoDBClient = session.client(
     "dynamodb", endpoint_url="http://localhost:8000"
 )
 
-# Create Reply table
+# Destroy and re-create Reply table
+reply_schema.destroy(client)
 reply_schema.publish(client)
 
 # Instantiate table data gateway
@@ -31,10 +32,14 @@ item = ReplyItem(
     posted_by="John Doe",
 )
 
-# Update item only if the id exists
-table.put(item, ReplyItem.id.exists())
+# Put item only if it does not exist
+assert table.put(item, ReplyItem.id.not_exists())
+
 
 item = table.get("example_reply")
 
-# Clean up
-reply_schema.destroy(client)
+print(item)
+
+# Now it should file, as item already exists
+assert not table.put(item, ReplyItem.id.not_exists())
+

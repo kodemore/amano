@@ -35,9 +35,7 @@ item = ReplyItem(
 # Store it in database using put method
 table.put(item)
 
-stored_item = table.get(
-    "example_reply", ReplyItem.reply_date_time.extract(reply_time)
-)
+stored_item = table.get("example_reply")
 
 print(stored_item)
 

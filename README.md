@@ -18,6 +18,8 @@ Amano has a built-in index auto-use mechanism when performing a query. If there 
 ## Basic Usage
 The following examples rely on [AWS Discussion Forum Data Model](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SampleData.CreateTables.html#SampleData.CreateTables2).
 
+> You can also have a look at [the cookbook](./cookbook) to find fully featured code examples.
+
 ### Defining your first Item
 
 The example below defines a `Forum` class, which represents a record in a Dynamodb table. This class is required to instantiate parametrised `Table` class that abstracts access to Dynamodb's table.

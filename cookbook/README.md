@@ -22,7 +22,9 @@ This example shows how to create a `Forum` table with two named indexes;
 
 In this example `ReplyItem` is being instantiated and stored it in the `Reply` table using `put` method.
 
-[Conditional Put Item Example](put_example.py)
+[Conditional Put Item Example](conditional_put_example.py)
+
+`ReplyItem` is stored only in a scenario where item does not already exists.
 
 ## Working with a cursor
 

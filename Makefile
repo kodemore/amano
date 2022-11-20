@@ -17,7 +17,7 @@ mypy:
 	poetry run mypy --install-types --show-error-codes --non-interactive .
 
 bandit:
-	poetry run bandit -r . -x ./tests,./test,./.venv
+	poetry run bandit -r . -x ./tests,./test,./.venv,./cookbook
 
 test:
 	poetry run pytest tests
