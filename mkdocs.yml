@@ -1,0 +1,23 @@
+site_name: Amano DB
+theme:
+  name: material
+
+repo_name: kodemore/amano
+repo_url: https://github.com/kodemore/amano
+
+nav:
+- Overview: index.md
+- Item:
+  - Defining Item: item/defining_item.md
+  - Basic Usage: item/basic_usage.md
+  - Field mapping: item/field_mapping.md
+- Table:
+    - Basic Usage: table/basic_usage.md
+- Cookbook: cookbook.md
+
+markdown_extensions:
+- pymdownx.highlight
+- pymdownx.extra
+- pymdownx.snippets
+- pymdownx.tabbed:
+    alternate_style: true

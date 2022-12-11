@@ -61,3 +61,10 @@ bandit = "^1.7.4"
 default = true
 name = 'default'
 url = 'https://pypi.python.org/simple'
+
+[tool.poetry.group.dev.dependencies]
+mkdocs = "^1.4.2"
+mkdocs-material = "^8.5.11"
+pymdown-extensions = "^9.9"
+
+

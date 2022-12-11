@@ -15,122 +15,7 @@ As mentioned above, Amano is a Table Data Gateway Pattern implementation, which 
 
 Amano has a built-in index auto-use mechanism when performing a query. If there is an index, it will automatically pick the best matching index for the query.
 
-## Basic Usage
-The following examples rely on [AWS Discussion Forum Data Model](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SampleData.CreateTables.html#SampleData.CreateTables2).
-
-> You can also have a look at [the cookbook](./cookbook) to find fully featured code examples.
-
-### Defining your first Item
-
-The example below defines a `Forum` class, which represents a record in a Dynamodb table. This class is required to instantiate parametrised `Table` class that abstracts access to Dynamodb's table.
-
-> Please note that property names in the following example do not follow the PEP standards. The reason is that those names correspond to field names present in Dynamodb's Item. To fix this issue, please look into a [mapping section](#mapping-items-fields).
-
-```python
-from dataclasses import dataclass
-
-import boto3
-from amano import Table, Item
-
-client = boto3.client("dynamodb")
-
-@dataclass
-class Forum(Item):
-    ForumName: str
-    Category: str
-    Threads: int = 0
-    Messages: int = 0
-    Views: int = 0
-
-forum_table = Table[Forum](client, table_name="Forum")
-```
-
-> Please note: `Forum` class extends `amano.Item` class. This is required by `amano.Table` to work properly. All the table's information, including; indexes, fields, projections, etc., are handled automatically and do not require any work on the developer's side.
-
-
-### Storing Item in a table
-
-To store Item, you can use the `put` or `save` method of `amano.Table` class.
-The difference between those two methods is that `save` can understand state of the Item and can execute either `PutItem` or `UpdateItem` operation depending on the scenario. 
-
-On the other hand, the `Put` method always executes `PutItem` expression. Which creates or fully overrides existing Item in case where no condition is provided.
-
-> Both `put` and `save` methods allow using conditional expressions.
-
-```python
-from dataclasses import dataclass
-
-import boto3
-from amano import Table, Item
-
-client = boto3.client("dynamodb")
-
-@dataclass
-class Forum(Item):
-    ForumName: str
-    Category: str
-    Threads: int = 0
-    Messages: int = 0
-    Views: int = 0
-
-forum_table = Table[Forum](client, table_name="Forum")
-forum_table.put(Forum(ForumName="Amano Forum", Category="Amazon DynamoDB"))
-```
-
-### Updating item in a table
-
-`Table.update` edits an existing item's attributes. The difference between `put` and `update` is that update calculates Item's changes and performs a query only for the attributes that were changed. To update an Item, it must be retrieved first.
-
-```python
-from dataclasses import dataclass
-
-import boto3
-from amano import Table, Item
-
-client = boto3.client("dynamodb")
-
-@dataclass
-class Forum(Item):
-    ForumName: str
-    Category: str
-    Threads: int = 0
-    Messages: int = 0
-    Views: int = 0
-
-forum_table = Table[Forum](client, table_name="Forum")
-amano_forum = forum_table.get("Amano Forum")
-amano_forum.Category = "Other Category"
-
-assert forum_table.update(amano_forum)
-```
-
-### Deleting item from a table
-
-
-```python
-from dataclasses import dataclass
-
-import boto3
-from amano import Table, Item
-
-client = boto3.client("dynamodb")
-
-@dataclass
-class Forum(Item):
-    ForumName: str
-    Category: str
-    Threads: int = 0
-    Messages: int = 0
-    Views: int = 0
-
-forum_table = Table[Forum](client, table_name="Forum")
-
-# get an item
-item = forum_table.get("Amano Forum", "Amazon DynamoDB")
-
-# delete it
-forum_table.delete(item)
-```
+## Docs
 
 ### Conditional writes
 
@@ -162,60 +47,6 @@ assert forum_table.update(amano_forum, Forum.Messages == 0)
 
 The above example shows how to update an Item in a certain situation. More complex conditions can be used, to learn more head to [Supported Conditions Section](#supported-conditions).
 
-### Retrieving data by a primary key
-
-Dynamodb allows to choose between two types of primary keys:
-- __Partition key__. It is a simplified primary key. It means there 
-should be no two items in a table with the same partition key value.
-- __Composite key__. It is a combination of the partition key and sort key. 
-This means there might be items in a table with the same partition key, but they must have different sort key values.
-
-
-#### Retrieving by a partition key
-```python
-from dataclasses import dataclass
-
-import boto3
-from amano import Table, Item
-
-client = boto3.client("dynamodb")
-
-@dataclass
-class Forum(Item):
-    ForumName: str
-    Category: str
-    Threads: int = 0
-    Messages: int = 0
-    Views: int = 0
-
-forum_table = Table[Forum](client, table_name="Forum")
-
-forum_table.get("Amazon DynamoDB")
-```
-
-#### Retrieving data by a composite key
-
-```python
-from dataclasses import dataclass
-
-import boto3
-from amano import Table, Item
-
-client = boto3.client("dynamodb")
-
-@dataclass
-class Thread(Item):
-    ForumName: str
-    Subject: str
-    Message: str
-    LastPostedBy: str
-    Replies: int = 0
-    Views: int = 0
-
-forum_table = Table[Thread](client, table_name="Thread")
-
-forum_table.get("Amazon DynamoDB", "Tagging tables")
-```
 
 #### Ensuring consistency reads
 
@@ -358,7 +189,6 @@ class Forum(Item, mapping=AttributeMapping.PASCAL_CASE):
 
 ```
 
-
 ### Improved type hints
 
 In order to get better type support in mypy and your IDE it is recommended 
@@ -378,69 +208,6 @@ class Thread(Item):
     LastPostedBy: Attribute[str]
     Replies: Attribute[int] = 0
     Views: Attribute[int] = 0
-```
-
-### Mapping item's fields
-
-Usually, schema of persisted data is different from its memory representation.
-Amano provides a powerful mapping mechanism to cover this scenario. Mapping is an operation which associates each element from one set of data (in-memory representation) to one or more elements of another set of data (Dynamodb table).
-
-```python
-from dataclasses import dataclass
-
-import boto3
-from amano import Table, Item, AttributeMapping
-
-client = boto3.client("dynamodb")
-
-
-@dataclass
-class Forum(Item, mapping=AttributeMapping.PASCAL_CASE):
-    forum_name: str
-    category: str
-    threads: int = 0
-    messages: int = 0
-    views: int = 0
-
-
-forum_table = Table[Forum](client, table_name="Forum")
-```
-
-The above example will use a built-in mapping strategy, which expects table's field names to follow PascalCase convention, and it will map them to standard python's snake case.
-
-The following is the list of available mapping strategies:
-- `Mapping.PASS_THROUGH`
-- `Mapping.PASCAL_CASE`
-- `Mapping.CAMEL_CASE`
-- `Mapping.HYPHENS`
-
-The `mapping` argument can also accept any `Dict[str, str]`. 
-The dict keys should correspond to class attributes and its values 
-to table's field names. Please see the example below:
-
-```python
-from dataclasses import dataclass
-
-import boto3
-from amano import Table, Item
-
-client = boto3.client("dynamodb")
-
-@dataclass
-class Forum(Item, mapping={
-    "forum_name": "ForumName",
-    "category": "Category",
-    "threads": "Threads",
-    "messages": "Messages",
-    "views": "Views",
-}):
-    forum_name: str
-    category: str
-    threads: int = 0
-    messages: int = 0
-    views: int = 0
-
-forum_table = Table[Forum](client, table_name="Forum")
 ```
 
 # Item class internals
