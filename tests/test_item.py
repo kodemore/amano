@@ -241,6 +241,9 @@ def test_can_extract_item_as_dataclass() -> None:
 
     item = MyItem("Bobik", 10)
 
+    item.name
+    return
+
     # when
     value = extract(item)
 
@@ -264,7 +267,7 @@ def test_item_log() -> None:
     # then
     assert item.name == "Bobik"
     assert item.age == 10
-    assert len(item.__log__) == 2
+    assert len(item.__log__) == 0
 
     # when
     item.name = "Pluto"
@@ -272,23 +275,26 @@ def test_item_log() -> None:
     # then
     assert item.name == "Pluto"
     assert item.age == 10
-    assert len(item.__log__) == 3
+    assert len(item.__log__) == 1
 
     # when
     del item.name
-
     # then
     assert not hasattr(item, "name")
+
+    # when
+    item.name = "Bob"
+
+    # then
     assert item.age == 10
-    assert len(item.__log__) == 4
+    assert len(item.__log__) == 3
 
     for log in item.__log__:
         assert isinstance(log, AttributeChange)
 
-    assert item.__log__[0].type == AttributeChange.Type.SET
-    assert item.__log__[1].type == AttributeChange.Type.SET
-    assert item.__log__[2].type == AttributeChange.Type.CHANGE
-    assert item.__log__[3].type == AttributeChange.Type.UNSET
+    assert item.__log__[0].type == AttributeChange.Type.CHANGE
+    assert item.__log__[1].type == AttributeChange.Type.UNSET
+    assert item.__log__[2].type == AttributeChange.Type.SET
 
 
 def test_use_default_values() -> None:
@@ -326,6 +332,12 @@ def test_can_get_item_state() -> None:
     assert item.age == 10
 
     # when
+    item.age = 11
+
+    # then
+    assert get_item_state(item) == ItemState.DIRTY
+
+    # when
     commit(item)
 
     # then
@@ -340,7 +352,7 @@ def test_can_get_item_state() -> None:
 
 def test_can_init_item() -> None:
     # given
-    class MyItem(Item, init=True):
+    class MyItem(Item):
         name: str
         age: int = 10
 
@@ -354,12 +366,12 @@ def test_can_init_item() -> None:
 
 def test_can_override_init_item() -> None:
     # given
-    class MyItem(Item, init=True):
+    class MyItem(Item):
         name: str
         age: int = 10
 
-        def __init__(self, *_, **__):
-            self.name = "Super " + self.name
+        def __init__(self, name: str):
+            self.name = "Super " + name
 
     # when
     item = MyItem(name="Bob")

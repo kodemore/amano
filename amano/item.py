@@ -84,23 +84,30 @@ class ItemState(Enum):
     DIRTY = "dirty"
 
 
+def _build_input_parameters(item: Item, args, kwargs) -> Dict[str, Any]:
+    result = {}
+    for attribute in item.__schema__.values():
+        result[attribute.name] = attribute.default_value
+
+    if args:
+        attribute_names = list(item.__schema__.keys())
+        for index, value in enumerate(args):
+            result[attribute_names[index]] = value
+    if kwargs:
+        result = {**result, **kwargs}
+
+    return result
+
+
 def _create_init(base_init: Union[Callable, None]) -> Callable:
     def _init_item(item: Item, *args, **kwargs) -> None:
-        item_data = {}
-        for attribute in item.__schema__.values():
-            item_data[attribute.name] = attribute.default_value
-
-        if args:
-            attribute_names = list(item.__schema__.keys())
-            for index, value in enumerate(args):
-                item_data[attribute_names[index]] = value
-        if kwargs:
-            item_data = {**item_data, **kwargs}
-
-        for name, value in item_data.items():
-            setattr(item, name, value)
         if base_init:
             base_init(item, *args, **kwargs)
+        else:
+            parameters = _build_input_parameters(item, args, kwargs)
+            for name, value in parameters.items():
+                setattr(item, name, value)
+        item.__log__ = []
 
     return _init_item
 
@@ -119,8 +126,7 @@ class ItemMeta(type):
             body,
         )
 
-        if "init" in meta and meta["init"] is True:
-            body["__init__"] = _create_init(body.get("__init__"))
+        body["__init__"] = _create_init(body.get("__init__"))
 
         new_class = type.__new__(
             cls,
@@ -340,7 +346,7 @@ def get_item_state(value: Item) -> ItemState:
     if not value.__log__ and len(value.__commits__) >= 1:
         return ItemState.CLEAN
 
-    if not value.__commits__:
+    if not value.__commits__ and not value.__log__:
         return ItemState.NEW
 
     return ItemState.DIRTY

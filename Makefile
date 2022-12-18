@@ -29,3 +29,6 @@ audit: bandit
 tests: test
 
 all: lint audit tests
+
+serve-docs:
+	poetry run mkdocs serve -a localhost:8001

@@ -9,10 +9,17 @@ nav:
 - Overview: index.md
 - Item:
   - Defining Item: item/defining_item.md
-  - Basic Usage: item/basic_usage.md
+  - Working with Item: item/working_with.md
   - Field mapping: item/field_mapping.md
+  - Advanced features: item/advanced_features.md
 - Table:
-    - Basic Usage: table/basic_usage.md
+    - Basic Usage (CRUD): table/basic_usage.md
+    - Querying a table: table/querying.md
+    - Conditional writes: table/conditional_writes.md
+    - Consistency model: table/consistency.md
+    - Bulk operations: table/bulk.md
+    - Working with schema: table/schema.md
+- Testing: testing.md
 - Cookbook: cookbook.md
 
 markdown_extensions:

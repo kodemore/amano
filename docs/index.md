@@ -9,6 +9,13 @@ Amano is a Table Data Gateway Pattern implementation, which means there are two 
  - a table, represented by `amano.Table`
  - an item, represented by `amano.Item`
 
+
+<figure markdown>
+  ![Amano Architecture](./table_gateway.png){ width=600 }
+  <figcaption>Amano's high level design</figcaption>
+</figure>
+
+
 A `Table` represents DynamoDB's table and acts as an access layer to a given table. An `Item` represents a single record in DynamoDB's table.
 
 It can understand existing schema to simplify daily tasks like; storing, retrieving and querying data.

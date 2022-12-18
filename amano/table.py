@@ -161,9 +161,10 @@ class Table(Generic[I]):
 
     def _fetch_table_meta(self):
         try:
-            self._table_meta = self._client.describe_table(
+            response = self._client.describe_table(
                 TableName=self._table_name
-            )["Table"]
+            )
+            self._table_meta = response["Table"]
         except ClientError as error:
             raise ValueError(
                 f"Table with name {self._table_name} was not found"

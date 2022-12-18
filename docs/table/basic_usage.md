@@ -3,7 +3,7 @@
 --8<-- "docs/examples_header.md"
 
 
-## Storing Items
+## Item storage
 
 To store Item, you can use the `put` or `save` method of `amano.Table` class.
 The difference between those two methods is that `save` can understand state of the Item and can execute either `PutItem` or `UpdateItem` operation depending on the scenario. 
@@ -17,7 +17,7 @@ On the other hand, the `Put` method always executes `PutItem` expression. Which 
 ```
 
 
-## Retrieving Items
+## Item retrieval
 
 Dynamodb allows to choose between two types of primary keys:
 - __Partition key__. It is a simplified primary key. It means there 
@@ -33,61 +33,30 @@ This means there might be items in a table with the same partition key, but they
 
 ### Retrieving by a composite key
 
-```python
+If your table defines composite key (key composed of a partition key and a sort key), you must provide both values in the get method, like below:
 
+```python title="Retrieve by a composite key"
+--8<-- "docs/examples/table_get_by_composite_key.py"
 ```
 
-
-## Updating Items
+## Item update
 
 `Table.update` edits an existing item's attributes. The difference between `put` and `update` is that update calculates Item's changes and performs a query only for the attributes that were changed. To update an Item, it must be retrieved first.
 
-```python
-from dataclasses import dataclass
-
-import boto3
-from amano import Table, Item
-
-client = boto3.client("dynamodb")
-
-@dataclass
-class Forum(Item):
-    ForumName: str
-    Category: str
-    Threads: int = 0
-    Messages: int = 0
-    Views: int = 0
-
-forum_table = Table[Forum](client, table_name="Forum")
-amano_forum = forum_table.get("Amano Forum")
-amano_forum.Category = "Other Category"
-
-assert forum_table.update(amano_forum)
+```python title="Udpdate item"
+--8<-- "docs/examples/table_basic_update.py"
 ```
 
-## Deleting Items
+## Item deletion
 
-```python
-from dataclasses import dataclass
+DynamoDB identifies each item by a primary key. In order to delete an item you have to identify it first. In Amano identification is done by retrieval, like in the example below:
 
-import boto3
-from amano import Table, Item
+```python title="Delete item"
+--8<-- "docs/examples/table_item_delete.py"
+```
 
-client = boto3.client("dynamodb")
+If you know the primary key upfront you can simply delete an item without retrieving it. Please consider the following example:
 
-@dataclass
-class Forum(Item):
-    ForumName: str
-    Category: str
-    Threads: int = 0
-    Messages: int = 0
-    Views: int = 0
-
-forum_table = Table[Forum](client, table_name="Forum")
-
-# get an item
-item = forum_table.get("Amano Forum", "Amazon DynamoDB")
-
-# delete it
-forum_table.delete(item)
+```python title="Delete item by PK"
+--8<-- "docs/examples/table_item_delete_pk.py"
 ```

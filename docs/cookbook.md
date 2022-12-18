@@ -10,6 +10,11 @@ If you prefer to read code by examples instead going through entire documentatio
 --8<-- "docs/examples/item_basic_definition.py"
 ```
 
+
+```python title="Built-in item initializer"
+--8<-- "docs/examples/item_initializer.py"
+```
+
 ```python title="Dataclass example"
 --8<-- "docs/examples/item_dataclass_definition.py"
 ```
@@ -45,4 +50,52 @@ If you prefer to read code by examples instead going through entire documentatio
 
 ```python title="Mapping using custom schema"
 --8<-- "docs/examples/item_mapping_custom_schema.py"
+```
+
+### Advanced features
+
+```python title="Getting item's state"
+--8<-- "docs/examples/item_states.py"
+```
+
+```python title="Commiting item's changes"
+--8<-- "docs/examples/item_commit.py"
+```
+
+```python title="Generating item's diff"
+--8<-- "docs/examples/item_diff.py"
+```
+
+## Table
+
+### Item storage
+
+```python title="Item storage using put method"
+--8<-- "docs/examples/table_storing_items.py"
+```
+
+### Item retrieval
+
+```python title="Get an item by a partition key"
+--8<-- "docs/examples/table_get_by_partition_key.py"
+```
+
+```python title="Get an item by a partition key"
+--8<-- "docs/examples/table_get_by_partition_key.py"
+```
+
+### Item update
+
+```python title="Update item"
+--8<-- "docs/examples/table_basic_update.py"
+```
+
+## Item deletion
+
+```python title="Delete item"
+--8<-- "docs/examples/table_item_delete.py"
+```
+
+```python title="Delete item by PK"
+--8<-- "docs/examples/table_item_delete_pk.py"
 ```

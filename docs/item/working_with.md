@@ -1,4 +1,4 @@
-# Basic Usage
+# Working with the Item class
 --8<-- "docs/cookbook_header.md"
 
 ## Instantiation
