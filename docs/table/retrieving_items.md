@@ -1,0 +1,44 @@
+# Retrieving items from a table
+
+There are two ways to retrieve your data from DynamoDB's table:
+
+ - by querying a table _`(amano.Table.query)`_
+ - by scanning a table _`(amano.Table.scan)`_
+
+Differences between those two operations are in performance, cost and flexibility. Generally speaking you should always favour query over scan. 
+
+To query a table you have to first instantiate `amano.Table` generic class, and execute a query method and pass a search criteria through `key_condition` argument. Difference in interface between `amano` and `boto` libraries is the requirement of specifying an index and the construction of query itself. Amano is using more flexible and approachable solution.
+
+> Amano can determine which index to use by looking at the fields in your key condition and the table's schema. If a corresponding index cannot be determined, the `query` method will throw an exception, and no actual request will be made to the table. Amano does all of this behind the scenes to save Dynamodb's quota.
+
+
+### Query operation
+
+```python  title="Query a table"
+--8<-- "docs/examples/table_query.py"
+```
+
+> The above query will look for all items in the `Thread` table, where `ForumName` equals `Amazon DynamoDB`. Because the `Thread` table specifies the sort key (`Subject`), a search might be refined by using it in the `key_condition`.
+
+#### Query with a filter condition
+
+A filter condition enables you to further refine the query results. Filter condition is applied after a query. Therefore, a query consumes the same amount of read capacity.
+
+A filter condition cannot contain a partition key or a sort key, use a key condition instead for those attributes.
+
+A filter condition and key condition use the same mechanism, but filter condition uses wider range of operators.
+
+The following example shows how to use filter condition in an example query:
+
+```python  title="Query with a filter condition"
+--8<-- "docs/examples/table_query_with_filter.py"
+```
+
+### Scan operation
+
+```python  title="Scan a table"
+--8<-- "docs/examples/table_scan.py"
+```
+
+
+## Working with cursor

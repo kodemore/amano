@@ -120,33 +120,3 @@ class Thread(Item):
     Replies: Attribute[int] = 0
     Views: Attribute[int] = 0
 ```
-
-# Item class internals
-
-`amano.Item` changes the default class behaviour for an object's attributes. It does it to catch all changes inside any instance of `amano.Item` class. Each change creates a changelog for a given instance, which is later used to generate an update expression. 
-The changelog is stored in the `__log__` attribute. 
-
-Additionally, `amano` inspects class attributes to generate a schema that later on is used to perform various queries and auto-index selection. Generated schema is stored in the `__schema__` attribute. 
-
-To utilise potential the above behaviours, the library provides following interface:
-
-- `amano.item.commit(item: Item)`
-- `amano.item.hydrate(what: Type[I], value: dict)`
-- `amano.item.extract(item: Item)`
-- `amano.item.from_dict(what: Type[I], value:dict)`
-- `amano.item.as_dict(value: Item)`
-
-## `amano.item.commit`
-Creates new commit from changes kept in `__log__` attribute. 
-
-## `amano.item.hydrate`
-Create new instance of the `Item` class from DynamoDB item representation.
-
-## `amano.item.extract`
-Creates a DynamoDB item representation from an instance of Item.
-
-## `amano.item.from_dict`
-Creates new instance of the `Item` class from a dict representation.
-
-## `amano.item.as_dict`
-Creates a dict representation of an `Item` object.

@@ -1,4 +1,4 @@
-from .attribute import Attribute
+from .attribute import Attribute, AttributeType
 from .index import (
     GlobalSecondaryIndex,
     Index,
@@ -12,6 +12,7 @@ from .table_schema import TableSchema
 
 __all__ = [
     "Attribute",
+    "AttributeType",
     "Item",
     "AttributeMapping",
     "Table",

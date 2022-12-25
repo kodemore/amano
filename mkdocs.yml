@@ -1,6 +1,8 @@
 site_name: Amano DB
 theme:
   name: material
+  features:
+    - content.tabs.link
 
 repo_name: kodemore/amano
 repo_url: https://github.com/kodemore/amano
@@ -14,7 +16,8 @@ nav:
   - Advanced features: item/advanced_features.md
 - Table:
     - Basic Usage (CRUD): table/basic_usage.md
-    - Querying a table: table/querying.md
+    - Retrieving items: table/retrieving_items.md
+    - Comparison operators and functions: table/operators_functions.md
     - Conditional writes: table/conditional_writes.md
     - Consistency model: table/consistency.md
     - Bulk operations: table/bulk.md
@@ -26,5 +29,8 @@ markdown_extensions:
 - pymdownx.highlight
 - pymdownx.extra
 - pymdownx.snippets
+- pymdownx.superfences
 - pymdownx.tabbed:
     alternate_style: true
+- admonition
+- pymdownx.details

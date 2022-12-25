@@ -90,7 +90,7 @@ If you prefer to read code by examples instead going through entire documentatio
 --8<-- "docs/examples/table_basic_update.py"
 ```
 
-## Item deletion
+### Item deletion
 
 ```python title="Delete item"
 --8<-- "docs/examples/table_item_delete.py"
@@ -98,4 +98,15 @@ If you prefer to read code by examples instead going through entire documentatio
 
 ```python title="Delete item by PK"
 --8<-- "docs/examples/table_item_delete_pk.py"
+```
+
+### Querying
+
+
+```python  title="Query a table"
+--8<-- "docs/examples/table_query.py"
+```
+
+```python  title="Query with a filter condition"
+--8<-- "docs/examples/table_query_with_filter.py"
 ```
