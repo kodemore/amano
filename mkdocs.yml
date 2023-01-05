@@ -13,6 +13,7 @@ nav:
   - Defining Item: item/defining_item.md
   - Working with Item: item/working_with.md
   - Field mapping: item/field_mapping.md
+  - Type annotations: item/type_annotations.md
   - Advanced features: item/advanced_features.md
 - Table:
     - Basic Usage (CRUD): table/basic_usage.md
