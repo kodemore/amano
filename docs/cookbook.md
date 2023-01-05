@@ -80,9 +80,25 @@ If you prefer to read code by examples instead going through entire documentatio
 --8<-- "docs/examples/table_get_by_partition_key.py"
 ```
 
+
 ```python title="Get an item by a partition key"
 --8<-- "docs/examples/table_get_by_partition_key.py"
 ```
+
+### Working with cursor
+
+```python title="Cursor a basic usage"
+--8<-- "docs/examples/cursor_basic_usage.py"
+```
+
+```python title="Fetching items"
+--8<-- "docs/examples/cursor_fetch.py"
+```
+
+```python title="Counting items"
+--8<-- "docs/examples/cursor_count.py"
+```
+
 
 ### Item update
 
