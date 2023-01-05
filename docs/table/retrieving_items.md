@@ -36,9 +36,39 @@ The following example shows how to use filter condition in an example query:
 
 ### Scan operation
 
+Scan operations are very flexible as they can be run without prior index setup.
+
+When a scan operation is executed every item in a given table is being read, which as you can imagine is a heavy and costly operation. Thus scans operations should be used as a last bastion or in a specific scenarios.
+
 ```python  title="Scan a table"
 --8<-- "docs/examples/table_scan.py"
 ```
 
-
 ## Working with cursor
+
+Scan and query operations as a result are returning a cursor. Cursor is an iterator object which can be used to access items from your DynamoDB table. The simplest use case is to iterate through the cursor until it is exhausted, like in the example below:
+
+```python title="Cursor a basic usage"
+--8<-- "docs/examples/cursor_basic_usage.py"
+```
+
+### Fetching items
+
+When iteration through all the results is not an option you can just fetch desired amount of items from a table by using the `fetch` method on a cursor object.
+
+```python title="Fetching items"
+--8<-- "docs/examples/cursor_fetch.py"
+```
+
+The `fetch` method will try to retrieve the desired amount of items matching the search criteria from a table. If there are not enough items in the search result, the `fetch` method will return all items from the result. 
+
+### Counting items
+
+To understand how many items have matched the search criteria you can use the `count` method of a cursor.
+
+```python title="Counting items"
+--8<-- "docs/examples/cursor_count.py"
+```
+
+!!! warning
+    The `count` method will retrieve all the items matching the search results and store them in the memory. Despite the fact that this can be the only option to understand the size of your result set, it should be used with care. 
