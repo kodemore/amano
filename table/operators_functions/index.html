@@ -1,0 +1,1092 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://kodemore.github.io/amano/table/operators_functions/">
+      
+      
+        <link rel="prev" href="../retrieving_items/">
+      
+      
+        <link rel="next" href="../conditional_writes/">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.8">
+    
+    
+      
+        <title>Comparison operators and functions - Amano DB</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.0d440cfe.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.2505c338.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#comparison-operators-and-functions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Amano DB" class="md-header__button md-logo" aria-label="Amano DB" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Amano DB
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Comparison operators and functions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/kodemore/amano" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kodemore/amano
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Amano DB" class="md-nav__button md-logo" aria-label="Amano DB" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Amano DB
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/kodemore/amano" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kodemore/amano
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Item
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Item
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../item/defining_item/" class="md-nav__link">
+        Defining Item
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../item/working_with/" class="md-nav__link">
+        Working with Item
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../item/field_mapping/" class="md-nav__link">
+        Field mapping
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../item/type_annotations/" class="md-nav__link">
+        Type annotations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../item/advanced_features/" class="md-nav__link">
+        Advanced features
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Table
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Table
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../basic_usage/" class="md-nav__link">
+        Basic Usage (CRUD)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../retrieving_items/" class="md-nav__link">
+        Retrieving items
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Comparison operators and functions
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Comparison operators and functions
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-operators" class="md-nav__link">
+    Comparison operators
+  </a>
+  
+    <nav class="md-nav" aria-label="Comparison operators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#equals" class="md-nav__link">
+    Equals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lower-than" class="md-nav__link">
+    Lower than
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lower-or-equal" class="md-nav__link">
+    Lower or equal
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#greater-than" class="md-nav__link">
+    Greater than
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#greater-or-equal" class="md-nav__link">
+    Greater or equal
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#between" class="md-nav__link">
+    Between
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    Functions
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#not-exists" class="md-nav__link">
+    (Not) Exists
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#is-type" class="md-nav__link">
+    Is Type
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#begins-with" class="md-nav__link">
+    Begins with
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#contains" class="md-nav__link">
+    Contains
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#in" class="md-nav__link">
+    In
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#size" class="md-nav__link">
+    Size
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logical-evaluations" class="md-nav__link">
+    Logical evaluations
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sort-key-evaluation" class="md-nav__link">
+    Sort key evaluation
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../conditional_writes/" class="md-nav__link">
+        Conditional writes
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../consistency/" class="md-nav__link">
+        Consistency model
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bulk.md" class="md-nav__link">
+        Bulk operations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schema.md" class="md-nav__link">
+        Working with schema
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing.md" class="md-nav__link">
+        Testing
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/" class="md-nav__link">
+        Cookbook
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-operators" class="md-nav__link">
+    Comparison operators
+  </a>
+  
+    <nav class="md-nav" aria-label="Comparison operators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#equals" class="md-nav__link">
+    Equals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lower-than" class="md-nav__link">
+    Lower than
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lower-or-equal" class="md-nav__link">
+    Lower or equal
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#greater-than" class="md-nav__link">
+    Greater than
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#greater-or-equal" class="md-nav__link">
+    Greater or equal
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#between" class="md-nav__link">
+    Between
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    Functions
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#not-exists" class="md-nav__link">
+    (Not) Exists
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#is-type" class="md-nav__link">
+    Is Type
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#begins-with" class="md-nav__link">
+    Begins with
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#contains" class="md-nav__link">
+    Contains
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#in" class="md-nav__link">
+    In
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#size" class="md-nav__link">
+    Size
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logical-evaluations" class="md-nav__link">
+    Logical evaluations
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sort-key-evaluation" class="md-nav__link">
+    Sort key evaluation
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+
+<h1 id="comparison-operators-and-functions">Comparison operators and functions</h1>
+<p>Amano supports all the comparison operators and functions of Dynamodb and provides an elegant abstraction around them, which simplifies querying and filtering Dynamodb tables.</p>
+<div class="admonition note">
+<p class="admonition-title">About this guide</p>
+<p>This guide uses the following symbols to provide a comprehensive list of examples:</p>
+<ul>
+<li><strong><code>{value: type}</code></strong> is used to reference any valid value you may use in a condition of a given type. If no <code>type</code> is specified it applies to all types.</li>
+<li><strong><code>Item</code></strong> is used to reference to an item class</li>
+<li><strong><code>{attribute: type}</code></strong> is used to reference to an attribute of an item class of a given type <code>type</code>. If no <code>type</code> is specified it applies to all types.</li>
+</ul>
+</div>
+<h2 id="comparison-operators">Comparison operators</h2>
+<h3 id="equals">Equals</h3>
+<p>Matches all items in a table where <code>{attribute}</code>'s value is equal to a <code>{value}</code>.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Structure</label><label for="__tabbed_1_2">Example</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Item.{attribute} == {value}
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>User.name == &quot;Bob&quot;
+</code></pre></div>
+</div>
+</div>
+</div>
+<h3 id="lower-than">Lower than</h3>
+<p>Matches all items in a table where <code>{attribute}</code>'s value is lower than a <code>{value}</code>.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Structure</label><label for="__tabbed_2_2">Example</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Item.{attribute: numeric} &lt; {value: numeric}
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>User.age &lt; 130
+</code></pre></div>
+</div>
+</div>
+</div>
+<h3 id="lower-or-equal">Lower or equal</h3>
+<p>Matches all items in a table where <code>{attribute}</code>'s value is lower or equal to a <code>{value}</code>.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Structure</label><label for="__tabbed_3_2">Example</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Item.{attribute: numeric} &lt;= {value: numeric}
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Wallet.value &lt;= 10.5
+</code></pre></div>
+</div>
+</div>
+</div>
+<h3 id="greater-than">Greater than</h3>
+<p>Matches all items in a table where <code>{attribute}</code>'s value is greater than  a <code>{value}</code>.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Structure</label><label for="__tabbed_4_2">Example</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Item.{attribute: numeric} &gt; {value: numeric}
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Wallet.value &gt; 0.1
+</code></pre></div>
+</div>
+</div>
+</div>
+<h3 id="greater-or-equal">Greater or equal</h3>
+<p>Matches all items in a table where <code>{attribute}</code>'s value is lower or equal to a <code>{value}</code>.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Structure</label><label for="__tabbed_5_2">Example</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Item.{attribute: numeric} &gt;= {value: numeric}
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>User.age &gt;= 18
+</code></pre></div>
+</div>
+</div>
+</div>
+<h3 id="between">Between</h3>
+<p>Matches all items in a table where <code>{attribute}</code>'s value is greater than or equals to <code>{value_a}</code> and lower than or equals to <code>{value_b}</code>.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:2"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><div class="tabbed-labels"><label for="__tabbed_6_1">Structure</label><label for="__tabbed_6_2">Example</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Item.{attribute: numeric}.between({value_a: numeric}, {value_b: numeric})
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>User.age.between(18, 120)
+</code></pre></div>
+</div>
+</div>
+</div>
+<h2 id="functions">Functions</h2>
+<h3 id="not-exists">(Not) Exists</h3>
+<p>Matches all items in a table where <code>{attribute}</code> is (not) defined in the given item.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:2"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio" /><input id="__tabbed_7_2" name="__tabbed_7" type="radio" /><div class="tabbed-labels"><label for="__tabbed_7_1">Structure</label><label for="__tabbed_7_2">Example</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Item.{attribute}.exists()
+Item.{attribute}.not_exists()
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>User.age.exists()
+User.age.not_exists()
+</code></pre></div>
+</div>
+</div>
+</div>
+<h3 id="is-type">Is Type</h3>
+<p>Matches all items in a table where <code>{attribute}</code> is of a given type.
+Passed type must be an instance of <code>amano.AttributeType</code> class. Supported values are:</p>
+<ul>
+<li>for string type - <code>amano.AttributeType.STRING</code> </li>
+<li>for numeric types - <code>amano.AttributeType.NUMBER</code></li>
+<li>for boolean type - <code>amano.AttributeType.BOOLEAN</code> </li>
+<li>for binary types - <code>amano.AttributeType.BINARY</code> </li>
+<li>for none type - <code>amano.AttributeType.NULL</code> </li>
+<li>for list types - <code>amano.AttributeType.LIST</code> </li>
+<li>for map types - <code>amano.AttributeType.MAP</code> </li>
+<li>for number set - <code>amano.AttributeType.NUMBER_SET</code> </li>
+<li>for string set - <code>amano.AttributeType.STRING_SET</code> </li>
+<li>for binary set - <code>amano.AttributeType.BINARY_SET</code> </li>
+<li>for any type - <code>amano.AttributeType.ANY</code> </li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:2"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio" /><input id="__tabbed_8_2" name="__tabbed_8" type="radio" /><div class="tabbed-labels"><label for="__tabbed_8_1">Structure</label><label for="__tabbed_8_2">Example</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Item.{attribute}.is_type({value: amano.AttributeType.NUMBER})
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>User.age.is_type(amano.AttributeType.NUMBER)
+</code></pre></div>
+</div>
+</div>
+</div>
+<h3 id="begins-with">Begins with</h3>
+<p>Matches all items in a table where <code>{attribute}</code> starts of a given string <code>{value}</code>. There is an alternate function called <code>startswith</code>, which can be used interchangeably.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="9:2"><input checked="checked" id="__tabbed_9_1" name="__tabbed_9" type="radio" /><input id="__tabbed_9_2" name="__tabbed_9" type="radio" /><div class="tabbed-labels"><label for="__tabbed_9_1">Structure</label><label for="__tabbed_9_2">Example</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Item.{attribute}.begins_with({value: string})
+Item.{attribute}.startswith({value: string})
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>User.name.begins_with(&quot;I&quot;)
+User.name.startswith(&quot;I&quot;)
+</code></pre></div>
+</div>
+</div>
+</div>
+<h3 id="contains">Contains</h3>
+<p>Matches all items in a table where <code>{attribute}</code> contains a value <code>{value}</code>.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="10:2"><input checked="checked" id="__tabbed_10_1" name="__tabbed_10" type="radio" /><input id="__tabbed_10_2" name="__tabbed_10" type="radio" /><div class="tabbed-labels"><label for="__tabbed_10_1">Structure</label><label for="__tabbed_10_2">Example</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Item.{attribute: list|set|string}.contains({value})
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>User.name.contains(&quot;a&quot;)
+User.favourites.contains(&quot;music&quot;)
+</code></pre></div>
+</div>
+</div>
+</div>
+<h3 id="in">In</h3>
+<p>Matches all items in a table where <code>{attribute}</code>'s value is within a list of values <code>{value}</code>. When comparing size you can use any of comparison operators.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="11:2"><input checked="checked" id="__tabbed_11_1" name="__tabbed_11" type="radio" /><input id="__tabbed_11_2" name="__tabbed_11" type="radio" /><div class="tabbed-labels"><label for="__tabbed_11_1">Structure</label><label for="__tabbed_11_2">Example</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Item.{attribute}.in({value})
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>User.country.in([&quot;US&quot;, &quot;UK&quot;])
+</code></pre></div>
+</div>
+</div>
+</div>
+<h3 id="size">Size</h3>
+<p>Matches all items in a table where <code>{attribute}</code> is sized or its size passes a comparison with a <code>{value}</code>. You can use all comparison operators except <code>between</code>. </p>
+<div class="tabbed-set tabbed-alternate" data-tabs="12:2"><input checked="checked" id="__tabbed_12_1" name="__tabbed_12" type="radio" /><input id="__tabbed_12_2" name="__tabbed_12" type="radio" /><div class="tabbed-labels"><label for="__tabbed_12_1">Structure</label><label for="__tabbed_12_2">Example</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Item.{attribute}.size()
+Item.{attribute}.size() &gt; {value}
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>User.favourites.size()
+User.favourites.size() &gt; 2
+</code></pre></div>
+</div>
+</div>
+</div>
+<h2 id="logical-evaluations">Logical evaluations</h2>
+<p>Use the <code>and</code>, <code>or</code>, and <code>not</code> python's logical operators to perform logical evaluations in your queries. </p>
+<p>Because logical operations in python takes any precedence over comparison operations make sure to wrap comparison operations in parentheses. Otherwise, your query may result in an error. </p>
+<p>For example, this is valid:
+<div class="highlight"><pre><span></span><code><span class="p">(</span><span class="n">User</span><span class="o">.</span><span class="n">favourites</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">User</span><span class="o">.</span><span class="n">favourites</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">)</span>
+</code></pre></div></p>
+<p>And the below will result in an error (as <code>1</code> and <code>User.favourites.size()</code> will be executed as an expression before the comparison):</p>
+<div class="highlight"><pre><span></span><code><span class="n">User</span><span class="o">.</span><span class="n">favourites</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">User</span><span class="o">.</span><span class="n">favourites</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">20</span>
+</code></pre></div>
+<p>You can also use additional parentheses (like you would normally do in python) to change the precedence of a logical evaluation.</p>
+<h2 id="sort-key-evaluation">Sort key evaluation</h2>
+<p>The sort key has a specific functionality in DynamoDB, thus it supports only limited amount of operators</p>
+<p><strong>Supported comparisons operators</strong></p>
+<ul>
+<li>equals <code>==</code></li>
+<li>greater than <code>&gt;</code></li>
+<li>greater or equals <code>&gt;=</code></li>
+<li>lower than <code>&lt;</code></li>
+<li>lower or equals <code>&lt;=</code></li>
+<li>between <code>field.between(a, b)</code></li>
+</ul>
+<p><strong>Supported functions</strong></p>
+<ul>
+<li><code>begins_with</code> (aka <code>startswith</code>)</li>
+</ul>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["content.tabs.link"], "search": "../../assets/javascripts/workers/search.db81ec45.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a00a7c5e.min.js"></script>
+      
+    
+  </body>
+</html>
