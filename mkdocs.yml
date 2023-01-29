@@ -1,4 +1,5 @@
 site_name: Amano DB
+site_url: https://kodemore.github.io/amano/
 theme:
   name: material
   features:

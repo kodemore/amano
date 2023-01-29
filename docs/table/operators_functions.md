@@ -195,13 +195,22 @@ Matches all items in a table where `{attribute}` is sized or its size passes a c
 
 ## Logical evaluations
 
-__And__
+Use the `and`, `or`, and `not` python's logical operators to perform logical evaluations in your queries. 
 
-__Or__
+Because logical operations in python takes any precedence over comparison operations make sure to wrap comparison operations in parentheses. Otherwise, your query may result in an error. 
 
-__Not__
+For example, this is valid:
+```python
+(User.favourites.size() > 1) and (User.favourites.size() < 20)
+```
 
-__Parentheses__
+And the below will result in an error (as `1` and `User.favourites.size()` will be executed as an expression before the comparison):
+
+```python
+User.favourites.size() > 1 and User.favourites.size() < 20
+```
+
+You can also use additional parentheses (like you would normally do in python) to change the precedence of a logical evaluation.
 
 ## Sort key evaluation
 

@@ -1,4 +1,14 @@
-`Put`, `update`, `save` and `delete` can perform conditional expressions (update Item only if given attribute exists, or when it asserts against given value). Amano provides abstraction which is built on the top of python's comparison operators (`==`, `=!`, `>`, `>=` `<`, `<=`) and bitwise operators (`&` - and, `|` - or).
+# Conditional writes
+
+`Put`, `update`, `save` and `delete` are all conditional operations, which means you can define what is required in order to perform the operation (e.g., update Item only if given attribute exists, or when it asserts against given value). 
+
+Amano supports this conditional operations with provided abstraction built on the top of python's comparison operators (`==`, `=!`, `>`, `>=` `<`, `<=`) and bitwise operators (`&` - and, `|` - or).
+
+
+## Conditional Update
+
+The below example shows how to update an Item in a certain situation. More complex conditions can be used, to learn more head to [Comparison operators and functions](/table/operators_functions/#comparison-operators).
+
 
 ```python
 from dataclasses import dataclass
@@ -23,5 +33,3 @@ amano_forum.Category = "Other Category"
 # Update forum only if there are no messages
 assert forum_table.update(amano_forum, Forum.Messages == 0)
 ```
-
-The above example shows how to update an Item in a certain situation. More complex conditions can be used, to learn more head to [Supported Conditions Section](#supported-conditions).
